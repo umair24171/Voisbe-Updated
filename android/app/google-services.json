@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "1046169935737",
+    "project_id": "voisbe",
+    "storage_bucket": "voisbe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1046169935737:android:05e71e068d4f73c2c359a8",
+        "android_client_info": {
+          "package_name": "com.app.social_notes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1046169935737-7cmscq7058ur4d0rr6gkg41gn4obeape.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.social_notes",
+            "certificate_hash": "134daf1202d25a538e442caadf41b652c12a16d6"
+          }
+        },
+        {
+          "client_id": "1046169935737-i2mh7af7oiirls9k9l3l76m5f1jav2t9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWDMw3aDPhafOGwpJnoiedUDMAZlLU6Lg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1046169935737-i2mh7af7oiirls9k9l3l76m5f1jav2t9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1046169935737-08u3qolec5e67i93262bkvia13bc5unn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.app.voise"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1046169935737:android:505eee0dedb6e5d7c359a8",
+        "android_client_info": {
+          "package_name": "com.app.voisbe"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1046169935737-i2mh7af7oiirls9k9l3l76m5f1jav2t9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWDMw3aDPhafOGwpJnoiedUDMAZlLU6Lg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1046169935737-i2mh7af7oiirls9k9l3l76m5f1jav2t9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1046169935737-08u3qolec5e67i93262bkvia13bc5unn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.app.voise"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
