@@ -21,6 +21,8 @@ class BlockedUsersScreen extends StatefulWidget {
 class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
   @override
   void initState() {
+    //  getting all the blocked users
+
     Provider.of<SettingsProvider>(context, listen: false).getBlockedUsers(
         Provider.of<UserProvider>(context, listen: false).user!.uid);
     super.initState();
@@ -53,6 +55,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           ),
         ),
         body: Consumer<SettingsProvider>(builder: (context, settingsPro, _) {
+          //  building the block users list that is saved in provider through consumer
+
           return ListView.builder(
             itemCount: settingsPro.blockedUsers.length,
             itemBuilder: (context, index) {
@@ -66,6 +70,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
   }
 }
 
+//  template or widget of the single block user
+
 class BlockedUserListTile extends StatelessWidget {
   const BlockedUserListTile({
     super.key,
@@ -77,6 +83,8 @@ class BlockedUserListTile extends StatelessWidget {
     var currentId = Provider.of<UserProvider>(context, listen: false).user!.uid;
     return ListTile(
         onTap: () {
+          //  navigating to the user profile
+
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -104,15 +112,12 @@ class BlockedUserListTile extends StatelessWidget {
               ),
             ),
             if (user.isVerified) verifiedIcon()
-            // Image.network(
-            //   'https://media.istockphoto.com/id/1396933001/vector/vector-blue-verified-badge.jpg?s=612x612&w=0&k=20&c=aBJ2JAzbOfQpv2OCSr0k8kYe0XHutOGBAJuVjvWvPrQ=',
-            //   height: 20,
-            //   width: 20,
-            // )
           ],
         ),
         trailing: InkWell(
           onTap: () {
+            //  removing user from the block list
+
             Provider.of<SettingsProvider>(context, listen: false)
                 .unblockUser(currentId, user.uid, context);
           },

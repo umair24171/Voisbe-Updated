@@ -24,11 +24,15 @@ class SubscribeScreen extends StatelessWidget {
     var size = MediaQuery.of(context).size;
     // var otherUser =
     //     Provider.of<UserProfileProvider>(context, listen: false).otherUser;
+
+    //  getting the current user
     var currentUser = Provider.of<UserProvider>(context, listen: false).user;
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
+            // the background of the screen
+
             Container(
               height: MediaQuery.of(context).size.height,
               decoration: const BoxDecoration(
@@ -47,33 +51,39 @@ class SubscribeScreen extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Container(
                       alignment: Alignment.center,
-                      child: Stack(
-                        children: [
-                          Consumer<UserProfileProvider>(
-                              builder: (context, otherUser, _) {
-                            return CircleAvatar(
-                              radius: 55,
-                              backgroundImage: NetworkImage(otherUser
-                                      .otherUser!.photoUrl.isEmpty
-                                  ? 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D'
-                                  : otherUser.otherUser!.photoUrl),
-                            );
-                          }),
-                          Positioned(
-                            bottom: size.width * 0.01,
-                            left: size.width * 0.19,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                  color: whiteColor,
-                                  borderRadius: BorderRadius.circular(40)),
-                              child: Icon(
-                                Icons.star_border,
-                                color: primaryColor,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Stack(
+                          children: [
+                            //  getting the subsribtion user pic
+
+                            Consumer<UserProfileProvider>(
+                                builder: (context, otherUser, _) {
+                              return CircleAvatar(
+                                radius: 55,
+                                backgroundImage: NetworkImage(otherUser
+                                        .otherUser!.photoUrl.isEmpty
+                                    ? 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D'
+                                    : otherUser.otherUser!.photoUrl),
+                              );
+                            }),
+
+                            Positioned(
+                              bottom: size.width * 0.01,
+                              left: size.width * 0.19,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                    color: whiteColor,
+                                    borderRadius: BorderRadius.circular(40)),
+                                child: Icon(
+                                  Icons.star_border,
+                                  color: primaryColor,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -88,6 +98,8 @@ class SubscribeScreen extends StatelessWidget {
                     children: [
                       Consumer<UserProfileProvider>(
                           builder: (context, otherUser, _) {
+                        //  getting the subsription user name
+
                         return Text(
                           'Subscribe to ${otherUser.otherUser!.username}',
                           style: TextStyle(
@@ -102,8 +114,11 @@ class SubscribeScreen extends StatelessWidget {
                         return Padding(
                           padding: EdgeInsets.symmetric(
                               horizontal: size.width * 0.14, vertical: 10),
+
+                          //  getting the user monthly subsription price
+
                           child: Text(
-                            'Monthly payment of USD ${userPro.otherUser!.price} You receive access to the following specials:',
+                            'Monthly payment of USD ${userPro.otherUser!.price.toStringAsFixed(2)} You receive access to the following specials:',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 color: whiteColor,
@@ -164,27 +179,28 @@ class SubscribeScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(12)
-                            .copyWith(left: size.width * 0.13),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.check,
-                              color: whiteColor,
-                              size: 20,
-                            ),
-                            Expanded(
-                              child: Text(
-                                'Access to longer voice messages',
-                                overflow: TextOverflow.fade,
-                                style: TextStyle(color: whiteColor),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
+                      // Padding(
+                      //   padding: const EdgeInsets.all(12)
+                      //       .copyWith(left: size.width * 0.13),
+                      //   child: Row(
+                      //     mainAxisAlignment: MainAxisAlignment.center,
+                      //     children: [
+                      //       Icon(
+                      //         Icons.check,
+                      //         color: whiteColor,
+                      //         size: 20,
+                      //       ),
+                      //       Expanded(
+                      //         child: Text(
+                      //           'Access to longer voice messages',
+                      //           overflow: TextOverflow.fade,
+                      //           style: TextStyle(color: whiteColor),
+                      //         ),
+                      //       )
+                      //     ],
+                      //   ),
+                      // ),
+
                       Padding(
                         padding: const EdgeInsets.all(12)
                             .copyWith(left: size.width * 0.13),
@@ -200,6 +216,8 @@ class SubscribeScreen extends StatelessWidget {
                             Expanded(
                               child: Consumer<UserProfileProvider>(
                                   builder: (context, otherUser, _) {
+                                //  getting the subsription user name
+
                                 return Text(
                                   'Your replies are shown  at the top of ${otherUser.otherUser!.username}\'s post',
                                   overflow: TextOverflow.fade,
@@ -219,50 +237,56 @@ class SubscribeScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(12),
                     child: GestureDetector(
                       onTap: () async {
+                        //  logic if the id exist then remove the current user as a subsriber otherwise add a subsriber
+
                         if (!otherUser.otherUser!.subscribedUsers
                             .contains(currentUser!.uid)) {
-                          // Provider.of<PaymentController>(context, listen: false)
-                          //     .makePayment(
-                          //         amount: otherUser.otherUser!.price
-                          //             .toInt()
-                          //             .toString(),
-                          //         currency: 'usd',
-                          //         addSubFunction: () async {
-                          //           var pro = Provider.of<UserProvider>(context,
-                          //               listen: false);
-                          //           // if (!otherUser.otherUser!.subscribedUsers
-                          //           //     .contains(currentUser.uid)) {
-                          //           pro.setUserLoading(true);
-                          //           await FirebaseFirestore.instance
-                          //               .collection('users')
-                          //               .doc(otherUser.otherUser!.uid)
-                          //               .update({
-                          //             'subscribedUsers': FieldValue.arrayUnion(
-                          //                 [currentUser.uid])
-                          //           }).then((value) async {
-                          //             await FirebaseFirestore.instance
-                          //                 .collection('users')
-                          //                 .doc(currentUser.uid)
-                          //                 .update({
-                          //               'subscribedSoundPacks':
-                          //                   FieldValue.arrayUnion(
-                          //                       [otherUser.otherUser!.uid])
-                          //             });
-                          //           }).then((value) {
-                          //             pro.setUserLoading(false);
-                          //             currentUser.subscribedSoundPacks
-                          //                 .add(otherUser.otherUser!.uid);
-                          //             showWhiteOverlayPopup(context,
-                          //                 Icons.subscriptions_outlined, null,
-                          //                 title: 'Subscription Successful',
-                          //                 message:
-                          //                     'You have successfully subscribed to ${otherUser.otherUser!.username}',
-                          //                 isUsernameRes: false);
-                          //           }).onError((error, stackTrace) {
-                          //             pro.setUserLoading(false);
-                          //             log('Error: $error');
-                          //           });
-                          //         });
+                          log('function running');
+                          Provider.of<PaymentController>(context, listen: false)
+                              .makePayment(
+                                  amount: otherUser.otherUser!.price
+                                      .toInt()
+                                      .toString(),
+                                  currency: 'usd',
+                                  addSubFunction: () async {
+                                    var pro = Provider.of<UserProvider>(context,
+                                        listen: false);
+                                    // if (!otherUser.otherUser!.subscribedUsers
+                                    //     .contains(currentUser.uid)) {
+                                    pro.setUserLoading(true);
+                                    await FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(otherUser.otherUser!.uid)
+                                        .update({
+                                      'subscribedUsers': FieldValue.arrayUnion(
+                                          [currentUser.uid])
+                                    }).then((value) async {
+                                      await FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(currentUser.uid)
+                                          .update({
+                                        'subscribedSoundPacks':
+                                            FieldValue.arrayUnion(
+                                                [otherUser.otherUser!.uid])
+                                      });
+                                    }).then((value) {
+                                      pro.setUserLoading(false);
+                                      currentUser.subscribedSoundPacks
+                                          .add(otherUser.otherUser!.uid);
+                                      showWhiteOverlayPopup(
+                                          context,
+                                          Icons.subscriptions_outlined,
+                                          null,
+                                          null,
+                                          title: 'Subscription Successful',
+                                          message:
+                                              'You have successfully subscribed to ${otherUser.otherUser!.username}',
+                                          isUsernameRes: false);
+                                    }).onError((error, stackTrace) {
+                                      pro.setUserLoading(false);
+                                      log('Error: $error');
+                                    });
+                                  });
                         } else {
                           var pro =
                               Provider.of<UserProvider>(context, listen: false);
@@ -285,8 +309,8 @@ class SubscribeScreen extends StatelessWidget {
                             pro.setUserLoading(false);
                             currentUser.subscribedSoundPacks
                                 .add(otherUser.otherUser!.uid);
-                            showWhiteOverlayPopup(
-                                context, Icons.subscriptions_outlined, null,
+                            showWhiteOverlayPopup(context,
+                                Icons.subscriptions_outlined, null, null,
                                 title: 'Successful',
                                 message:
                                     'You have successfully unsubscribed to ${otherUser.otherUser!.username}',
@@ -305,6 +329,9 @@ class SubscribeScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                               color: whiteColor,
                               borderRadius: BorderRadius.circular(40)),
+
+                          //  showing the loader while the user is being subscribing
+
                           child: loadProvider.userLoading
                               ? SpinKitThreeBounce(
                                   color: blackColor,
@@ -318,6 +345,9 @@ class SubscribeScreen extends StatelessWidget {
                                     const SizedBox(
                                       width: 6,
                                     ),
+
+                                    //  getting the real time text if the user is subscribed or not
+
                                     StreamBuilder(
                                         stream: FirebaseFirestore.instance
                                             .collection('users')
@@ -363,6 +393,9 @@ class SubscribeScreen extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                             fontSize: 11),
                       ),
+
+                      //  agreeing the terms and conditions
+
                       InkWell(
                         splashColor: Colors.transparent,
                         onTap: () async {

@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/resources/navigation.dart';
-import 'package:social_notes/screens/home_screen/view/widgets/confirm_report_post.dart';
+import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
+import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
+import 'package:social_notes/screens/home_screen/controller/report_services.dart';
+import 'package:social_notes/screens/home_screen/model/report_post_model.dart';
 import 'package:social_notes/screens/user_profile/view/widgets/confirm_report.dart';
+import 'package:uuid/uuid.dart';
 
 class ReportModalSheet extends StatelessWidget {
-  const ReportModalSheet({super.key});
+  const ReportModalSheet({super.key, required this.note});
+  final NoteModel note;
 
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+    var provider = Provider.of<UserProvider>(context, listen: false).user;
     return Container(
       height: size.height * 0.95,
       child: SingleChildScrollView(
@@ -71,6 +78,14 @@ class ReportModalSheet extends StatelessWidget {
             InkWell(
               onTap: () async {
                 navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'It’s spam',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
                   backgroundColor: whiteColor,
                   elevation: 0,
@@ -116,17 +131,21 @@ class ReportModalSheet extends StatelessWidget {
             ),
             InkWell(
               onTap: () async {
+                navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'Sexual activity',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
                   backgroundColor: whiteColor,
                   elevation: 0,
-                  // enableDrag: true,
-                  // useSafeArea: true,
-                  // isScrollControlled: true,
-                  // constraints: BoxConstraints(),
-
                   context: context,
                   builder: (context) {
-                    return const ConfirmReportPost();
+                    return const ConfirmReport();
                   },
                 );
               },
@@ -166,6 +185,15 @@ class ReportModalSheet extends StatelessWidget {
             ),
             InkWell(
               onTap: () async {
+                navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'Hate speech',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
                   backgroundColor: whiteColor,
                   elevation: 0,
@@ -208,6 +236,15 @@ class ReportModalSheet extends StatelessWidget {
             ),
             InkWell(
               onTap: () async {
+                navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'Violence or dangerous organizations',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
                   backgroundColor: whiteColor,
                   elevation: 0,
@@ -250,6 +287,15 @@ class ReportModalSheet extends StatelessWidget {
             ),
             InkWell(
               onTap: () async {
+                navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'Bullying or harassment',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
                   backgroundColor: whiteColor,
                   elevation: 0,
@@ -292,6 +338,15 @@ class ReportModalSheet extends StatelessWidget {
             ),
             InkWell(
               onTap: () async {
+                navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'False information',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
                   backgroundColor: whiteColor,
                   elevation: 0,
@@ -334,6 +389,15 @@ class ReportModalSheet extends StatelessWidget {
             ),
             InkWell(
               onTap: () async {
+                navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'Scam or fraud',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
                   backgroundColor: whiteColor,
                   elevation: 0,
@@ -376,6 +440,15 @@ class ReportModalSheet extends StatelessWidget {
             ),
             InkWell(
               onTap: () async {
+                navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'Suicide or self-injury',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
                   backgroundColor: whiteColor,
                   elevation: 0,
@@ -418,6 +491,15 @@ class ReportModalSheet extends StatelessWidget {
             ),
             InkWell(
               onTap: () async {
+                navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'Sale of illegal or regulated good',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
                   backgroundColor: whiteColor,
                   elevation: 0,
@@ -460,6 +542,15 @@ class ReportModalSheet extends StatelessWidget {
             ),
             InkWell(
               onTap: () async {
+                navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'Eating disorders',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
                   backgroundColor: whiteColor,
                   elevation: 0,
@@ -502,6 +593,15 @@ class ReportModalSheet extends StatelessWidget {
             ),
             InkWell(
               onTap: () async {
+                navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'Report as unlawful',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
                   backgroundColor: whiteColor,
                   elevation: 0,
@@ -544,6 +644,15 @@ class ReportModalSheet extends StatelessWidget {
             ),
             InkWell(
               onTap: () async {
+                navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'Drugs',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
                   backgroundColor: whiteColor,
                   elevation: 0,
@@ -586,9 +695,18 @@ class ReportModalSheet extends StatelessWidget {
             ),
             InkWell(
               onTap: () async {
+                navPop(context);
+                String reportId = const Uuid().v4();
+                ReportPostModel report = ReportPostModel(
+                    reportId: reportId,
+                    postId: note.noteId,
+                    postOwner: note.userUid,
+                    reportMessage: 'Something else',
+                    reportedBy: provider!.uid);
+                ReportServices().reportPost(report);
                 showModalBottomSheet(
-                  elevation: 0,
                   backgroundColor: whiteColor,
+                  elevation: 0,
                   context: context,
                   builder: (context) {
                     return const ConfirmReport();

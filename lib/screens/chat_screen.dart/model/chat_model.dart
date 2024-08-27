@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+//  creating the model with the required fields for the chat
+
 class ChatModel {
   final String chatId;
   final String senderId;
@@ -14,6 +16,7 @@ class ChatModel {
   final DateTime time;
   String messageRead;
   final String avatarUrl;
+  final List deletedChat;
 
   ChatModel(
       {required this.name,
@@ -24,6 +27,7 @@ class ChatModel {
       required this.messageRead,
       required this.isShare,
       required this.postOwner,
+      required this.deletedChat,
       required this.receiverId,
       required this.avatarUrl});
 
@@ -37,6 +41,7 @@ class ChatModel {
       'isShare': isShare,
       'name': name,
       'message': message,
+      'deletedChat': deletedChat,
       'time': time,
       'avatarUrl': avatarUrl,
     };
@@ -49,6 +54,9 @@ class ChatModel {
       message: map['message'] as String,
       receiverId: map['receiverId'] as String,
       messageRead: map['messageRead'] as String,
+      deletedChat: List.from(
+        (map['deletedChat'] as List),
+      ),
       isShare: map['isShare'] as bool,
       chatId: map['chatId'] as String,
       postOwner: map['postOwner'] as String,

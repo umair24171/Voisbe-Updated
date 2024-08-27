@@ -18,6 +18,16 @@ class UserProfileProvider with ChangeNotifier {
   List<UserModel> following = [];
   List<UserModel> closeFriends = [];
 
+  addNotification(String userId) {
+    otherUser!.notificationsEnable.add(userId);
+    notifyListeners();
+  }
+
+  removeNotification(String userId) {
+    otherUser!.notificationsEnable.remove(userId);
+    notifyListeners();
+  }
+
   getCloseFriends(List closeFriend) async {
     try {
       await _firestore
@@ -225,29 +235,128 @@ class UserProfileProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  pinPost(String noteId, bool isPinned) async {
-    List<NoteModel> pinnedPosts = [];
-    for (var note in userPosts) {
-      if (note.isPinned) {
-        pinnedPosts.add(note);
-      }
-    }
+  // pinPost(String noteId, bool isPinned) async {
+  //   int maxPinnedPosts = 3; // Limit to 3 pinned posts
+  //   List<NoteModel> pinnedPosts = [];
 
-    log(pinnedPosts.length.toString());
-    if (pinnedPosts.length < 2 || isPinned == false) {
+  //   // Check if the current post should be pinned or unpinned
+  //   for (var note in userPosts) {
+  //     if (note.noteId == noteId) {
+  //       note.isPinned = isPinned;
+  //     }
+  //     if (note.isPinned) {
+  //       pinnedPosts.add(note);
+  //     }
+  //   }
+
+  //   // Restrict pinned posts to the maximum allowed
+  //   if (pinnedPosts.length > maxPinnedPosts) {
+  //     var noteToUnpin = pinnedPosts.removeLast();
+  //     noteToUnpin.isPinned = false;
+  //     await _firestore
+  //         .collection('notes')
+  //         .doc(noteToUnpin.noteId)
+  //         .update({'isPinned': false});
+  //   }
+
+  //   notifyListeners();
+
+  //   // Update the pin status in Firestore
+  //   await _firestore
+  //       .collection('notes')
+  //       .doc(noteId)
+  //       .update({'isPinned': isPinned});
+  // }
+  pinPost(String noteId, bool isPinned) async {
+    int pinnedCount = userPosts.where((note) => note.isPinned).length;
+
+    if (isPinned && pinnedCount >= 1) {
+      // If trying to pin a post and there's already a pinned post, unpin the existing one
+      var existingPinnedPost = userPosts.firstWhere((note) => note.isPinned);
+      existingPinnedPost.isPinned = false;
       await _firestore
           .collection('notes')
-          .doc(noteId)
-          .update({'isPinned': isPinned});
-      for (var element in userPosts) {
-        if (element.noteId == noteId) {
-          element.isPinned = isPinned;
-          // if (isPinned) {
-          //   userPosts.insert(1, element);
-          // }
-        }
-      }
-      notifyListeners();
+          .doc(existingPinnedPost.noteId)
+          .update({'isPinned': false});
     }
+
+    // Update the target post
+    var targetPost = userPosts.firstWhere((note) => note.noteId == noteId);
+    targetPost.isPinned = isPinned;
+    await _firestore
+        .collection('notes')
+        .doc(noteId)
+        .update({'isPinned': isPinned});
+
+    // Re-sort the posts
+    userPosts.sort((a, b) {
+      if (a.noteId == userPosts[0].noteId) return -1;
+      if (b.noteId == userPosts[0].noteId) return 1;
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      // If neither is pinned or both are pinned, maintain original order
+      return b.publishedDate
+          .compareTo(a.publishedDate); // Assuming newer posts should be higher
+    });
+
+    notifyListeners();
   }
+  // pinPost(String noteId, bool isPinned) async {
+  //   int pinnedCount = userPosts.where((note) => note.isPinned).length;
+
+  //   if (isPinned && pinnedCount >= 1) {
+  //     // If trying to pin a post and there's already a pinned post, unpin the existing one
+  //     var existingPinnedPost = userPosts.firstWhere((note) => note.isPinned);
+  //     existingPinnedPost.isPinned = false;
+  //     await _firestore
+  //         .collection('notes')
+  //         .doc(existingPinnedPost.noteId)
+  //         .update({'isPinned': false});
+  //   }
+
+  //   // Update the target post
+  //   var targetPost = userPosts.firstWhere((note) => note.noteId == noteId);
+  //   targetPost.isPinned = isPinned;
+  //   await _firestore
+  //       .collection('notes')
+  //       .doc(noteId)
+  //       .update({'isPinned': isPinned});
+
+  //   // Re-sort the posts
+  //   userPosts.sort((a, b) {
+  //     if (a.noteId == userPosts[0].noteId) return -1;
+  //     if (b.noteId == userPosts[0].noteId) return 1;
+  //     if (a.isPinned && !b.isPinned) return -1;
+  //     if (!a.isPinned && b.isPinned) return 1;
+  //     return 0;
+  //   });
+
+  //   notifyListeners();
+  // }
+
+  // pinPost(String noteId, bool isPinned) async {
+  //   List<NoteModel> pinnedPosts = [];
+  //   for (var note in userPosts) {
+  //     if (note.isPinned) {
+  //       pinnedPosts.add(note);
+  //     }
+  //   }
+
+  //   log(pinnedPosts.length.toString());
+  //   if (pinnedPosts.isEmpty || isPinned == false) {
+  //     for (var element in userPosts) {
+  //       if (element.noteId == noteId) {
+  //         element.isPinned = isPinned;
+  //         // if (isPinned) {
+  //         //   userPosts.insert(1, element);
+  //         // }
+  //       }
+  //     }
+  //     notifyListeners();
+  //     await _firestore
+  //         .collection('notes')
+  //         .doc(noteId)
+  //         .update({'isPinned': isPinned});
+  //   }
+  // }
 }

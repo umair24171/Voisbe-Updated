@@ -5,8 +5,45 @@ import 'package:flutter/material.dart';
 import 'package:social_notes/screens/notifications_screen/model/comment_notofication_model.dart';
 
 class NotificationProvider with ChangeNotifier {
+  //  creating the instance of the firestore
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  //  getting all the notifications
+
   List<CommentNotoficationModel> allNotifications = [];
+
+  //  show expand
+  bool isExpand = false;
+
+  //  expand for comments
+
+  bool isExpandForComment = false;
+
+  //  expand for the follow requests
+
+  bool isFollowExpand = false;
+
+  setIsFollowExpand() {
+    isFollowExpand = !isFollowExpand;
+    notifyListeners();
+  }
+
+  //  changing the value of the expand
+
+  setIsExpand() {
+    isExpand = !isExpand;
+    notifyListeners();
+  }
+
+//  changing the value of the  for comment expand
+
+  setIsExpandForCOmment() {
+    isExpandForComment = !isExpandForComment;
+    notifyListeners();
+  }
+
+  //  accept follow request function
 
   confirmFollowReq(String currentId, String otherId) async {
     try {
@@ -28,6 +65,8 @@ class NotificationProvider with ChangeNotifier {
     }
   }
 
+  //  canceling the follow request function
+
   cancelFollowReq(String currentId, String otherId) async {
     try {
       await _firestore.collection('users').doc(currentId).update({
@@ -41,6 +80,8 @@ class NotificationProvider with ChangeNotifier {
     }
   }
 
+  //  adding the notification to the database
+
   addCommentNotification(CommentNotoficationModel noti) async {
     try {
       await _firestore
@@ -51,6 +92,8 @@ class NotificationProvider with ChangeNotifier {
       log(e.toString());
     }
   }
+
+  //  getting all the notifications
 
   getAllNotifications(String userId) async {
     try {
@@ -69,12 +112,14 @@ class NotificationProvider with ChangeNotifier {
     }
   }
 
+  //  reading the notification
+
   readNotification(String notiId) async {
     try {
-      int index =
-          allNotifications.indexWhere((noti) => noti.notificationId == notiId);
-      allNotifications[index].isRead = 'read';
-      notifyListeners();
+      // int index =
+      //     allNotifications.indexWhere((noti) => noti.notificationId == notiId);
+      // allNotifications[index].isRead = 'read';
+      // notifyListeners();
       await _firestore
           .collection('commentNotifications')
           .doc(notiId)

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
+import 'package:social_notes/screens/home_screen/view/home_screen.dart';
 import 'package:social_notes/screens/search_screen/view/note_details_screen.dart';
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
 
@@ -94,19 +95,19 @@ class DeepLinkPostService {
           if (snapshot.exists) {
             final postData = NoteModel.fromMap(snapshot.data()!);
             Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => NoteDetailsScreen(
-                      audioPlayer: _audioPlayer,
-                      changeIndex: 0,
-                      currentIndex: 0,
-                      duration: Duration.zero,
-                      isPlaying: true,
-                      pageController: controller,
-                      playPause: () {
-                        // playPause(userPosts[index].noteUrl, index);
-                      },
-                      position: Duration.zero,
-                      stopMainPlayer: () {},
-                      size: MediaQuery.of(context).size,
+                builder: (context) => HomeScreen(
+                      // audioPlayer: _audioPlayer,
+                      // changeIndex: 0,
+                      // currentIndex: 0,
+                      // duration: Duration.zero,
+                      // isPlaying: true,
+                      // pageController: controller,
+                      // playPause: () {
+                      //   // playPause(userPosts[index].noteUrl, index);
+                      // },
+                      // position: Duration.zero,
+                      // stopMainPlayer: () {},
+                      // size: MediaQuery.of(context).size,
                       note: postData,
                     )));
 

@@ -130,10 +130,10 @@ class TagUsersModalSheet extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 0),
                       child: GestureDetector(
                         onTap: () {
-                          if (!tagProvider.tags.contains(tagUser)) {
-                            tagProvider.addTag(tagUser);
+                          if (!tagProvider.tags.contains(tagUser.uid)) {
+                            tagProvider.addTag(tagUser.uid);
                           } else {
-                            tagProvider.removeTag(tagUser);
+                            tagProvider.removeTag(tagUser.uid);
                           }
                         },
                         child: Consumer<NoteProvider>(
@@ -159,7 +159,7 @@ class TagUsersModalSheet extends StatelessWidget {
                                   ],
                                 )
                               ]),
-                              if (notePro.tags.contains(tagUser))
+                              if (notePro.tags.contains(tagUser.uid))
                                 Container(
                                   padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(

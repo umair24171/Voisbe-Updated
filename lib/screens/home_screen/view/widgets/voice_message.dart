@@ -5,13 +5,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:flutter_svg/svg.dart';
+// import 'package:flutter_svg/svg.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
-import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
+// import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
 
@@ -27,12 +27,15 @@ class CircleVoiceNotes extends StatefulWidget {
     required this.onPlayStateChanged,
     required this.audioPlayer,
     required this.engageCommentIndex,
+    // required this.backGround,
     required this.isPlaying,
     required this.position,
     required this.onPlayPause,
     required this.changeIndex,
   }) : super(key: key);
-  // int playedComment;
+
+  //  getting the required data from the constructor
+
   final CommentModel commentModel;
   final int index;
   final List<int> subscriberCommentIndex;
@@ -58,6 +61,8 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
 
   @override
   void initState() {
+    //  initializing the player to get the duration of the voice reply
+
     initPlayer();
     super.initState();
   }
@@ -81,18 +86,9 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
         duration = event;
       });
     });
-    // widget.audioPlayer.onPositionChanged.listen((event) {
-    //   setState(() {
-    //     position = event;
-    //   });
-    // });
-
-    // widget.audioPlayer.onPlayerComplete.listen((state) {
-    //   setState(() {
-    //     _isPlaying = false;
-    //   });
-    // });
   }
+
+//  disposing the player when no longer needs
 
   @override
   void dispose() {
@@ -100,6 +96,8 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
     // widget.audioPlayer.dispose();
     // widget.audioPlayer.stop();
   }
+
+// updating the value of played comment
 
   updatePlayedComment() async {
     int updateCommentCounter = widget.commentModel.playedComment;
@@ -112,44 +110,11 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
         .update({'playedComment': updateCommentCounter});
   }
 
-  // void playPause() async {
-  //   if (_isPlaying) {
-  //     await _audioPlayer.pause();
-  //   } else {
-  //     if (_cachedFilePath != null) {
-  //       _audioPlayer.setReleaseMode(ReleaseMode.stop);
-  //       await _audioPlayer
-  //           .setPlaybackRate(_playbackSpeed); // Set playback speed
-  //       await _audioPlayer.play(UrlSource(_cachedFilePath!));
-
-  //       updatePlayedComment();
-  //     } else {
-  //       // Cache the file if not already cached
-  //       _audioPlayer.setReleaseMode(ReleaseMode.stop);
-  //       DefaultCacheManager()
-  //           .downloadFile(widget.commentModel.comment)
-  //           .then((fileInfo) {
-  //         if (fileInfo != null && fileInfo.file.existsSync()) {
-  //           _cachedFilePath = fileInfo.file.path;
-  //           _audioPlayer.setPlaybackRate(_playbackSpeed); // Set playback speed
-  //           _audioPlayer.play(
-  //             UrlSource(_cachedFilePath!),
-  //           );
-  //         }
-  //       });
-  //     }
-  //   }
-  //   setState(() {
-  //     _isPlaying = !_isPlaying;
-  //   });
-  //   // Start playing if not already playing
-  //   // Pause if already playing
-  //   // Your play/pause logic here
-  // }
-
   bool _isLiked = false;
   Duration duration = Duration.zero;
   // Duration position = Duration.zero;
+
+  //  like function on the circle replies
 
   void _toggleLike() async {
     bool isAlreadyLiked = widget.commentModel.likes
@@ -197,6 +162,8 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
         padding: const EdgeInsets.symmetric(horizontal: 0),
         child: Column(
           children: [
+            //  percent bar of the voice reply
+
             CircularPercentIndicator(
               // radius: 40.0,
               radius: size.width * 0.112,
@@ -204,6 +171,9 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
               percent: widget.isPlaying && widget.changeIndex == widget.index
                   ? widget.position.inSeconds / duration.inSeconds
                   : 0.0,
+
+//  displaying the user profile real time
+
               center: StreamBuilder(
                   stream: FirebaseFirestore.instance
                       .collection('users')
@@ -226,6 +196,9 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                             ),
                             borderRadius: BorderRadius.circular(50),
                           ),
+
+                          //  showing the like icon
+
                           child: _isLiked
                               ? Consumer<FilterProvider>(
                                   builder: (context, filterPro, _) {
@@ -245,6 +218,9 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                                     ),
                                   );
                                 })
+
+                              //  showing the playpause icon
+
                               : InkWell(
                                   splashColor: Colors.transparent,
                                   onTap: widget.onPlayPause,
@@ -261,7 +237,7 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                                                 : widget.closeFriendIndexs
                                                         .contains(widget.index)
                                                     ? const Color(0xff50a87e)
-                                                    : whiteColor,
+                                                    : primaryColor,
                                         borderRadius:
                                             BorderRadius.circular(20)),
                                     child: Icon(
@@ -278,7 +254,7 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                                               : widget.closeFriendIndexs
                                                       .contains(widget.index)
                                                   ? whiteColor
-                                                  : primaryColor,
+                                                  : whiteColor,
                                       size: 20,
                                     ),
                                   ),
@@ -288,11 +264,9 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                     }
                   }),
               circularStrokeCap: CircularStrokeCap.round,
-              // backgroundColor: widget.index == 0
-              //     ? const Color(0xff50a87e)
-              //     : widget.index == 1
-              //         ? const Color(0xff6cbfd9)
-              //         : Colors.white,
+
+              //  managing the color of the circle replies
+
               backgroundColor:
                   widget.isPlaying && widget.changeIndex == widget.index
                       ? const Color(0xFFB8C7CB)
@@ -302,17 +276,24 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                               ? const Color(0xffa562cb)
                               : widget.closeFriendIndexs.contains(widget.index)
                                   ? const Color(0xff50a87e)
-                                  : whiteColor,
+                                  : primaryColor,
+
+              //  managing the progress color of the circle replies
+
               progressColor: widget.index == widget.engageCommentIndex
                   ? const Color(0xff6cbfd9)
                   : widget.subscriberCommentIndex.contains(widget.index)
                       ? const Color(0xffa562cb)
                       : widget.closeFriendIndexs.contains(widget.index)
                           ? const Color(0xff50a87e)
-                          : whiteColor,
+                          : primaryColor,
+
               animation: widget.isPlaying && widget.changeIndex == widget.index,
               animationDuration: duration.inSeconds,
             ),
+
+            //  displaying the username real time
+
             InkWell(
               onTap: () {
                 Navigator.push(
@@ -322,7 +303,7 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                           OtherUserProfile(userId: widget.commentModel.userId),
                     ));
               },
-              child: StreamBuilder(
+              child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                   stream: FirebaseFirestore.instance
                       .collection('users')
                       .doc(widget.commentModel.userId)
@@ -331,25 +312,29 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                     if (snapshot.hasData) {
                       var data = snapshot.data!.data();
                       UserModel userModel = UserModel.fromMap(data!);
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            userModel.isVerified
-                                ? userModel.name.length > 7
-                                    ? '${userModel.name.substring(0, 5)}...'
-                                    : userModel.name
-                                : '${userModel.name.substring(0, 7)}...',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Colors.white,
-                            ),
-                          ),
-                          if (userModel.isVerified) verifiedIcon()
-                        ],
-                      );
+                      return userModel.name.isEmpty
+                          ? Text('')
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  userModel.isVerified
+                                      ? (userModel.name.length > 7
+                                          ? '${userModel.name.substring(0, 5)}...'
+                                          : userModel.name)
+                                      : (userModel.name.length > 7
+                                          ? '${userModel.name.substring(0, 7)}...'
+                                          : userModel.name),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                if (userModel.isVerified) verifiedIcon()
+                              ],
+                            );
                     } else {
                       return const Text('');
                     }

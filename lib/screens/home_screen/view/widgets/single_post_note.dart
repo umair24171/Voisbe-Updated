@@ -18,12 +18,14 @@ import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
 import 'package:social_notes/screens/auth_screens/controller/notifications_methods.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
+import 'package:social_notes/screens/home_screen/controller/play_count_service.dart';
 import 'package:social_notes/screens/home_screen/controller/share_services.dart';
 import 'package:social_notes/screens/home_screen/model/book_mark_model.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
 // import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dart';
 // import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
+import 'package:social_notes/screens/home_screen/view/like_screen.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/circle_comments.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/comments_modal_sheet.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/main_player.dart';
@@ -53,9 +55,12 @@ class SingleNotePost extends StatefulWidget {
     required this.changeIndex,
     required this.position,
     required this.stopMainPlayer,
+    required this.isSecondHome,
     required this.playPause,
     this.postIndex,
   });
+
+  //  getting the required data from the constructor
 
   final Size size;
   final NoteModel note;
@@ -69,6 +74,7 @@ class SingleNotePost extends StatefulWidget {
   final VoidCallback playPause;
   final VoidCallback stopMainPlayer;
   final Duration duration;
+  final bool isSecondHome;
   @override
   State<SingleNotePost> createState() => _SingleNotePostState();
 }
@@ -76,7 +82,10 @@ class SingleNotePost extends StatefulWidget {
 class _SingleNotePostState extends State<SingleNotePost> {
   @override
   void initState() {
+    //  automatically playing post for the zero index
+
     playPauseForIndexZero();
+
     super.initState();
   }
 
@@ -87,28 +96,28 @@ class _SingleNotePostState extends State<SingleNotePost> {
       }
     });
   }
-  // int? _currentPlayingIndex;
-
-  // void _handlePlayStateChanged(bool isPlaying, int index) {
-  //   if (_currentPlayingIndex != null && _currentPlayingIndex != index) {
-  //     // Pause the previously playing voice
-  //     _currentPlayingIndex = index;
-  //     setState(() {});
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    // var commentProvider =
-    //     Provider.of<DisplayNotesProvider>(context, listen: false).allComments;
+
+    //  getting the current user data
+
     var userProvider = Provider.of<UserProvider>(context, listen: false).user;
+
     return Container(
       height: MediaQuery.of(context).size.height,
       child: Column(
         // crossAxisAlignment: CrossAxisAlignment.center,
 
         children: [
+          if (widget.isSecondHome)
+            const SizedBox(
+              height: 75,
+            ),
+
+          //  displaying the user name and profile image and verified icon realtime and selected topic of the post
+
           StreamBuilder(
               stream: FirebaseFirestore.instance
                   .collection('users')
@@ -129,7 +138,7 @@ class _SingleNotePostState extends State<SingleNotePost> {
                             ? widget.size.width * 0.73
                             : bubbleUser.name.length <= 7
                                 ? widget.size.width * 0.77
-                                : widget.size.width * 0.81,
+                                : widget.size.width * 0.80,
                         child: Stack(
                           children: [
                             Padding(
@@ -192,7 +201,7 @@ class _SingleNotePostState extends State<SingleNotePost> {
                             ),
                             Positioned(
                                 left: bubbleUser.name.length <= 5
-                                    ? widget.size.width * 0.29
+                                    ? widget.size.width * 0.30
                                     : bubbleUser.name.length <= 7
                                         ? widget.size.width * 0.34
                                         : widget.size.width * 0.38,
@@ -200,7 +209,7 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                 child: Container(
                                   width: widget.size.width * 0.42,
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 0, vertical: 15),
+                                      horizontal: 0, vertical: 14.5),
                                   decoration: BoxDecoration(
                                       color:
                                           Color(widget.note.topicColor.value),
@@ -227,10 +236,15 @@ class _SingleNotePostState extends State<SingleNotePost> {
               }),
 
           const Expanded(child: SizedBox()),
+
+          //  showing the player  and passing the required data
+
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: MainPlayer(
-                waveformData: widget.note.waveformData,
+                // playCounts: playCounts,
+                listenedWaves: widget.note.mostListenedWaves,
+                postId: widget.note.noteId,
                 duration: widget.duration,
                 playPause: widget.playPause,
                 audioPlayer: widget.audioPlayer,
@@ -248,49 +262,72 @@ class _SingleNotePostState extends State<SingleNotePost> {
                 mainHeight: 85),
           ),
 
-          Align(
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  timeago.format(widget.note.publishedDate).toUpperCase(),
-                  style: TextStyle(
-                      color: whiteColor, fontFamily: fontFamily, fontSize: 11),
-                ),
-                // Text(
-                //   ' |  ',
-                //   style: TextStyle(color: whiteColor, fontSize: 11),
-                // ),
-                // Icon(
-                //   Icons.play_arrow,
-                //   size: 10,
-                //   color: whiteColor,
+          // showing the title of the post and date of the post
 
-                // ),
-                // Text(
-                //   ' ${note.title}',
-                //   style: TextStyle(
-                //       fontFamily: fontFamily, color: whiteColor, fontSize: 11),
-                // )
-              ],
+          Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: Align(
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    widget.note.title.isNotEmpty
+                        ? ' ${widget.note.title.toUpperCase()} - '
+                        : '',
+                    // widget.note.title.toLowerCase(),
+                    style: TextStyle(
+                        fontFamily: fontFamily,
+                        color: whiteColor,
+                        fontSize: 11),
+                  ),
+                  Text(
+                    timeago.format(widget.note.publishedDate).toUpperCase(),
+                    style: TextStyle(
+                        color: whiteColor,
+                        fontFamily: fontFamily,
+                        fontSize: 11),
+                  ),
+                  // Text(
+                  //   ' |  ',
+                  //   style: TextStyle(color: whiteColor, fontSize: 11),
+                  // ),
+                  // Icon(
+                  //   Icons.play_arrow,
+                  //   size: 10,
+                  //   color: whiteColor,
+
+                  // ),
+                ],
+              ),
             ),
           ),
           const Expanded(child: SizedBox()),
+
+          // showing post icons
+
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 5)
                 .copyWith(top: 6, bottom: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                //  like icon with the  logic of liking the post
+
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: GestureDetector(
                       onTap: () {
                         String notiId = const Uuid().v4();
 
+                        //  liking the post and sending notification to the post owner
+
                         CommentNotoficationModel commentNotoficationModel =
                             CommentNotoficationModel(
+                                postBackground: widget.note.backgroundImage,
+                                postThumbnail: widget.note.videoThumbnail,
+                                postType: widget.note.backgroundType,
+                                noteUrl: widget.note.noteUrl,
                                 notificationId: notiId,
                                 notification: widget.note.noteUrl,
                                 currentUserId: userProvider!.uid,
@@ -304,14 +341,13 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                 widget.note.noteId,
                                 commentNotoficationModel,
                                 widget.note.userToken,
-                                userProvider.name);
-
-                        //     .then((value) {
-                        //   Provider.of<DisplayNotesProvider>(context,
-                        //           listen: false)
-                        //       .addLikeInProvider(widget.note.noteId);
-                        // });
+                                userProvider.name,
+                                widget.note.userUid,
+                                userProvider.uid);
                       },
+
+                      //  changing the value of the like realtime
+
                       child: StreamBuilder(
                           stream: FirebaseFirestore.instance
                               .collection('notes')
@@ -341,10 +377,14 @@ class _SingleNotePostState extends State<SingleNotePost> {
                           })),
                 ),
 
+                //  sharing post icon
+
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: GestureDetector(
                     onTap: () async {
+                      //  share post to the chat
+
                       await showModalBottomSheet(
                           context: context,
                           builder: (context) {
@@ -368,10 +408,15 @@ class _SingleNotePostState extends State<SingleNotePost> {
                     // ),
                   ),
                 ),
+
+                //  saving post icon
+
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: InkWell(
                       onTap: () {
+                        // saving post with the shared prefs
+
                         String bookMarkId = const Uuid().v4();
                         BookmarkModel bookmarkModel = BookmarkModel(
                             bookmarkId: bookMarkId,
@@ -381,6 +426,9 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                 listen: false)
                             .addPostToSaved(bookmarkModel, context);
                       },
+
+                      //  changing the value of saved posts realtime
+
                       child: StreamBuilder(
                         stream: FirebaseFirestore.instance
                             .collection('bookmarks')
@@ -419,13 +467,9 @@ class _SingleNotePostState extends State<SingleNotePost> {
                         },
                       )),
                 ),
-                // IconButton(
-                //     onPressed: () {},
-                //     icon: Icon(
-                //       Icons.image_outlined,
-                //       color: whiteColor,
-                //       size: 30,
-                //     )),
+
+                //  tag people icon only show when the certain conditions met
+
                 if (widget.note.tagPeople.isNotEmpty)
                   InkWell(
                     onTap: () {
@@ -441,37 +485,142 @@ class _SingleNotePostState extends State<SingleNotePost> {
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Image.asset(
-                        'assets/images/tags.png',
+                      child: SvgPicture.asset(
+                        'assets/icons/User_box.svg',
                         height: 30,
                         width: 25,
                       ),
                     ),
                   ),
+
+                // showing different options  based on users needs
+
                 IconButton(
                     onPressed: () {
                       showDialog(
                         context: context,
                         builder: (context) {
                           return AlertDialog(
+                            actionsPadding: const EdgeInsets.all(0),
+                            contentPadding: const EdgeInsets.all(4),
                             backgroundColor: whiteColor,
                             elevation: 0,
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
-                              // crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                // Align(
-                                //   alignment: Alignment.centerRight,
-                                //   child: IconButton(
-                                //       onPressed: () {
-                                //         navPop(context);
-                                //       },
-                                //       icon: Icon(
-                                //         Icons.close,
-                                //         color: blackColor,
-                                //         size: 30,
-                                //       )),
-                                // ),
+                                //  option to remove itself from the tag
+
+                                if (widget.note.tagPeople
+                                    .contains(userProvider!.uid))
+                                  InkWell(
+                                    onTap: () async {
+                                      navPop(context);
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          actionsPadding:
+                                              const EdgeInsets.all(0),
+                                          contentPadding:
+                                              const EdgeInsets.all(4),
+                                          backgroundColor: whiteColor,
+                                          elevation: 0,
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 20),
+                                                child: SvgPicture.asset(
+                                                  'assets/icons/close_ring-1.svg',
+                                                  height: 30,
+                                                  width: 30,
+                                                  color: blackColor,
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 20),
+                                                child: Text(
+                                                  'Tag Removed',
+                                                  style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontFamily: khulaBold,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: blackColor),
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 20),
+                                                child: Text(
+                                                  'Your tag was removed from this post.',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontFamily: khulaRegular,
+                                                      fontSize: 12,
+                                                      color: Color(0xff6C6C6C)),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                      Provider.of<DisplayNotesProvider>(context,
+                                              listen: false)
+                                          .updateTag(
+                                              widget.note.noteId,
+                                              userProvider!.uid,
+                                              widget.currentIndex);
+                                      await FirebaseFirestore.instance
+                                          .collection('notes')
+                                          .doc(widget.note.noteId)
+                                          .update({
+                                        'tagPeople': FieldValue.arrayRemove(
+                                            [userProvider.uid])
+                                      });
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          bottom: 8,
+                                          left: 10,
+                                          right: 10,
+                                          top: 10),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Remove me from post',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontFamily: khulaRegular,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w600),
+                                          ),
+                                          const Icon(
+                                              Icons.arrow_forward_ios_outlined)
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                if (widget.note.tagPeople
+                                    .contains(userProvider!.uid))
+                                  Container(
+                                    width: MediaQuery.of(context).size.width,
+                                    height: 1,
+                                    color: const Color(0xffEAEAEA),
+                                  ),
+
+                                //  report the post option if the user is not the post owner
+
                                 if (widget.note.userUid != userProvider!.uid)
                                   InkWell(
                                     onTap: () {
@@ -486,10 +635,16 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                           elevation: 0,
                                           context: context,
                                           builder: (context) =>
-                                              const ReportModalSheet());
+                                              ReportModalSheet(
+                                                note: widget.note,
+                                              ));
                                     },
                                     child: Padding(
-                                      padding: const EdgeInsets.only(bottom: 8),
+                                      padding: const EdgeInsets.only(
+                                          bottom: 8,
+                                          left: 10,
+                                          right: 10,
+                                          top: 10),
                                       child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
@@ -508,13 +663,21 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                       ),
                                     ),
                                   ),
-                                if (widget.note.userUid != userProvider!.uid)
-                                  Divider(
-                                    endIndent: 0,
-                                    indent: 0,
+                                if (widget.note.userUid != userProvider.uid)
+                                  Container(
+                                    width: MediaQuery.of(context).size.width,
                                     height: 1,
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: const Color(0xffEAEAEA),
                                   ),
+                                // Divider(
+                                //   endIndent: 0,
+                                //   indent: 0,
+                                //   height: 1,
+                                //   color: Colors.black.withOpacity(0.1),
+                                // ),
+
+                                //  delete the post option for the post owner
+
                                 if (widget.note.userUid == userProvider.uid)
                                   InkWell(
                                     onTap: () async {
@@ -526,26 +689,17 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                           .deletePost(widget.note.noteId);
                                       navPop(context);
                                       showWhiteOverlayPopup(
-                                          context, Icons.check_box, null,
+                                          context, Icons.check_box, null, null,
                                           title: 'Successful',
                                           message: 'Post was deleted!',
                                           isUsernameRes: false);
-                                      // ScaffoldMessenger.of(context)
-                                      //     .showSnackBar(SnackBar(
-                                      //         backgroundColor: Colors.white,
-                                      //         content: Text(
-                                      //           'Post was deleted!',
-                                      //           style: TextStyle(
-                                      //               fontFamily: khulaRegular,
-                                      //               color: blackColor),
-                                      //         )));
-
-                                      // navPop(context);
                                     },
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                              vertical: 0)
-                                          .copyWith(top: 10),
+                                      padding: const EdgeInsets.only(
+                                          bottom: 8,
+                                          left: 10,
+                                          right: 10,
+                                          top: 10),
                                       child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
@@ -572,6 +726,9 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                     height: 1,
                                     color: Colors.black.withOpacity(0.1),
                                   ),
+
+                                //  copy the link of the post to share somewhere
+
                                 InkWell(
                                   onTap: () async {
                                     await DeepLinkPostService()
@@ -595,8 +752,11 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                     });
                                   },
                                   child: Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 8),
+                                    padding: const EdgeInsets.only(
+                                        bottom: 8,
+                                        left: 10,
+                                        right: 10,
+                                        top: 10),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
@@ -621,44 +781,9 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                   height: 1,
                                   color: Colors.black.withOpacity(0.1),
                                 ),
-                                InkWell(
-                                  onTap: () async {
-                                    // await DeepLinkPostService()
-                                    //     .createReferLink(widget.note)
-                                    //     .then((value) {
-                                    //   Share.share(value);
-                                    //   navPop(context);
-                                    // });
-                                  },
-                                  child: Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 0)
-                                            .copyWith(top: 10),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Share to instagram ',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontFamily: khulaRegular,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                        const Icon(
-                                            Icons.arrow_forward_ios_outlined)
-                                      ],
-                                    ),
-                                  ),
-                                ),
 
-                                Divider(
-                                  endIndent: 0,
-                                  indent: 0,
-                                  height: 1,
-                                  color: Colors.black.withOpacity(0.1),
-                                ),
+                                //  share the post to different social media platforms
+
                                 InkWell(
                                   onTap: () async {
                                     await DeepLinkPostService()
@@ -669,9 +794,11 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                     });
                                   },
                                   child: Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 0)
-                                            .copyWith(top: 10),
+                                    padding: const EdgeInsets.only(
+                                        bottom: 8,
+                                        left: 10,
+                                        right: 10,
+                                        top: 10),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
@@ -690,13 +817,6 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                     ),
                                   ),
                                 ),
-
-                                // Divider(
-                                //   endIndent: 10,
-                                //   indent: 10,
-                                //   height: 1,
-                                //   color: Colors.black.withOpacity(0.1),
-                                // ),
                               ],
                             ),
                           );
@@ -718,6 +838,8 @@ class _SingleNotePostState extends State<SingleNotePost> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                // showing the number of the likes realtime
+
                 StreamBuilder(
                     stream: FirebaseFirestore.instance
                         .collection('notes')
@@ -727,19 +849,33 @@ class _SingleNotePostState extends State<SingleNotePost> {
                       if (snapshot.hasData) {
                         NoteModel likes =
                             NoteModel.fromMap(snapshot.data!.data()!);
-                        return Text(
-                          likes.likes.isNotEmpty
-                              ? '${likes.likes.length} likes'
-                              : 'No likes',
-                          style: TextStyle(
-                              fontFamily: fontFamily,
-                              color: whiteColor,
-                              fontWeight: FontWeight.w600),
+                        return InkWell(
+                          splashColor: Colors.transparent,
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      LikeScreen(likes: widget.note.likes),
+                                ));
+                          },
+                          child: Text(
+                            likes.likes.isNotEmpty
+                                ? '${likes.likes.length} likes'
+                                : 'No likes',
+                            style: TextStyle(
+                                fontFamily: fontFamily,
+                                color: whiteColor,
+                                fontWeight: FontWeight.w600),
+                          ),
                         );
                       } else {
                         return const Text('');
                       }
                     }),
+
+                //  displaying the modal sheet of all replies
+
                 GestureDetector(
                   onTap: () async {
                     await showModalBottomSheet(
@@ -787,14 +923,13 @@ class _SingleNotePostState extends State<SingleNotePost> {
             ),
           ),
 
+          //  all the circle replies
+
           CircleComments(
-            userName: widget.note.username,
-            userToken: widget.note.userToken,
             stopMainPlayer: widget.stopMainPlayer,
             mainAudioPlayer: widget.audioPlayer,
 
-            postId: widget.note.noteId,
-            userId: widget.note.userUid,
+            noteModel: widget.note,
 
             // commentsLength: snapshot.data!.docs.length,
           ),

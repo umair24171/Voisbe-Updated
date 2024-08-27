@@ -1,18 +1,17 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:audioplayers/audioplayers.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
+import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
+import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
-import 'package:social_notes/screens/search_screen/view/provider/search_screen_provider.dart';
-import 'package:social_notes/screens/search_screen/view/widgets/single_search_item.dart';
-import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
+import 'package:social_notes/screens/search_screen/view/widgets/optimised_grid_view.dart';
+import 'package:social_notes/screens/user_profile/other_user_profile.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart' as rem;
 
 class SearchScreen extends StatefulWidget {
   SearchScreen({super.key});
@@ -22,175 +21,222 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  // List<NoteModel> mostEngagedPosts = [];
+  //empty list of most engaged posts
+  List<NoteModel> mostEngagedPosts = [];
+
+  // posts that would be after adding the likes filter
   List<NoteModel> postsAfterFilter = [];
-  AudioPlayer _audioPlayer = AudioPlayer();
-  PageController _pageController = PageController();
-  int currentIndex = 0;
-  bool _isPlaying = false;
-  AudioPlayer player = AudioPlayer();
-  Duration position = Duration.zero;
-  int _currentIndex = 0;
 
-  Duration duration = Duration.zero;
+  //  it would be managed through firebase to change the value of the likes
 
-  late StreamSubscription<QuerySnapshot> _subscription;
-  List<NoteModel> userPosts = [];
-  List<NoteModel> pinnedPosts = [];
-  List<NoteModel> nonPinnedPosts = [];
+  int likesThreshold = 0;
 
   @override
   void initState() {
-    _audioPlayer = AudioPlayer();
-    // _subscription = FirebaseFirestore.instance
-    //     .collection('notes')
-    //     .where('userUid',
-    //         isEqualTo:
-    //             // 'ysGnuGm48ySdv4i20ZKA0XB5g7o1'
-    //             Provider.of<UserProfileProvider>(context, listen: false)
-    //                 .otherUser!
-    //                 .uid)
-    //     .orderBy('publishedDate', descending: true)
-    //     .snapshots()
-    //     .listen((snapshot) {
-    //   if (snapshot.docs.isNotEmpty) {
-    //     log('snapshots are ${snapshot.docs.first.data()}');
-    //     List<NoteModel> otherUserPosts =
-    //         snapshot.docs.map((e) => NoteModel.fromMap(e.data())).toList();
+    // initilizing the firebase config
+    initializeData();
 
-    //     List<NoteModel> secondList = List.from(otherUserPosts);
-
-    //     NoteModel newPost = otherUserPosts[0];
-    //     pinnedPosts.clear();
-    //     nonPinnedPosts.clear();
-    //     for (int i = 0; i < otherUserPosts.length; i++) {
-    //       if (otherUserPosts[i].isPinned) {
-    //         pinnedPosts.add(otherUserPosts[i]);
-    //       } else {
-    //         nonPinnedPosts.add(otherUserPosts[i]);
-    //       }
-    //     }
-    //     pinnedPosts.removeWhere((element) => element.noteId == newPost.noteId);
-    //     nonPinnedPosts
-    //         .removeWhere((element) => element.noteId == newPost.noteId);
-
-    //     otherUserPosts = [newPost, ...pinnedPosts, ...nonPinnedPosts];
-    //     setState(() {
-    //       userPosts = otherUserPosts;
-    //       // Update the local list with the sorted list
-    //     });
-    //   }
-    // });
-    // Provider.of<UserProfileProvider>(context, listen: false).getUserPosts(
-    //     Provider.of<UserProfileProvider>(context, listen: false)
-    //         .otherUser!
-    //         .uid);
     super.initState();
   }
 
-  stopMainPlayer() {
-    _audioPlayer.pause();
-    setState(() {
-      _isPlaying = false;
-      currentIndex = -1;
-    });
+  Future<void> initializeData() async {
+    await getLikesThreshold();
+    await Provider.of<DisplayNotesProvider>(context, listen: false)
+        .getAllNotes(context);
+    getLikesLogicsAndFilteration();
   }
 
-  void playPause(String url, int index) async {
-    // Check if the file is already cached
-    final cacheManager = DefaultCacheManager();
-    FileInfo? fileInfo = await cacheManager.getFileFromCache(url);
+  // this function is helpful in managing the value of the likes in future without sending the update  through firebase config
 
-    if (fileInfo == null) {
-      // File is not cached, download and cache it
-      try {
-        fileInfo = await cacheManager.downloadFile(url, key: url);
-      } catch (e) {
-        print('Error downloading file: $e');
-        return;
+  Future<void> getLikesThreshold() async {
+    final rem.FirebaseRemoteConfig remoteConfig =
+        rem.FirebaseRemoteConfig.instance;
+
+    try {
+      // Set a minimum fetch interval (optional, but recommended)
+      await remoteConfig.setConfigSettings(rem.RemoteConfigSettings(
+        fetchTimeout: const Duration(minutes: 1),
+        minimumFetchInterval: Duration.zero,
+      ));
+
+      // Force fetch (bypasses throttling)
+      await remoteConfig.fetchAndActivate();
+
+      likesThreshold = remoteConfig.getInt('likes_threshold');
+      log('Likes threshold is $likesThreshold');
+    } catch (e) {
+      // If fetch fails, use the last activated value
+      likesThreshold = remoteConfig.getInt('likes_threshold');
+      log('Failed to fetch remote config. Using cached value: $likesThreshold');
+    }
+  }
+
+  // through this finction we get the posts and filter them based on the likes and update our lists
+
+  void getLikesLogicsAndFilteration() {
+    var provider = Provider.of<DisplayNotesProvider>(context, listen: false);
+    UserModel? currentUser =
+        Provider.of<UserProvider>(context, listen: false).user;
+
+    postsAfterFilter.clear();
+
+    for (int i = 0; i < provider.notes.length; i++) {
+      log('likes in condition $likesThreshold');
+      if (provider.notes[i].likes.length > likesThreshold) {
+        postsAfterFilter.add(provider.notes[i]);
       }
     }
 
-    // Use the cached file for playback
-    if (_isPlaying && _currentIndex != index) {
-      await _audioPlayer.stop();
+    List<NoteModel> displayPosts = [];
+
+    for (var note in postsAfterFilter) {
+      bool isSubscribed =
+          currentUser?.subscribedSoundPacks.contains(note.userUid) ?? false;
+      bool isPostForSubscriber = note.isPostForSubscribers;
+
+      if (!(isPostForSubscriber && !isSubscribed)) {
+        UserModel? user;
+        try {
+          user = Provider.of<ChatProvider>(context, listen: false)
+              .users
+              .firstWhere((element) => element.uid == note.userUid);
+        } catch (e) {
+          continue;
+        }
+
+        if (user.isPrivate &&
+            !(currentUser?.following.contains(note.userUid) ?? false) &&
+            note.userUid != currentUser!.uid) {
+          continue;
+        }
+
+        displayPosts.add(note);
+      }
     }
 
-    if (_currentIndex == index && _isPlaying) {
-      if (_audioPlayer.state == PlayerState.playing) {
-        _audioPlayer.pause();
-        setState(() {
-          _currentIndex = -1;
-          _isPlaying = false;
-        });
-      } else {
-        _audioPlayer.resume();
-        setState(() {
-          _currentIndex = index;
-          _isPlaying = true;
-        });
-      }
-    } else {
-      await _audioPlayer
-          .play(
-        UrlSource(fileInfo.file.path),
-      )
-          .then((value) async {
-        setState(() {
-          _currentIndex = index;
-          _isPlaying = true;
-        });
-        duration = (await _audioPlayer.getDuration())!;
-        setState(() {});
-      });
-    }
-
-    _audioPlayer.onPositionChanged.listen((event) {
-      if (_currentIndex == index) {
-        setState(() {
-          position = event;
-        });
-      }
-    });
-    _audioPlayer.onPlayerComplete.listen((event) {
-      setState(() {
-        _isPlaying = false;
-        _currentIndex = -1;
-        position = Duration.zero;
-      });
-    });
+    postsAfterFilter = displayPosts;
+    setState(() {});
   }
 
-  PageController _controller = PageController();
-  @override
-  void dispose() {
-    super.dispose();
-  }
+//   getLikesLogicsAndFilteration() {
+//     var provider = Provider.of<DisplayNotesProvider>(context, listen: false);
+//     UserModel? currentUser =
+//         Provider.of<UserProvider>(context, listen: false).user;
+
+//     postsAfterFilter.clear();
+
+//     for (int i = 0; i < provider.notes.length; i++) {
+//       if (provider.notes[i].likes.isNotEmpty) {
+//         postsAfterFilter.add(provider.notes[i]);
+//       }
+//     }
+
+// // Create a new list to store the posts that will be displayed
+//     List<NoteModel> displayPosts = [];
+
+//     for (var note in postsAfterFilter) {
+//       bool isSubscribed =
+//           currentUser?.subscribedSoundPacks.contains(note.userUid) ?? false;
+//       bool isPostForSubscriber = note.isPostForSubscribers;
+
+//       // If the post is for subscribers and the current user is not subscribed, don't add it to the display list
+//       if (!(isPostForSubscriber && !isSubscribed)) {
+//         // New logic to check for private accounts
+//         UserModel? user;
+//         try {
+//           user = Provider.of<ChatProvider>(context, listen: false)
+//               .users
+//               .firstWhere(
+//                 (element) => element.uid == note.userUid,
+//               );
+//         } catch (e) {
+//           // User not found in the list, skip this post
+//           continue;
+//         }
+
+//         // Check if the account is private and the current user is not following
+//         if (user.isPrivate &&
+//             !(currentUser?.following.contains(note.userUid) ?? false) &&
+//             note.userUid != currentUser!.uid) {
+//           continue; // Skip this post
+//         }
+
+//         displayPosts.add(note);
+//       }
+//     }
+
+// // Assign the displayPosts list to the postsAfterFilter
+//     postsAfterFilter = displayPosts;
+//     setState(() {});
+//   }
+
+//   Future<int> getLikesThreshold() async {
+//     final rem.FirebaseRemoteConfig remoteConfig =
+//         rem.FirebaseRemoteConfig.instance;
+//     await remoteConfig.fetchAndActivate();
+//     return remoteConfig.getInt('likes_threshold');
+//   }
 
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    var provider = Provider.of<DisplayNotesProvider>(context, listen: false);
-    var userProvider = Provider.of<UserProvider>(context, listen: false).user;
-    provider.getAllNotes();
-    var allPosts = provider.notes;
-    postsAfterFilter.clear();
-    // postContainsSubscribers.clear();
-    for (int i = 0; i < provider.notes.length; i++) {
-      if (allPosts[i].likes.length >= 20) {
-        postsAfterFilter.add(allPosts[i]);
-        // allPosts.removeAt(i);
-      }
-    }
 
-    // allPosts = [...mostEngagedPosts, ...postContainsSubscribers, ...allPosts];
-    // allPosts.sort((a, b) => b.likes.length.compareTo(a.likes.length));
+    // var size = MediaQuery.of(context).size;
+    // var provider = Provider.of<DisplayNotesProvider>(context, listen: false);
+    // UserModel? currentUser =
+    //     Provider.of<UserProvider>(context, listen: false).user;
 
-    // var postsProvider =
-    //     Provider.of<DisplayNotesProvider>(context, listen: false);
-    // postsProvider.getAllNotes();
+    // var allPosts = provider.notes;
+    // postsAfterFilter.clear();
+
+    // for (int i = 0; i < provider.notes.length; i++) {
+    //   if (allPosts[i].likes.length >= 10) {
+    //     postsAfterFilter.add(allPosts[i]);
+    //   }
+    // }
+
+    // for (var note in postsAfterFilter) {
+    //   bool isSubscribed =
+    //       currentUser!.subscribedSoundPacks.contains(note.userUid);
+    //   bool isPostForSubscriber = note.isPostForSubscribers;
+    //   if (isPostForSubscriber && !isSubscribed) {
+    //     postsAfterFilter.remove(note);
+    //   }
+    // }
+// var size = MediaQuery.of(context).size;
+//     var provider = Provider.of<DisplayNotesProvider>(context, listen: false);
+//     UserModel? currentUser =
+//         Provider.of<UserProvider>(context, listen: false).user;
+
+//     // var allPosts = provider.notes;
+//     postsAfterFilter.clear();
+
+//     for (int i = 0; i < provider.notes.length; i++) {
+//       if (provider.notes[i].likes.isNotEmpty) {
+//         postsAfterFilter.add(provider.notes[i]);
+//       }
+//     }
+
+// // Create a new list to store the posts that will be displayed
+//     List<NoteModel> displayPosts = [];
+
+//     for (var note in postsAfterFilter) {
+//       bool isSubscribed =
+//           currentUser?.subscribedSoundPacks.contains(note.userUid) ?? false;
+//       bool isPostForSubscriber = note.isPostForSubscribers;
+
+//       // If the post is for subscribers and the current user is not subscribed, don't add it to the display list
+//       if (!(isPostForSubscriber && !isSubscribed)) {
+//         displayPosts.add(note);
+//       }
+//     }
+
+// // Assign the displayPosts list to the postsAfterFilter
+//     postsAfterFilter = displayPosts;
     return Scaffold(
         appBar: AppBar(
+          backgroundColor: whiteColor,
+          elevation: 0,
           automaticallyImplyLeading: false,
           title: Row(
             children: [
@@ -201,28 +247,29 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: TextFormField(
                     onChanged: (value) {
                       if (value.isNotEmpty) {
-                        var pro = Provider.of<SearchScreenProvider>(context,
-                            listen: false);
-                        pro.setSearching(true);
-                        pro.searchedNotes.clear();
-                        pro.setSearching(true);
-                        for (int i = 0; i < postsAfterFilter.length; i++) {
-                          if (postsAfterFilter[i]
-                                  .topic
-                                  .toLowerCase()
-                                  .contains(value.toLowerCase()) ||
-                              postsAfterFilter[i]
-                                  .username
-                                  .toLowerCase()
-                                  .contains(value.toLowerCase())) {
-                            pro.searchedNotes.add(allPosts[i]);
+                        //  the search value is adding to the provider
+
+                        var chatPro =
+                            Provider.of<ChatProvider>(context, listen: false);
+
+                        //  changing the search status
+
+                        chatPro.changeSearchStatus(true);
+
+                        // clearing the prevoius search list
+
+                        chatPro.clearSearchedUser();
+                        for (var user in chatPro.users) {
+                          if (user.name.contains(value)) {
+                            //  adding user to the list if the name matches to the value
+                            chatPro.addSearchedUsers(user);
                           }
                         }
                       } else {
-                        var pro = Provider.of<SearchScreenProvider>(context,
-                            listen: false);
-                        pro.setSearching(false);
-                        pro.searchedNotes.clear();
+                        var chatPro =
+                            Provider.of<ChatProvider>(context, listen: false);
+                        chatPro.changeSearchStatus(false);
+                        chatPro.clearSearchedUser();
                       }
                     },
                     textAlignVertical: TextAlignVertical.center,
@@ -244,58 +291,68 @@ class _SearchScreenState extends State<SearchScreen> {
                       hintText: 'Search',
                       hintStyle:
                           TextStyle(fontFamily: fontFamily, color: Colors.grey),
-                      // label: Text(
-                      //   'Search',
-                      //   style: TextStyle(
-                      //       fontFamily: fontFamily, color: Colors.grey),
-                      // ),
                     ),
                   ),
                 ),
               ),
             ],
           ),
-          // actions: [
-          //   Padding(
-          //     padding: const EdgeInsets.only(right: 12),
-          //     child: Icon(
-          //       Icons.more_horiz,
-          //       color: blackColor,
-          //     ),
-          //   ),
-          // ],
         ),
-        body: Consumer<SearchScreenProvider>(builder: (context, searchPro, _) {
-          return GridView.builder(
-            itemCount: searchPro.isSearching
-                ? searchPro.searchedNotes.length
-                : postsAfterFilter.length,
-            shrinkWrap: true,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisExtent: size.height * 0.2,
-            ),
-            itemBuilder: (context, index) => SingleSearchItem(
-              postion: position,
-              stopMainPlayer: stopMainPlayer,
-              isPlaying: _isPlaying,
-              pageController: _controller,
-              audioPlayer: _audioPlayer,
-              duration: duration,
-              playPause: () {
-                playPause(
-                    searchPro.isSearching
-                        ? searchPro.searchedNotes[index].noteUrl
-                        : postsAfterFilter[index].noteUrl,
-                    index);
-              },
-              changeIndex: _currentIndex,
-              index: index,
-              noteModel: searchPro.isSearching
-                  ? searchPro.searchedNotes[index]
-                  : postsAfterFilter[index],
-            ),
-          );
-        }));
+
+        // refresh indicator to get the newly posts
+
+        body: RefreshIndicator(
+          backgroundColor: whiteColor,
+          color: primaryColor,
+          onRefresh: () {
+            // function to get the newly posts
+
+            return Provider.of<DisplayNotesProvider>(context, listen: false)
+                .getAllNotes(context);
+          },
+          child: Consumer<ChatProvider>(builder: (context, searchPro, _) {
+            return searchPro.isSearching
+
+                // if the value of the search is true show the seached users
+
+                ? Container(
+                    height: MediaQuery.of(context).size.height,
+                    color: whiteColor,
+                    child: ListView.builder(
+                      itemCount: searchPro.searchedUSers.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: NetworkImage(
+                                searchPro.searchedUSers[index].photoUrl),
+                          ),
+                          title: Row(
+                            children: [
+                              Text(
+                                searchPro.searchedUSers[index].name,
+                                style: TextStyle(fontFamily: fontFamily),
+                              ),
+                              if (searchPro.searchedUSers[index].isVerified)
+                                verifiedIcon()
+                            ],
+                          ),
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => OtherUserProfile(
+                                  userId: searchPro.searchedUSers[index].uid),
+                            ));
+                          },
+                        );
+                      },
+                    ),
+                  )
+
+                // otherwise show the grid of posts
+
+                : OptimizedSearchGrid(
+                    postsAfterFilter: postsAfterFilter, size: size);
+          }),
+        ));
   }
 }

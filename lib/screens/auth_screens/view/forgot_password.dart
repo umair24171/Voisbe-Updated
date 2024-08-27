@@ -73,11 +73,15 @@ class ForgotPasswordScreen extends StatelessWidget {
           const SizedBox(
             height: 15,
           ),
+
+          //  button to send the link to the user added email  to reset the password
           ElevatedButton(
               style: ButtonStyle(
-                  backgroundColor: MaterialStatePropertyAll(blackColor)),
+                  backgroundColor: WidgetStatePropertyAll(blackColor)),
               onPressed: () async {
                 FirebaseAuth auth = FirebaseAuth.instance;
+
+                //  function to reset the password
                 await auth
                     .sendPasswordResetEmail(email: emailController.text)
                     .then((value) {

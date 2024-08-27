@@ -1,42 +1,47 @@
+import 'dart:ui';
+
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
+import 'package:social_notes/screens/add_note_screen/view/widgets/custom_video_player.dart';
+import 'package:social_notes/screens/auth_screens/model/user_model.dart';
+import 'package:social_notes/screens/bottom_provider.dart';
+import 'package:social_notes/screens/custom_bottom_bar.dart';
+import 'package:social_notes/screens/home_screen/view/home_screen.dart';
 import 'package:social_notes/screens/search_screen/view/note_details_screen.dart';
+import 'package:social_notes/screens/search_screen/view/widgets/search_player.dart';
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
+import 'package:video_player/video_player.dart';
 
 class SingleSearchItem extends StatefulWidget {
-  const SingleSearchItem(
-      {super.key,
-      required this.noteModel,
-      required this.index,
-      required this.audioPlayer,
-      required this.changeIndex,
-      required this.duration,
-      required this.playPause,
-      required this.stopMainPlayer,
-      required this.pageController,
-      required this.isPlaying,
-      required this.postion});
+  const SingleSearchItem({
+    super.key,
+    required this.noteModel,
+    // this.controller,
+    required this.index,
+  });
   final NoteModel noteModel;
+  // final VideoPlayerController? controller;
   final int index;
-  final AudioPlayer audioPlayer;
-  final int changeIndex;
-  final Duration postion;
-  final Duration duration;
-  final VoidCallback playPause;
-  final VoidCallback stopMainPlayer;
-  final bool isPlaying;
-  final PageController pageController;
 
   @override
   State<SingleSearchItem> createState() => _SingleSearchItemState();
 }
 
 class _SingleSearchItemState extends State<SingleSearchItem> {
+  //  instance of the audio player
+
   late AudioPlayer _audioPlayer;
+
+  //  cached file path of the audio player
+
   String? _cachedFilePath;
   bool _isPlaying = false;
   double _playbackSpeed = 1.0; // Default playback speed
@@ -44,9 +49,13 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
 
   @override
   void initState() {
+    // initializing  the audio player
+
     initPlayer();
     super.initState();
   }
+
+  // initilizing the audio player  and getting the duration
 
   initPlayer() async {
     _audioPlayer = AudioPlayer();
@@ -80,11 +89,15 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
     });
   }
 
+  // disposing the audio player when no longer neeeded
+
   @override
   void dispose() {
     _audioPlayer.dispose();
     super.dispose();
   }
+
+  // play and pause the player
 
   void playPause() async {
     if (_isPlaying) {
@@ -125,57 +138,95 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
       width: size.width * 0.5,
       child: Stack(
         children: [
+          //  background of the post
+
           SizedBox(
             height: size.height * 0.2,
             width: size.width * 0.5,
             child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => OtherUserProfile(
-                        userId: widget.noteModel.userUid,
-                      ),
-                    ));
-              },
-              child: Image.network(
-                widget.noteModel.photoUrl,
-                fit: BoxFit.cover,
-              ),
-            ),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OtherUserProfile(
+                          userId: widget.noteModel.userUid,
+                        ),
+                      ));
+                },
+
+                //  building the background
+
+                child: _buildBackgroundContent(size)),
           ),
 
-          // Positioned(
-          //   top: 30,
-          //   left: 54,
-          //   child: Container(
-          //     padding: const EdgeInsets.all(8),
-          //     decoration: BoxDecoration(
-          //       color: whiteColor,
-          //       borderRadius: BorderRadius.circular(35),
-          //     ),
-          //     child: IconButton(
-          //       onPressed: playPause,
-          //       icon: Icon(
-          //         _isPlaying ? Icons.pause_circle_filled : Icons.play_arrow,
-          //         color: widget.index == 0
-          //             ? Colors.red
-          //             : widget.index == 1
-          //                 ? greenColor
-          //                 : color7,
-          //       ),
-          //     ),
-          //   ),
-          // ),
+          //  gradient of the backgound
+
+          Container(
+            height: MediaQuery.of(context).size.height,
+            decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                    stops: [
+                      0.25,
+                      0.75,
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.black26, Colors.transparent])),
+          ),
           Column(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              //  showing username of the post owner realtime
+
+              StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(widget.noteModel.userUid)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      UserModel noteUser =
+                          UserModel.fromMap(snapshot.data!.data()!);
+                      return InkWell(
+                        splashColor: Colors.transparent,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  OtherUserProfile(userId: noteUser.uid),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: Align(
+                              alignment: Alignment.center,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    noteUser.name,
+                                    style: TextStyle(
+                                        color: whiteColor,
+                                        fontFamily: fontFamily),
+                                  ),
+                                  if (noteUser.isVerified) verifiedIcon()
+                                ],
+                              )),
+                        ),
+                      );
+                    } else {
+                      return const Text('');
+                    }
+                  }),
+
+              // showing the percent bar of the audio duration
+
               CircularPercentIndicator(
                 radius: 35.0,
                 lineWidth: 8.0,
                 percent: position.inSeconds / duration.inSeconds,
-
                 center: InkWell(
                   splashColor: Colors.transparent,
                   onTap: playPause,
@@ -194,11 +245,6 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
                   ),
                 ),
                 circularStrokeCap: CircularStrokeCap.round,
-                // backgroundColor: widget.index == 0
-                //     ? const Color(0xff50a87e)
-                //     : widget.index == 1
-                //         ? const Color(0xff6cbfd9)
-                //         : Colors.white,
                 backgroundColor: _isPlaying
                     ? const Color(0xFFB8C7CB)
                     : Color(widget.noteModel.topicColor.value),
@@ -206,6 +252,9 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
                 animation: _isPlaying,
                 animationDuration: duration.inSeconds,
               ),
+
+              //   getting the topic of the post
+
               Stack(
                 children: [
                   Padding(
@@ -232,35 +281,27 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
                       top: 8,
                       child: InkWell(
                         onTap: () {
+                          Provider.of<BottomProvider>(context, listen: false)
+                              .setCurrentIndex(1);
+
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => NoteDetailsScreen(
-                                    audioPlayer: widget.audioPlayer,
-                                    changeIndex: widget.changeIndex,
-                                    currentIndex: widget.changeIndex,
-                                    duration: widget.duration,
-                                    isPlaying: widget.isPlaying,
-                                    pageController: widget.pageController,
-                                    playPause: widget.playPause,
-                                    position: widget.postion,
-                                    stopMainPlayer: widget.stopMainPlayer,
-                                    size: size,
-                                    note: widget.noteModel),
-                              ));
+                                  builder: (context) => HomeScreen(
+                                        note: widget.noteModel,
+                                        // currentIndex: widget.index,
+                                        // screenChange: 1,
+                                      )));
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               vertical: 6, horizontal: 10),
                           decoration: BoxDecoration(
-                              // boxShadow: const [
-                              //   BoxShadow(
-                              //       color: Color(0xffcf4836),
-                              //       blurRadius: 4,
-                              //       spreadRadius: 1)
-                              // ],
                               color: whiteColor.withOpacity(1),
                               borderRadius: BorderRadius.circular(18)),
+
+                          //  view post details screen
+
                           child: Text(
                             'View Post',
                             style: TextStyle(
@@ -278,5 +319,46 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
         ],
       ),
     );
+  }
+
+  Widget _buildBackgroundContent(Size size) {
+    //  if the background is photo or video show this
+
+    if (widget.noteModel.backgroundImage.isNotEmpty) {
+      if (widget.noteModel.backgroundType.contains('video')) {
+        return CachedNetworkImage(
+          imageUrl: widget.noteModel.videoThumbnail,
+          fit: BoxFit.cover,
+        );
+      } else {
+        return CachedNetworkImage(
+          imageUrl: widget.noteModel.backgroundImage,
+          fit: BoxFit.cover,
+        );
+      }
+    } else {
+      //  show the users profile pic if the background is empty
+
+      return StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.noteModel.userUid)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            UserModel user = UserModel.fromMap(snapshot.data!.data()!);
+            return CachedNetworkImage(
+              imageUrl: user.photoUrl,
+              fit: BoxFit.cover,
+            );
+          } else {
+            return Image.network(
+              widget.noteModel.photoUrl,
+              fit: BoxFit.cover,
+            );
+          }
+        },
+      );
+    }
   }
 }

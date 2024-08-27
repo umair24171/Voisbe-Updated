@@ -57,6 +57,7 @@ class _EditSubscriptionsScreenState extends State<EditSubscriptionsScreen> {
             itemBuilder: (context, index) {
               UserModel user = settingPro.userSubscriptions[index];
               return SubsccriptionListTile(
+                  price: user.price,
                   isVerified: user.isVerified,
                   image: user.photoUrl,
                   userId: user.uid,

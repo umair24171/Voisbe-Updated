@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
@@ -48,7 +50,7 @@ class _SingleChatUserState extends State<SingleChatUser> {
   }
 
   checkSeenStatus() async {
-    chatStream = await FirebaseFirestore.instance
+    chatStream = FirebaseFirestore.instance
         .collection('chats')
         .doc(widget.chatModel.usersId)
         .collection('messages')
@@ -70,7 +72,92 @@ class _SingleChatUserState extends State<SingleChatUser> {
     var currentUSer = Provider.of<UserProvider>(context, listen: false).user;
     String formattedTime = DateFormat('hh:mm a').format(widget.chatModel.time!);
     bool isMe = widget.chatModel.senderId == currentUSer!.uid;
+    // log('Chat id is ${widget.chatModel.message}');
 
+    return Slidable(
+      direction: Axis.horizontal,
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+              padding: const EdgeInsets.all(0),
+              onPressed: (context) async {
+                final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+                List delChat = widget.chatModel.deletedChat!;
+                delChat.add(currentUSer.uid);
+                await _firestore
+                    .collection('chats')
+                    .doc(widget.chatModel.usersId)
+                    .update({'deletedChat': delChat});
+
+                // Get all messages in the specified chat
+                final QuerySnapshot messagesSnapshot = await _firestore
+                    .collection('chats')
+                    .doc(widget.chatModel.usersId)
+                    .collection('messages')
+                    .get();
+
+                // Batch write to update all messages
+                final WriteBatch batch = _firestore.batch();
+
+                for (DocumentSnapshot message in messagesSnapshot.docs) {
+                  // Get current deletedChat field value
+                  List<String> deletedChat =
+                      List<String>.from(message['deletedChat'] ?? []);
+
+                  // Add current user's UID if not already present
+                  if (!deletedChat.contains(currentUSer.uid)) {
+                    deletedChat.add(currentUSer.uid);
+                  }
+
+                  // Update the deletedChat field
+                  batch.update(message.reference, {'deletedChat': deletedChat});
+                }
+
+                // Commit the batch update
+                await batch.commit();
+              },
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
+              flex: 4,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(0),
+                topLeft: Radius.circular(0),
+              ),
+              autoClose: true,
+              icon: Icons.delete,
+              label: "Delete"),
+        ],
+      ),
+      child: BuildSingleChatUser(
+        widget: widget,
+        currentUSer: currentUSer,
+        formattedTime: formattedTime,
+        chat: chat,
+        isMe: isMe,
+      ),
+    );
+  }
+}
+
+class BuildSingleChatUser extends StatelessWidget {
+  const BuildSingleChatUser({
+    super.key,
+    required this.widget,
+    required this.currentUSer,
+    required this.formattedTime,
+    required this.chat,
+    required this.isMe,
+  });
+
+  final SingleChatUser widget;
+  final UserModel? currentUSer;
+  final String formattedTime;
+  final ChatModel? chat;
+  final bool isMe;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       child: Row(
@@ -81,13 +168,23 @@ class _SingleChatUserState extends State<SingleChatUser> {
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(45),
                   border: Border.all(width: 3, color: widget.color)),
-              child: CircleAvatar(
-                backgroundImage: NetworkImage(
-                    widget.chatModel.senderId! == currentUSer.uid
-                        ? widget.chatModel.receiverImage!
-                        : widget.chatModel.senderImage!),
-                radius: 17,
-              ),
+              child: StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(widget.recId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      UserModel recImage =
+                          UserModel.fromMap(snapshot.data!.data()!);
+                      return CircleAvatar(
+                        backgroundImage: NetworkImage(recImage.photoUrl),
+                        radius: 17,
+                      );
+                    } else {
+                      return const Text('');
+                    }
+                  }),
             ),
           ),
           // const SizedBox(width: 5),
@@ -102,7 +199,7 @@ class _SingleChatUserState extends State<SingleChatUser> {
                     StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('users')
-                          .doc(currentUSer.uid == widget.chatModel.senderId
+                          .doc(currentUSer!.uid == widget.chatModel.senderId
                               ? widget.chatModel.receiverId!
                               : widget.chatModel.senderId!)
                           .snapshots(),
@@ -150,10 +247,13 @@ class _SingleChatUserState extends State<SingleChatUser> {
                   ],
                 ),
                 CustomProgressPlayer(
+                  lockPosts: [],
+                  stopMainPlayer: () {},
+                  postId: widget.chatModel.chatId,
                   isChatUserPlayer: true,
                   size: 10,
                   waveColor: whiteColor,
-                  backgroundColor: currentUSer.following.contains(widget.recId)
+                  backgroundColor: currentUSer!.following.contains(widget.recId)
                       ? chat == null
                           ? greenColor.withOpacity(0.5)
                           : greenColor

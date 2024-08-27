@@ -3,14 +3,20 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 // import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:flutter/widgets.dart';
 import 'package:simple_waveform_progressbar/simple_waveform_progressbar.dart';
 import 'package:social_notes/resources/colors.dart';
 
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
+import 'package:social_notes/screens/home_screen/view/widgets/main_player.dart';
+import 'package:uuid/uuid.dart';
+import 'package:waveform_extractor/model/waveform_progress.dart';
+import 'package:waveform_extractor/waveform_extractor.dart';
 
 class CommentsPlayer extends StatefulWidget {
   CommentsPlayer(
@@ -62,13 +68,44 @@ class CommentsPlayer extends StatefulWidget {
 }
 
 class _CommentsPlayerState extends State<CommentsPlayer> {
+  late ScrollController _scrollController;
   String? _cachedFilePath;
+  final waveformExtractor = WaveformExtractor();
+  List<double> waveForm = [];
   // int? _currentIndex;
   // var _player = AudioPlayer();
   // bool isPlaying = false;
   bool isBuffering = false;
   double _playbackSpeed = 1.0;
   Duration duration = Duration.zero;
+  Future<void> extractWavedata() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String cacheKey = widget.commentId!;
+
+    List<String>? cachedData = prefs.getStringList(cacheKey);
+
+    if (cachedData != null && cachedData.isNotEmpty) {
+      waveForm = cachedData.map((e) => double.tryParse(e) ?? 6.0).toList();
+      setState(() {
+        waveForm = waveForm.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
+      });
+    } else {
+      final result = await waveformExtractor.extractWaveform(
+        widget.noteUrl,
+        useCache: true,
+        cacheKey: cacheKey,
+      );
+      List<int> waveForms = result.waveformData;
+
+      setState(() {
+        waveForm = waveForms.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
+      });
+
+      await prefs.setStringList(
+          cacheKey, waveForms.map((e) => e.toString()).toList());
+    }
+  }
+
   // Duration position = Duration.zero;
   initPlayer() async {
     widget.player = AudioPlayer();
@@ -122,9 +159,24 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
     });
   }
 
+  void scrollToPosition(Duration position) {
+    if (waveForm.isNotEmpty && _scrollController.hasClients) {
+      final progressPercent = position.inMilliseconds / duration.inMilliseconds;
+      final targetScrollOffset =
+          progressPercent * waveForm.length * widget.width - widget.width / 2;
+      _scrollController.animateTo(
+        targetScrollOffset,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
+    extractWavedata();
     initPlayer();
     // _player = AudioPlayer();
     //  widget.player.setReleaseMode(ReleaseMode.stop);
@@ -366,42 +418,82 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
                     ),
                   ),
                 ),
-              SizedBox(
+              Consumer<FilterProvider>(builder: (context, filterPro, _) {
+                return SizedBox(
                   height: widget.height,
                   width: widget.width,
-                  child: Consumer<FilterProvider>(
-                      builder: (context, filterPro, _) {
-                    return WaveformProgressbar(
-                      color: filterPro.selectedFilter.contains('Close Friends')
-                          ? whiteColor.withOpacity(0.5)
-                          : widget.isMainPlayer
-                              ? primaryColor.withOpacity(0.5)
-                              : widget.waveColor!.withOpacity(0.5),
-                      // widget.waveColor == null
-                      //     ? primaryColor
-                      //     : widget.waveColor!,
-                      progressColor:
-                          filterPro.selectedFilter.contains('Close Friends')
-                              ? whiteColor
-                              : widget.isMainPlayer
-                                  ? primaryColor
-                                  : widget.waveColor ?? primaryColor,
-                      // widget.waveColor == null
-                      //     ? greenColor
-                      //     : widget.waveColor!,
-                      progress: widget.changeIndex == widget.currentIndex &&
-                              widget.isPlaying
-                          ? widget.position.inSeconds / duration.inSeconds
-                          : 0.0,
-                      onTap: (progress) {
-                        Duration seekPosition = Duration(
-                            seconds: (progress * duration.inSeconds).round());
-                        // Duration seekPosition =
-                        //     Duration(seconds: progress.toInt());
-                        widget.player.seek(seekPosition);
-                      },
-                    );
-                  })),
+                  child: SingleChildScrollView(
+                      controller: _scrollController,
+                      scrollDirection: Axis.horizontal,
+                      child: GestureDetector(
+                        onHorizontalDragStart: (details) {
+                          final position = details.localPosition.dx /
+                              widget.width *
+                              duration.inMilliseconds;
+                          final seekPosition =
+                              Duration(milliseconds: position.toInt());
+                          widget.player.seek(seekPosition);
+                        },
+                        onHorizontalDragEnd: (details) {
+                          final position = details.localPosition.dx /
+                              widget.width *
+                              duration.inMilliseconds;
+                          final seekPosition =
+                              Duration(milliseconds: position.toInt());
+                          widget.player.seek(seekPosition);
+                        },
+                        onTapUp: (details) {
+                          final position = details.localPosition.dx /
+                              widget.width *
+                              duration.inMilliseconds;
+                          final seekPosition =
+                              Duration(milliseconds: position.toInt());
+                          widget.player.seek(seekPosition);
+                          scrollToPosition(seekPosition);
+                        },
+                        child: CustomPaint(
+                          size: Size(widget.width, widget.height),
+                          painter: RectangleActiveWaveformPainter(
+                            onSeek: (p0) {
+                              widget.player.seek(p0);
+                              scrollToPosition(p0);
+                            },
+                            activeColor:
+                                widget.currentIndex == widget.changeIndex &&
+                                        widget.isPlaying
+                                    ? filterPro.selectedFilter
+                                            .contains('Close Friends')
+                                        ? whiteColor
+                                        : widget.isMainPlayer
+                                            ? primaryColor
+                                            : widget.waveColor!
+                                    : whiteColor.withOpacity(0.5),
+                            inactiveColor: filterPro.selectedFilter
+                                    .contains('Close Friends')
+                                ? whiteColor.withOpacity(0.5)
+                                : widget.isMainPlayer
+                                    ? primaryColor.withOpacity(0.5)
+                                    : widget.waveColor!.withOpacity(0.5),
+                            scrollController: _scrollController,
+                            duration: duration,
+                            position: widget.position,
+                            style: PaintingStyle.fill,
+                            activeSamples: waveForm,
+                            borderColor: primaryColor.withOpacity(0.5),
+                            sampleWidth: 2.5,
+                            borderWidth: BorderSide.strokeAlignCenter,
+                            color: filterPro.selectedFilter
+                                    .contains('Close Friends')
+                                ? greenColor.withOpacity(0.5)
+                                : primaryColor.withOpacity(0.5),
+                            isCentered: true,
+                            isRoundedRectangle: true,
+                            waveformAlignment: WaveformAlignment.center,
+                          ),
+                        ),
+                      )),
+                );
+              }),
               const SizedBox(
                 width: 10,
               ),

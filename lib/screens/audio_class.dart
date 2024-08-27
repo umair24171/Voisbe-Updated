@@ -1,623 +1,654 @@
 // import 'dart:async';
-// import 'dart:io';
+// import 'dart:math';
+// import 'dart:core';
+// import 'dart:typed_data';
 
-// import 'package:audioplayers/audioplayers.dart';
-// import 'package:flutter/foundation.dart';
-// import 'package:flutter/scheduler.dart';
-// import 'package:flutter/services.dart';
-// import 'package:path_provider/path_provider.dart';
-// import 'package:uuid/uuid.dart';
-// import 'package:audioplayers_platform_interface/audioplayers_platform_interface.dart';
+// import 'package:flutter/material.dart';
 
-// const _uuid = Uuid();
+// import 'package:mic_stream/mic_stream.dart';
 
-// /// This represents a single AudioPlayer, which can play one audio at a time.
-// /// To play several audios at the same time, you must create several instances
-// /// of this class.
-// ///
-// /// It holds methods to play, loop, pause, stop, seek the audio, and some useful
-// /// hooks for handlers and callbacks.
-// class AudioPlayerClass {
-//   static final global = GlobalAudioScope();
-//   final _platform = AudioplayersPlatformInterface.instance;
-
-//   /// This is the [AudioCache] instance used by this player.
-//   /// Unless you want to control multiple caches separately, you don't need to
-//   /// change anything as the global instance will be used by default.
-//   AudioCache audioCache = AudioCache.instance;
-
-//   /// An unique ID generated for this instance of [AudioPlayer].
-//   ///
-//   /// This is used to properly exchange messages with the [MethodChannel].
-//   final String playerId;
-
-//   Source? _source;
-
-//   Source? get source => _source;
-
-//   double _volume = 1.0;
-
-//   double get volume => _volume;
-
-//   double _balance = 0.0;
-
-//   double get balance => _balance;
-
-//   double _playbackRate = 1.0;
-
-//   double get playbackRate => _playbackRate;
-
-//   /// Current mode of the audio player. Can be updated at any time, but is going
-//   /// to take effect only at the next time you play the audio.
-//   PlayerMode _mode = PlayerMode.mediaPlayer;
-
-//   PlayerMode get mode => _mode;
-
-//   ReleaseMode _releaseMode = ReleaseMode.release;
-
-//   ReleaseMode get releaseMode => _releaseMode;
-
-//   /// Auxiliary variable to re-check the volatile player state during async
-//   /// operations.
-//   @visibleForTesting
-//   PlayerState desiredState = PlayerState.stopped;
-
-//   PlayerState _playerState = PlayerState.stopped;
-
-//   PlayerState get state => _playerState;
-
-//   /// The current playback state.
-//   /// It is only set, when the corresponding action succeeds.
-//   set state(PlayerState state) {
-//     if (_playerState == PlayerState.disposed) {
-//       throw Exception('AudioPlayer has been disposed');
-//     }
-//     if (!_playerStateController.isClosed) {
-//       _playerStateController.add(state);
-//     }
-//     _playerState = desiredState = state;
-//   }
-
-//   PositionUpdater? _positionUpdater;
-
-//   /// Completer to wait until the native player and its event stream are
-//   /// created.
-//   @visibleForTesting
-//   final creatingCompleter = Completer<void>();
-
-//   late final StreamSubscription _onPlayerCompleteStreamSubscription;
-
-//   late final StreamSubscription _onLogStreamSubscription;
-
-//   /// Stream controller to be able to get a stream on initialization, before the
-//   /// native event stream is ready via [_create] method.
-//   final _eventStreamController = StreamController<AudioEvent>.broadcast();
-//   late final StreamSubscription _eventStreamSubscription;
-
-//   Stream<AudioEvent> get eventStream => _eventStreamController.stream;
-
-//   final StreamController<PlayerState> _playerStateController =
-//       StreamController<PlayerState>.broadcast();
-
-//   /// Stream of changes on player state.
-//   Stream<PlayerState> get onPlayerStateChanged => _playerStateController.stream;
-
-//   /// Stream of changes on audio position.
-//   ///
-//   /// Roughly fires every 200 milliseconds. Will continuously update the
-//   /// position of the playback if the status is [PlayerState.playing].
-//   ///
-//   /// You can use it on a progress bar, for instance.
-//   Stream<Duration> get onPositionChanged =>
-//       _positionUpdater?.positionStream ?? const Stream.empty();
-
-//   /// Stream of changes on audio duration.
-//   ///
-//   /// An event is going to be sent as soon as the audio duration is available
-//   /// (it might take a while to download or buffer it).
-//   Stream<Duration> get onDurationChanged => eventStream
-//       .where((event) => event.eventType == AudioEventType.duration)
-//       .map((event) => event.duration!);
-
-//   /// Stream of player completions.
-//   ///
-//   /// Events are sent every time an audio is finished, therefore no event is
-//   /// sent when an audio is paused or stopped.
-//   ///
-//   /// [ReleaseMode.loop] also sends events to this stream.
-//   Stream<void> get onPlayerComplete =>
-//       eventStream.where((event) => event.eventType == AudioEventType.complete);
-
-//   /// Stream of seek completions.
-//   ///
-//   /// An event is going to be sent as soon as the audio seek is finished.
-//   Stream<void> get onSeekComplete => eventStream
-//       .where((event) => event.eventType == AudioEventType.seekComplete);
-
-//   Stream<bool> get _onPrepared => eventStream
-//       .where((event) => event.eventType == AudioEventType.prepared)
-//       .map((event) => event.isPrepared!);
-
-//   /// Stream of log events.
-//   Stream<String> get onLog => eventStream
-//       .where((event) => event.eventType == AudioEventType.log)
-//       .map((event) => event.logMessage!);
-
-//   /// Creates a new instance and assigns an unique id to it.
-//   AudioPlayerClass({String? playerId}) : playerId = playerId ?? _uuid.v4() {
-//     // _onLogStreamSubscription = onLog.listen(
-//     //   (log) => AudioLogger.log('$log\nSource: $_source'),
-//     //   onError: (Object e, [StackTrace? stackTrace]) => AudioLogger.error(
-//     //     AudioPlayerException(this, cause: e),
-//     //     stackTrace,
-//     //   ),
-//     // );
-//     _onPlayerCompleteStreamSubscription = onPlayerComplete.listen(
-//       (_) async {
-//         state = PlayerState.completed;
-//         if (releaseMode == ReleaseMode.release) {
-//           _source = null;
-//         }
-//         await _positionUpdater?.stopAndUpdate();
-//       },
-//       onError: (Object _, [StackTrace? __]) {
-//         /* Errors are already handled via log stream */
-//       },
-//     );
-//     _create();
-//     positionUpdater = FramePositionUpdater(
-//       getPosition: getCurrentPosition,
-//     );
-//   }
-
-//   Future<void> _create() async {
-//     try {
-//       await _platform.create(playerId);
-//       // Assign the event stream, now that the platform registered this player.
-//       _eventStreamSubscription = _platform.getEventStream(playerId).listen(
-//             _eventStreamController.add,
-//             onError: _eventStreamController.addError,
-//           );
-//       creatingCompleter.complete();
-//     } on Exception catch (e, stackTrace) {
-//       creatingCompleter.completeError(e, stackTrace);
-//     }
-//   }
-
-//   /// Play an audio [source].
-//   ///
-//   /// To reduce preparation latency, instead consider calling [setSource]
-//   /// beforehand and then [resume] separately.
-//   Future<void> play(
-//     Source source, {
-//     double? volume,
-//     double? balance,
-//     AudioContext? ctx,
-//     Duration? position,
-//     PlayerMode? mode,
-//   }) async {
-//     desiredState = PlayerState.playing;
-
-//     if (mode != null) {
-//       await setPlayerMode(mode);
-//     }
-//     if (volume != null) {
-//       await setVolume(volume);
-//     }
-//     if (balance != null) {
-//       await setBalance(balance);
-//     }
-//     if (ctx != null) {
-//       await setAudioContext(ctx);
-//     }
-
-//     // await setSource(source);
-//     if (position != null) {
-//       await seek(position);
-//     }
-
-//     await _resume();
-//   }
-
-//   Future<void> setAudioContext(AudioContext ctx) async {
-//     await creatingCompleter.future;
-//     return _platform.setAudioContext(playerId, ctx);
-//   }
-
-//   Future<void> setPlayerMode(PlayerMode mode) async {
-//     _mode = mode;
-//     await creatingCompleter.future;
-//     return _platform.setPlayerMode(playerId, mode);
-//   }
-
-//   /// Pauses the audio that is currently playing.
-//   ///
-//   /// If you call [resume] later, the audio will resume from the point that it
-//   /// has been paused.
-//   Future<void> pause() async {
-//     desiredState = PlayerState.paused;
-//     await creatingCompleter.future;
-//     if (desiredState == PlayerState.paused) {
-//       await _platform.pause(playerId);
-//       state = PlayerState.paused;
-//       await _positionUpdater?.stopAndUpdate();
-//     }
-//   }
-
-//   /// Stops the audio that is currently playing.
-//   ///
-//   /// The position is going to be reset and you will no longer be able to resume
-//   /// from the last point.
-//   Future<void> stop() async {
-//     desiredState = PlayerState.stopped;
-//     await creatingCompleter.future;
-//     if (desiredState == PlayerState.stopped) {
-//       await _platform.stop(playerId);
-//       state = PlayerState.stopped;
-//       await _positionUpdater?.stopAndUpdate();
-//     }
-//   }
-
-//   /// Resumes the audio that has been paused or stopped.
-//   Future<void> resume() async {
-//     desiredState = PlayerState.playing;
-//     await _resume();
-//   }
-
-//   /// Resume without setting the desired state.
-//   Future<void> _resume() async {
-//     await creatingCompleter.future;
-//     if (desiredState == PlayerState.playing) {
-//       await _platform.resume(playerId);
-//       state = PlayerState.playing;
-//       _positionUpdater?.start();
-//     }
-//   }
-
-//   /// Releases the resources associated with this media player.
-//   ///
-//   /// The resources are going to be fetched or buffered again as soon as you
-//   /// call [resume] or change the source.
-//   Future<void> release() async {
-//     await stop();
-//     await _platform.release(playerId);
-//     // Stop state already set in stop()
-//     _source = null;
-//   }
-
-//   /// Moves the cursor to the desired position.
-//   Future<void> seek(Duration position) async {
-//     await creatingCompleter.future;
-
-//     final futureSeekComplete =
-//         onSeekComplete.first.timeout(const Duration(seconds: 30));
-//     final futureSeek = _platform.seek(playerId, position);
-//     // Wait simultaneously to ensure all errors are propagated through the same
-//     // future.
-//     await Future.wait([futureSeek, futureSeekComplete]);
-
-//     await _positionUpdater?.update();
-//   }
-
-//   /// Sets the stereo balance.
-//   ///
-//   /// -1 - The left channel is at full volume; the right channel is silent.
-//   ///  1 - The right channel is at full volume; the left channel is silent.
-//   ///  0 - Both channels are at the same volume.
-//   Future<void> setBalance(double balance) async {
-//     _balance = balance;
-//     await creatingCompleter.future;
-//     return _platform.setBalance(playerId, balance);
-//   }
-
-//   /// Sets the volume (amplitude).
-//   ///
-//   /// 0 is mute and 1 is the max volume. The values between 0 and 1 are linearly
-//   /// interpolated.
-//   Future<void> setVolume(double volume) async {
-//     _volume = volume;
-//     await creatingCompleter.future;
-//     return _platform.setVolume(playerId, volume);
-//   }
-
-//   /// Sets the release mode.
-//   ///
-//   /// Check [ReleaseMode]'s doc to understand the difference between the modes.
-//   Future<void> setReleaseMode(ReleaseMode releaseMode) async {
-//     _releaseMode = releaseMode;
-//     await creatingCompleter.future;
-//     return _platform.setReleaseMode(playerId, releaseMode);
-//   }
-
-//   /// Sets the playback rate - call this after first calling play() or resume().
-//   ///
-//   /// iOS and macOS have limits between 0.5 and 2x
-//   /// Android SDK version should be 23 or higher
-//   Future<void> setPlaybackRate(double playbackRate) async {
-//     _playbackRate = playbackRate;
-//     await creatingCompleter.future;
-//     return _platform.setPlaybackRate(playerId, playbackRate);
-//   }
-
-//   /// Sets the audio source for this player.
-//   ///
-//   /// This will delegate to one of the specific methods below depending on
-//   /// the source type.
-//   // Future<void> setSource(Source source) async {
-//   //   // Implementations of setOnPlayer also call `creatingCompleter.future`
-//   //   await source.setOnPlayer(this);
-//   // }
-
-//   /// This method helps waiting for a source to be set until it's prepared.
-//   /// This can happen immediately after [setSource] has finished or it needs to
-//   /// wait for the [AudioEvent] [AudioEventType.prepared] to arrive.
-//   Future<void> _completePrepared(Future<void> Function() setSource) async {
-//     await creatingCompleter.future;
-
-//     final futurePrepared = _onPrepared
-//         .firstWhere((isPrepared) => isPrepared)
-//         .timeout(const Duration(seconds: 30));
-//     // Need to await the setting the source to propagate immediate errors.
-//     final futureSetSource = setSource();
-
-//     // Wait simultaneously to ensure all errors are propagated through the same
-//     // future.
-//     await Future.wait([futureSetSource, futurePrepared]);
-
-//     // Share position once after finished loading
-//     await _positionUpdater?.update();
-//   }
-
-//   /// Sets the URL to a remote link.
-//   ///
-//   /// The resources will start being fetched or buffered as soon as you call
-//   /// this method.
-//   Future<void> setSourceUrl(String url, {String? mimeType}) async {
-//     if (!kIsWeb &&
-//         defaultTargetPlatform != TargetPlatform.android &&
-//         url.startsWith('data:')) {
-//       // Convert data URI's to bytes (native support for web and android).
-//       final uriData = UriData.fromUri(Uri.parse(url));
-//       mimeType ??= url.substring(url.indexOf(':') + 1, url.indexOf(';'));
-//       await setSourceBytes(uriData.contentAsBytes(), mimeType: mimeType);
-//       return;
-//     }
-
-//     _source = UrlSource(
-//       url,
-//     );
-//     // Encode remote url to avoid unexpected failures.
-//     await _completePrepared(
-//       () => _platform.setSourceUrl(
-//         playerId,
-//         UriCoder.encodeOnce(url),
-//         isLocal: false,
-//       ),
-//     );
-//   }
-
-//   /// Sets the URL to a file in the users device.
-//   ///
-//   /// The resources will start being fetched or buffered as soon as you call
-//   /// this method.
-//   Future<void> setSourceDeviceFile(String path, {String? mimeType}) async {
-//     _source = DeviceFileSource(
-//       path,
-//     );
-//     await _completePrepared(
-//       () => _platform.setSourceUrl(
-//         playerId,
-//         path,
-//         isLocal: true,
-//       ),
-//     );
-//   }
-
-//   /// Sets the URL to an asset in your Flutter application.
-//   /// The global instance of AudioCache will be used by default.
-//   ///
-//   /// The resources will start being fetched or buffered as soon as you call
-//   /// this method.
-//   Future<void> setSourceAsset(String path, {String? mimeType}) async {
-//     _source = AssetSource(
-//       path,
-//     );
-//     final cachePath = await audioCache.loadPath(path);
-//     await _completePrepared(
-//       () => _platform.setSourceUrl(
-//         playerId,
-//         cachePath,
-//         isLocal: true,
-//       ),
-//     );
-//   }
-
-//   Future<void> setSourceBytes(Uint8List bytes, {String? mimeType}) async {
-//     if (!kIsWeb &&
-//         (defaultTargetPlatform == TargetPlatform.iOS ||
-//             defaultTargetPlatform == TargetPlatform.macOS ||
-//             defaultTargetPlatform == TargetPlatform.linux)) {
-//       // Convert to file as workaround
-//       final tempDir = (await getTemporaryDirectory()).path;
-//       final bytesHash = Object.hashAll(bytes)
-//           .toUnsigned(20)
-//           .toRadixString(16)
-//           .padLeft(5, '0');
-//       final file = File('$tempDir/$bytesHash');
-//       await file.writeAsBytes(bytes);
-//       await setSourceDeviceFile(file.path, mimeType: mimeType);
-//     } else {
-//       _source = BytesSource(
-//         bytes,
-//       );
-//       await _completePrepared(
-//         () => _platform.setSourceBytes(
-//           playerId,
-//           bytes,
-//         ),
-//       );
-//     }
-//   }
-
-//   /// Set the PositionUpdater to control how often the position stream will be
-//   /// updated. You can use the [FramePositionUpdater], the
-//   /// [TimerPositionUpdater] or write your own implementation of the
-//   /// [PositionUpdater].
-//   set positionUpdater(PositionUpdater? positionUpdater) {
-//     _positionUpdater?.dispose(); // No need to wait for dispose
-//     _positionUpdater = positionUpdater;
-//   }
-
-//   /// Get audio duration after setting url.
-//   /// Use it in conjunction with setUrl.
-//   ///
-//   /// It will be available as soon as the audio duration is available
-//   /// (it might take a while to download or buffer it if file is not local).
-//   Future<Duration?> getDuration() async {
-//     await creatingCompleter.future;
-//     final milliseconds = await _platform.getDuration(playerId);
-//     if (milliseconds == null) {
-//       return null;
-//     }
-//     return Duration(milliseconds: milliseconds);
-//   }
-
-//   // Gets audio current playing position
-//   Future<Duration?> getCurrentPosition() async {
-//     await creatingCompleter.future;
-//     final milliseconds = await _platform.getCurrentPosition(playerId);
-//     if (milliseconds == null) {
-//       return null;
-//     }
-//     return Duration(milliseconds: milliseconds);
-//   }
-
-//   /// Closes all [StreamController]s.
-//   ///
-//   /// You must call this method when your [AudioPlayer] instance is not going to
-//   /// be used anymore. If you try to use it after this you will get errors.
-//   Future<void> dispose() async {
-//     // First stop and release all native resources.
-//     await release();
-
-//     state = desiredState = PlayerState.disposed;
-
-//     final futures = <Future>[
-//       if (_positionUpdater != null) _positionUpdater!.dispose(),
-//       if (!_playerStateController.isClosed) _playerStateController.close(),
-//       _onPlayerCompleteStreamSubscription.cancel(),
-//       _onLogStreamSubscription.cancel(),
-//       _eventStreamSubscription.cancel(),
-//       _eventStreamController.close(),
-//     ];
-
-//     _source = null;
-
-//     await Future.wait<dynamic>(futures);
-
-//     // Needs to be called after cancelling event stream subscription:
-//     await _platform.dispose(playerId);
-//   }
+// enum Command {
+//   start,
+//   stop,
+//   change,
 // }
 
-// extension UriCoder on Uri {
-//   static String encodeOnce(String uri) {
-//     try {
-//       // If decoded differs, the uri was already encoded.
-//       final decodedUri = Uri.decodeFull(uri);
-//       if (decodedUri != uri) {
-//         return uri;
-//       }
-//     } on ArgumentError catch (_) {}
-//     return Uri.encodeFull(uri);
-//   }
+// int screenWidth = 0;
+
+// class MicStreamExampleApp extends StatefulWidget {
+//   @override
+//   _MicStreamExampleAppState createState() => _MicStreamExampleAppState();
 // }
 
-// abstract class PositionUpdater {
-//   /// You can use `player.getCurrentPosition` as the [getPosition] parameter.
-//   PositionUpdater({
-//     required this.getPosition,
-//   });
+// class _MicStreamExampleAppState extends State<MicStreamExampleApp>
+//     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+//   Stream<Uint8List>? stream;
+//   late StreamSubscription listener;
 
-//   final Future<Duration?> Function() getPosition;
-//   final _streamController = StreamController<Duration>.broadcast();
+//   List<double>? waveSamples;
+//   List<double>? intensitySamples;
+//   int sampleIndex = 0;
+//   double localMax = 0;
+//   double localMin = 0;
 
-//   Stream<Duration> get positionStream => _streamController.stream;
+//   // Refreshes the Widget for every possible tick to force a rebuild of the sound wave
+//   late AnimationController controller;
 
-//   Future<void> update() async {
-//     final position = await getPosition();
-//     if (position != null) {
-//       _streamController.add(position);
-//     }
-//   }
+//   Color _iconColor = Colors.white;
+//   bool isRecording = false;
+//   bool memRecordingState = false;
+//   late bool isActive;
+//   DateTime? startTime;
 
-//   void start();
-
-//   void stop();
-
-//   Future<void> stopAndUpdate() async {
-//     stop();
-//     await update();
-//   }
-
-//   Future<void> dispose() async {
-//     stop();
-//     await _streamController.close();
-//   }
-// }
-
-// class TimerPositionUpdater extends PositionUpdater {
-//   Timer? _positionStreamTimer;
-//   final Duration interval;
-
-//   /// Position stream will be updated in the according [interval].
-//   TimerPositionUpdater({
-//     required super.getPosition,
-//     required this.interval,
-//   });
+//   int page = 0;
+//   List state = ["SoundWavePage", "IntensityWavePage", "InformationPage"];
 
 //   @override
-//   void start() {
-//     _positionStreamTimer?.cancel();
-//     _positionStreamTimer = Timer.periodic(interval, (timer) async {
-//       await update();
+//   void initState() {
+//     print("Init application");
+//     super.initState();
+//     WidgetsBinding.instance.addObserver(this);
+//     setState(() {
+//       initPlatformState();
 //     });
 //   }
 
-//   @override
-//   void stop() {
-//     _positionStreamTimer?.cancel();
-//     _positionStreamTimer = null;
+//   void _controlPage(int index) => setState(() => page = index);
+
+//   // Responsible for switching between recording / idle state
+//   void _controlMicStream({Command command = Command.change}) async {
+//     switch (command) {
+//       case Command.change:
+//         _changeListening();
+//         break;
+//       case Command.start:
+//         _startListening();
+//         break;
+//       case Command.stop:
+//         _stopListening();
+//         break;
+//     }
 //   }
-// }
 
-// class FramePositionUpdater extends PositionUpdater {
-//   int? _frameCallbackId;
-//   bool _isRunning = false;
+//   Future<bool> _changeListening() async =>
+//       !isRecording ? await _startListening() : _stopListening();
 
-//   /// Position stream will be updated at every new frame.
-//   FramePositionUpdater({
-//     required super.getPosition,
-//   });
+//   late int bytesPerSample;
+//   late int samplesPerSecond;
 
-//   void _tick(Duration? timestamp) {
-//     if (_isRunning) {
-//       update();
-//       _frameCallbackId = SchedulerBinding.instance.scheduleFrameCallback(_tick);
+//   Future<bool> _startListening() async {
+//     if (isRecording) return false;
+//     // Default option. Set to false to disable request permission dialogue
+//     MicStream.shouldRequestPermission(true);
+
+//     stream = MicStream.microphone(
+//         audioSource: AudioSource.DEFAULT,
+//         sampleRate: 48000,
+//         channelConfig: ChannelConfig.CHANNEL_IN_MONO,
+//         audioFormat: AudioFormat.ENCODING_PCM_16BIT);
+//     listener =
+//         stream!.transform(MicStream.toSampleStream).listen(_processSamples);
+//     listener.onError(print);
+//     print(
+//         "Start listening to the microphone, sample rate is ${await MicStream.sampleRate}, bit depth is ${await MicStream.bitDepth}, bufferSize: ${await MicStream.bufferSize}");
+
+//     localMax = 0;
+//     localMin = 0;
+
+//     bytesPerSample = await MicStream.bitDepth ~/ 8;
+//     samplesPerSecond = await MicStream.sampleRate;
+//     setState(() {
+//       isRecording = true;
+//       startTime = DateTime.now();
+//     });
+//     return true;
+//   }
+
+//   void _processSamples(_sample) async {
+//     if (screenWidth == 0) return;
+
+//     double sample = 0;
+//     if ("${_sample.runtimeType}" == "(int, int)" ||
+//         "${_sample.runtimeType}" == "(double, double)") {
+//       sample = 0.9 * (_sample.$1 + _sample.$2);
+//     } else {
+//       sample = _sample.toDouble();
+//     }
+//     waveSamples ??= List.filled(screenWidth, 0);
+
+//     final overridden = waveSamples![sampleIndex];
+//     waveSamples![sampleIndex] = sample;
+//     sampleIndex = (sampleIndex + 1) % screenWidth;
+
+//     if (overridden == localMax) {
+//       localMax = 0;
+//       for (final val in waveSamples!) {
+//         localMax = max(localMax, val);
+//       }
+//     } else if (overridden == localMin) {
+//       localMin = 0;
+//       for (final val in waveSamples!) {
+//         localMin = min(localMin, val);
+//       }
+//     } else {
+//       if (sample > 0)
+//         localMax = max(localMax, sample);
+//       else
+//         localMin = min(localMin, sample);
+//     }
+
+//     _calculateIntensitySamples();
+//   }
+
+//   void _calculateIntensitySamples() {}
+
+//   bool _stopListening() {
+//     if (!isRecording) return false;
+//     print("Stop listening to the microphone");
+//     listener.cancel();
+
+//     setState(() {
+//       isRecording = false;
+//       waveSamples = List.filled(screenWidth, 0);
+//       intensitySamples = List.filled(screenWidth, 0);
+//       startTime = null;
+//     });
+//     return true;
+//   }
+
+//   // Platform messages are asynchronous, so we initialize in an async method.
+//   Future<void> initPlatformState() async {
+//     if (!mounted) return;
+//     isActive = true;
+
+//     Statistics(false);
+
+//     controller =
+//         AnimationController(duration: const Duration(seconds: 1), vsync: this)
+//           ..addListener(() {
+//             if (isRecording) setState(() {});
+//           })
+//           ..addStatusListener((status) {
+//             if (status == AnimationStatus.completed)
+//               controller.reverse();
+//             else if (status == AnimationStatus.dismissed) controller.forward();
+//           })
+//           ..forward();
+//   }
+
+//   Color _getBgColor() => (isRecording) ? Colors.red : Colors.cyan;
+//   Icon _getIcon() =>
+//       (isRecording) ? const Icon(Icons.stop) : const Icon(Icons.keyboard_voice);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       theme: ThemeData.dark(),
+//       home: Scaffold(
+//           appBar: AppBar(
+//             title: const Text('Plugin: mic_stream :: Debug'),
+//           ),
+//           floatingActionButton: FloatingActionButton(
+//             onPressed: _controlMicStream,
+//             child: _getIcon(),
+//             foregroundColor: _iconColor,
+//             backgroundColor: _getBgColor(),
+//             tooltip: (isRecording) ? "Stop recording" : "Start recording",
+//           ),
+//           bottomNavigationBar: BottomNavigationBar(
+//             items: [
+//               const BottomNavigationBarItem(
+//                 icon: Icon(Icons.broken_image),
+//                 label: "Sound Wave",
+//               ),
+//               const BottomNavigationBarItem(
+//                 icon: Icon(Icons.broken_image),
+//                 label: "Intensity Wave",
+//               ),
+//               const BottomNavigationBarItem(
+//                 icon: Icon(Icons.view_list),
+//                 label: "Statistics",
+//               )
+//             ],
+//             backgroundColor: Colors.black26,
+//             elevation: 20,
+//             currentIndex: page,
+//             onTap: _controlPage,
+//           ),
+//           body: (page == 0 || page == 1)
+//               ? CustomPaint(
+//                   painter: page == 0
+//                       ? WavePainter(
+//                           samples: waveSamples,
+//                           color: _getBgColor(),
+//                           index: sampleIndex,
+//                           localMax: localMax,
+//                           localMin: localMin,
+//                           context: context,
+//                         )
+//                       : IntensityPainter(
+//                           samples: intensitySamples,
+//                           color: _getBgColor(),
+//                           index: sampleIndex,
+//                           localMax: localMax,
+//                           localMin: localMin,
+//                           context: context,
+//                         ))
+//               : Statistics(
+//                   isRecording,
+//                   startTime: startTime,
+//                 )),
+//     );
+//   }
+
+//   @override
+//   void didChangeAppLifecycleState(AppLifecycleState state) {
+//     if (state == AppLifecycleState.resumed) {
+//       isActive = true;
+//       print("Resume app");
+
+//       _controlMicStream(
+//           command: memRecordingState ? Command.start : Command.stop);
+//     } else if (isActive) {
+//       memRecordingState = isRecording;
+//       _controlMicStream(command: Command.stop);
+
+//       print("Pause app");
+//       isActive = false;
 //     }
 //   }
 
 //   @override
-//   void start() {
-//     _isRunning = true;
-//     _tick(null);
+//   void dispose() {
+//     listener.cancel();
+//     controller.dispose();
+//     WidgetsBinding.instance.removeObserver(this);
+//     super.dispose();
+//   }
+// }
+
+// class WavePainter extends CustomPainter {
+//   int? index;
+//   double? localMax;
+//   double? localMin;
+//   List<double>? samples;
+//   late List<Offset> points;
+//   Color? color;
+//   BuildContext? context;
+//   Size? size;
+
+//   WavePainter(
+//       {this.samples,
+//       this.color,
+//       this.context,
+//       this.index,
+//       this.localMax,
+//       this.localMin});
+
+//   @override
+//   void paint(Canvas canvas, Size? size) {
+//     this.size = context!.size;
+//     size = this.size;
+//     if (size == null) return;
+//     screenWidth = size.width.toInt();
+
+//     Paint paint = new Paint()
+//       ..color = color!
+//       ..strokeWidth = 3.0
+//       ..style = PaintingStyle.stroke;
+
+//     samples ??= List.filled(screenWidth, 0);
+//     index ??= 0;
+//     points = toPoints(samples!, index!);
+
+//     Path path = new Path();
+//     path.addPolygon(points, false);
+
+//     canvas.drawPath(path, paint);
 //   }
 
 //   @override
-//   void stop() {
-//     _isRunning = false;
-//     if (_frameCallbackId != null) {
-//       SchedulerBinding.instance.cancelFrameCallbackWithId(_frameCallbackId!);
+//   bool shouldRepaint(CustomPainter oldPainting) => true;
+
+//   // Maps a list of ints and their indices to a list of points on a cartesian grid
+//   List<Offset> toPoints(List<double> samples, int index) {
+//     List<Offset> points = [];
+//     double totalMax = max(-1 * localMin!, localMax!);
+//     double maxHeight = 0.2 * size!.height;
+//     for (int i = 0; i < screenWidth; i++) {
+//       double height = maxHeight +
+//           ((totalMax == 0 || index == 0)
+//               ? 0
+//               : (samples[(i + index) % index] / totalMax * maxHeight));
+//       var point = Offset(i.toDouble(), height);
+//       points.add(point);
 //     }
+//     return points;
 //   }
 // }
+
+// class IntensityPainter extends CustomPainter {
+//   int? index;
+//   double? localMax;
+//   double? localMin;
+//   List<double>? samples;
+//   late List<Offset> points;
+//   Color? color;
+//   BuildContext? context;
+//   Size? size;
+
+//   IntensityPainter(
+//       {this.samples,
+//       this.color,
+//       this.context,
+//       this.index,
+//       this.localMax,
+//       this.localMin});
+
+//   @override
+//   void paint(Canvas canvas, Size? size) {}
+
+//   @override
+//   bool shouldRepaint(CustomPainter oldPainting) => true;
+
+//   // Maps a list of ints and their indices to a list of points on a cartesian grid
+//   List<Offset> toPoints(List<int>? samples) {
+//     return points;
+//   }
+
+//   double project(double val, double max, double height) {
+//     if (max == 0) {
+//       return 0.5 * height;
+//     }
+//     var rv = val / max * 0.5 * height;
+//     return rv;
+//   }
+// }
+
+// class Statistics extends StatelessWidget {
+//   final bool isRecording;
+//   final DateTime? startTime;
+
+//   final String url = "https://github.com/anarchuser/mic_stream";
+
+//   Statistics(this.isRecording, {this.startTime});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return ListView(children: <Widget>[
+//       const ListTile(
+//           leading: Icon(Icons.title),
+//           title: Text("Microphone Streaming Example App")),
+//       ListTile(
+//         leading: const Icon(Icons.keyboard_voice),
+//         title: Text((isRecording ? "Recording" : "Not recording")),
+//       ),
+//       ListTile(
+//           leading: const Icon(Icons.access_time),
+//           title: Text((isRecording
+//               ? DateTime.now().difference(startTime!).toString()
+//               : "Not recording"))),
+//     ]);
+//   }
+// }
+
+// Iterable<T> eachWithIndex<E, T>(
+//     Iterable<T> items, E Function(int index, T item) f) {
+//   var index = 0;
+
+//   for (final item in items) {
+//     f(index, item);
+//     index = index + 1;
+//   }
+
+//   return items;
+// }
+
+// // import 'package:flutter/material.dart';
+// // import 'dart:async';
+
+// // import 'package:waveform_extractor/model/waveform.dart';
+// // import 'package:waveform_extractor/model/waveform_progress.dart';
+// // import 'package:waveform_extractor/waveform_extractor.dart';
+
+// // class AudioClass extends StatefulWidget {
+// //   const AudioClass({super.key});
+
+// //   @override
+// //   State<AudioClass> createState() => _AudioClassState();
+// // }
+
+// // class _AudioClassState extends State<AudioClass> {
+// //   Waveform? _currentWaveform;
+// //   final List<double> _downscaledWaveformList = [];
+// //   int _downscaledTargetSize = 100;
+
+// //   Duration? _currentExtractionTime;
+// //   Duration? _currentDownloadTime;
+// //   int _currentIndex = 0;
+// //   double _barWidth = 2;
+// //   final horizontalPadding = 24.0;
+// //   final _waveformExtractor = WaveformExtractor();
+// //   final links = [
+// //     "https://actions.google.com/sounds/v1/alarms/assorted_computer_sounds.ogg",
+// //     "https://actions.google.com/sounds/v1/alarms/dosimeter_alarm.ogg",
+// //     "https://actions.google.com/sounds/v1/alarms/phone_alerts_and_rings.ogg",
+// //     "https://actions.google.com/sounds/v1/ambiences/ambient_hum_air_conditioner.ogg",
+// //     "https://actions.google.com/sounds/v1/alarms/mechanical_clock_ring.ogg",
+// //     "https://actions.google.com/sounds/v1/alarms/dinner_bell_triangle.ogg",
+// //     "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg",
+// //     "https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg",
+// //   ];
+
+// //   @override
+// //   void initState() {
+// //     super.initState();
+// //     generateWaveform((sources) => sources[_currentIndex]);
+// //   }
+
+// //   void _resetValues() {
+// //     _downscaledWaveformList
+// //       ..clear()
+// //       ..addAll(List<double>.filled(_downscaledTargetSize, 0.1));
+// //     _currentWaveform = null;
+// //     _currentExtractionTime = null;
+// //     _currentDownloadTime = null;
+// //   }
+
+// //   Future<void> generateWaveform(
+// //       String Function(List<String> sources) source) async {
+// //     _resetValues();
+// //     setState(() {});
+// //     final downloadStart = DateTime.now();
+// //     DateTime? downloadEnd;
+// //     final time = await executeWithTimeDifference(() async {
+// //       _currentWaveform = await _waveformExtractor.extractWaveform(
+// //         source(links),
+// //         onProgress: (progress) {
+// //           if (progress.operation != ProgressOperation.downloading) {
+// //             downloadEnd = DateTime.now();
+// //           }
+// //         },
+// //       );
+// //     });
+// //     _currentDownloadTime = downloadEnd?.difference(downloadStart);
+// //     _currentExtractionTime = time - (_currentDownloadTime ?? Duration.zero);
+// //     updateDownscaledList(_currentWaveform?.waveformData, _downscaledTargetSize);
+// //     setState(() {});
+// //   }
+
+// //   void updateDownscaledList(List<int>? list, int targetSize) {
+// //     final downscaled = list?.reduceListSize(targetSize: targetSize);
+// //     _downscaledWaveformList
+// //       ..clear()
+// //       ..addAll(downscaled ?? []);
+// //     _barWidth = (MediaQuery.of(context).size.width - horizontalPadding) /
+// //         (downscaled?.length ?? 1) *
+// //         0.45;
+// //   }
+
+// //   Future<Duration> executeWithTimeDifference<T>(
+// //       FutureOr<T> Function() fn) async {
+// //     final start = DateTime.now();
+// //     await fn();
+// //     final end = DateTime.now();
+// //     return end.difference(start);
+// //   }
+
+// //   Widget getText(String title, dynamic subtitle) {
+// //     return RichText(
+// //       text: TextSpan(
+// //         text: "$title: ",
+// //         style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600),
+// //         children: [
+// //           TextSpan(
+// //             text: subtitle.toString(),
+// //             style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400),
+// //           )
+// //         ],
+// //       ),
+// //     );
+// //   }
+
+// //   @override
+// //   Widget build(BuildContext context) {
+// //     _waveformExtractor.clearAllWaveformCache();
+// //     return MaterialApp(
+// //       theme: ThemeData.dark(useMaterial3: true),
+// //       home: Scaffold(
+// //         appBar: AppBar(
+// //           title: const Text('WaveformExtractor Example App'),
+// //         ),
+// //         body: Padding(
+// //           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+// //           child: ListView(
+// //             children: [
+// //               const SizedBox(height: 24.0),
+// //               SizedBox(
+// //                 height: MediaQuery.of(context).size.width,
+// //                 child: PageView.builder(
+// //                   itemCount: links.length,
+// //                   onPageChanged: (value) async {
+// //                     _currentIndex = value;
+// //                     await generateWaveform((sources) => sources[value]);
+// //                   },
+// //                   itemBuilder: (context, index) {
+// //                     return Container(
+// //                       decoration: BoxDecoration(
+// //                           color: const Color.fromARGB(255, 40, 40, 40),
+// //                           borderRadius: BorderRadius.circular(24.0)),
+// //                       width: MediaQuery.of(context).size.width,
+// //                       child: index == _currentIndex
+// //                           ? Row(
+// //                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+// //                               mainAxisSize: MainAxisSize.max,
+// //                               children: [
+// //                                 ..._downscaledWaveformList
+// //                                     .map((e) => AnimatedContainer(
+// //                                           duration:
+// //                                               const Duration(milliseconds: 300),
+// //                                           decoration: BoxDecoration(
+// //                                               color: Colors.brown,
+// //                                               borderRadius:
+// //                                                   BorderRadius.circular(6.0)),
+// //                                           height: (e * 12).clamp(
+// //                                               1.0,
+// //                                               MediaQuery.of(context)
+// //                                                   .size
+// //                                                   .width),
+// //                                           width: _barWidth,
+// //                                         )),
+// //                               ],
+// //                             )
+// //                           : const SizedBox(),
+// //                     );
+// //                   },
+// //                 ),
+// //               ),
+// //               const SizedBox(height: 12.0),
+// //               Row(
+// //                 mainAxisAlignment: MainAxisAlignment.center,
+// //                 children: links
+// //                     .asMap()
+// //                     .entries
+// //                     .map(
+// //                       (e) => Padding(
+// //                         padding: const EdgeInsets.all(4.0),
+// //                         child: CircleAvatar(
+// //                           radius: 6.0,
+// //                           backgroundColor:
+// //                               _currentIndex == e.key ? null : Colors.grey,
+// //                         ),
+// //                       ),
+// //                     )
+// //                     .toList(),
+// //               ),
+// //               const SizedBox(height: 24.0),
+// //               Slider.adaptive(
+// //                 min: 40,
+// //                 max: 400,
+// //                 divisions: 400 - 40,
+// //                 label: _downscaledTargetSize.toString(),
+// //                 value: _downscaledTargetSize.toDouble(),
+// //                 onChanged: (valueDouble) {
+// //                   final value = valueDouble.toInt();
+// //                   _downscaledTargetSize = value;
+// //                   updateDownscaledList(
+// //                       _currentWaveform?.waveformData ?? [], value);
+// //                   setState(
+// //                     () {},
+// //                   );
+// //                 },
+// //               ),
+// //               getText("Source", _currentWaveform?.source),
+// //               const SizedBox(height: 6.0),
+// //               getText("Duration", _currentWaveform?.duration),
+// //               const SizedBox(height: 6.0),
+// //               getText(
+// //                   "Waveform count", _currentWaveform?.waveformData.length ?? 0),
+// //               const SizedBox(height: 6.0),
+// //               getText("Download Time", _currentDownloadTime),
+// //               const SizedBox(height: 6.0),
+// //               getText("Extraction Time", _currentExtractionTime),
+// //               const SizedBox(height: 6.0),
+// //               getText(
+// //                   "Total Time",
+// //                   (_currentDownloadTime ?? Duration.zero) +
+// //                       (_currentExtractionTime ?? Duration.zero)),
+// //               const SizedBox(height: 12.0),
+// //               ElevatedButton.icon(
+// //                 onPressed: () async =>
+// //                     await generateWaveform((sources) => sources[_currentIndex]),
+// //                 icon: const Icon(Icons.refresh_outlined),
+// //                 label: const Text('Re Extract'),
+// //               ),
+// //               const SizedBox(height: 12.0),
+// //             ],
+// //           ),
+// //         ),
+// //       ),
+// //     );
+// //   }
+// // }
+
+// // extension ListSize<N extends num> on List<N> {
+// //   List<double> reduceListSize({
+// //     required int targetSize,
+// //   }) {
+// //     if (length > targetSize) {
+// //       final finalList = <double>[];
+// //       final chunk = length / targetSize;
+// //       final iterationsCount = targetSize;
+// //       for (int i = 0; i < iterationsCount; i++) {
+// //         final part = skip((chunk * i).floor()).take(chunk.floor());
+// //         final sum = part.fold<double>(
+// //             0, (previousValue, element) => previousValue + element);
+// //         final peak = sum / part.length;
+// //         finalList.add(peak);
+// //       }
+// //       return finalList;
+// //     } else {
+// //       return map((e) => e.toDouble()).toList();
+// //     }
+// //   }
+// // }

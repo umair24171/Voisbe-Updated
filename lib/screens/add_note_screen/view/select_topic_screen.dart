@@ -19,34 +19,27 @@ class SelectTopicScreen extends StatefulWidget {
   const SelectTopicScreen(
       {super.key,
       required this.title,
+      required this.backImage,
+      required this.type,
       required this.taggedPeople,
+      this.isGalleryThumbnail,
+      this.thumbnailPath,
       required this.path});
   static const routeName = '/select-topic';
   final String title;
   final List<String> taggedPeople;
   final String path;
+  final String backImage;
+  final String type;
+  final String? thumbnailPath;
+  final bool? isGalleryThumbnail;
 
   @override
   State<SelectTopicScreen> createState() => _SelectTopicScreenState();
 }
 
 class _SelectTopicScreenState extends State<SelectTopicScreen> {
-  PlayerController controller = PlayerController();
-  List<double> waveformData = [];
   String _selectedOption = '';
-  @override
-  void initState() {
-    super.initState();
-    preparePlayer();
-  }
-
-  preparePlayer() async {
-    waveformData = await controller.extractWaveformData(
-      path: widget.path,
-      noOfSamples: 100,
-    );
-    setState(() {});
-  }
 
   List<String> topics = [
     'Need support',
@@ -71,10 +64,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
     'Hobbies & Interests',
     'Other'
   ];
-  // Color _randomColor() {
-  //   return Color((Random().nextDouble() * 0xFFFFFF).toInt() << 0)
-  //       .withOpacity(1.0);
-  // }
+
   List<Color> colors = [
     const Color(0xff503e3b),
     const Color(0xffcd3826),
@@ -101,12 +91,13 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
 
   @override
   Widget build(BuildContext context) {
-    dev.log('taggedPeople: ${Provider.of<NoteProvider>(context).tags}');
     return Scaffold(
+      extendBodyBehindAppBar: true,
       body: Padding(
-        padding: const EdgeInsets.only(top: 40),
+        padding: const EdgeInsets.only(top: 0),
         child: Stack(
           children: [
+            //  background static gradient
             Container(
               height: MediaQuery.of(context).size.height,
               decoration: const BoxDecoration(
@@ -115,188 +106,201 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                       end: Alignment.bottomCenter,
                       colors: [Color(0xffee856d), Color(0xffed6a5a)])),
             ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 30),
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      'ADD 1 TOPIC',
-                      style: TextStyle(
-                          color: whiteColor,
-                          fontFamily: fontFamily,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600),
+            Padding(
+              padding: const EdgeInsets.only(top: 35),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 30),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        'ADD 1 TOPIC',
+                        style: TextStyle(
+                            color: whiteColor,
+                            fontFamily: fontFamily,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Container(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 15),
+                    child: Align(
                       alignment: Alignment.center,
                       child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Wrap(
-                          spacing: 3,
-                          alignment: WrapAlignment.center,
-                          children: topics.asMap().entries.map((entry) {
-                            int index = entry.key;
-                            String topic = entry.value;
-                            Color color = colors[index %
-                                colors
-                                    .length]; // Use modulo to repeat colors if topics exceed colors
-                            return ChoiceChip(
-                              selectedColor: color,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                side: BorderSide(
-                                  width: 2,
-                                  color: _selectedOption.contains(topic)
-                                      ? Colors.white
-                                      : Colors.transparent,
+                        alignment: Alignment.center,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+
+                          //    displaying all the topics in wrap
+                          child: Wrap(
+                            spacing: MediaQuery.of(context).size.width > 400
+                                ? 10
+                                : 3,
+                            alignment: WrapAlignment.center,
+                            children: topics.asMap().entries.map((entry) {
+                              //  managing the colors which i defined in the list
+                              int index = entry.key;
+                              String topic = entry.value;
+                              Color color = colors[index %
+                                  colors
+                                      .length]; // Use modulo to repeat colors if topics exceed colors
+
+                              //  choice chip to select the topic
+                              return ChoiceChip(
+                                selectedColor: color,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  side: BorderSide(
+                                    width: 2,
+                                    color: _selectedOption.contains(topic)
+                                        ? Colors.white
+                                        : Colors.transparent,
+                                  ),
                                 ),
-                              ),
-                              label: Text(topic,
-                                  style: TextStyle(
-                                      color: whiteColor,
-                                      fontFamily: fontFamily)),
-                              backgroundColor: color,
-                              labelStyle: TextStyle(color: blackColor),
-                              showCheckmark: false,
-                              selected: false,
-                              pressElevation: 0,
-                              surfaceTintColor: Colors.transparent,
-                              onSelected: (bool selected) {
-                                setState(() {
-                                  if (selected) {
-                                    _selectedOption = topic;
-                                  } else {
-                                    _selectedOption = '';
-                                  }
-                                });
-                              },
-                            );
-                          }).toList(),
+                                label: Text(topic,
+                                    style: TextStyle(
+                                        color: whiteColor,
+                                        fontFamily: fontFamily)),
+                                backgroundColor: color,
+                                labelStyle: TextStyle(color: blackColor),
+                                showCheckmark: false,
+                                selected: false,
+                                pressElevation: 0,
+                                surfaceTintColor: Colors.transparent,
+                                onSelected: (bool selected) {
+                                  //  function to select the topic and remove the selected topic
+                                  setState(() {
+                                    if (selected) {
+                                      _selectedOption = topic;
+                                    } else {
+                                      _selectedOption = '';
+                                    }
+                                  });
+                                },
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                Expanded(child: SizedBox()),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                  ).copyWith(bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton.icon(
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStatePropertyAll(blackColor),
-                          fixedSize: const MaterialStatePropertyAll(
-                            Size(100, 10),
+                  const Expanded(child: SizedBox()),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                    ).copyWith(bottom: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        //  back button to to move to back screen
+                        ElevatedButton.icon(
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStatePropertyAll(blackColor),
+                            fixedSize: const WidgetStatePropertyAll(
+                              Size(100, 10),
+                            ),
+                          ),
+                          onPressed: () {
+                            navPop(context);
+                          },
+                          label: Text(
+                            'Back',
+                            style: TextStyle(
+                                color: whiteColor,
+                                fontFamily: fontFamily,
+                                fontSize: 12),
+                          ),
+                          icon: Icon(
+                            Icons.arrow_back_ios,
+                            color: whiteColor,
+                            size: 15,
                           ),
                         ),
-                        onPressed: () {
-                          navPop(context);
-                        },
-                        label: Text(
-                          'Back',
-                          style: TextStyle(
-                              color: whiteColor,
-                              fontFamily: fontFamily,
-                              fontSize: 12),
-                        ),
-                        icon: Icon(
-                          Icons.arrow_back_ios,
-                          color: whiteColor,
-                          size: 15,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          // ElevatedButton.icon(
-                          //   style: ButtonStyle(
-                          //       fixedSize: const MaterialStatePropertyAll(
-                          //           Size(100, 10)),
-                          //       backgroundColor:
-                          //           MaterialStatePropertyAll(whiteColor)),
-                          //   onPressed: () {
-                          //     navPush(AddHashtagsScreen.routeName, context);
-                          //   },
-                          //   label: Text(
-                          //     'Skip',
-                          //     style: TextStyle(
-                          //         color: blackColor,
-                          //         fontFamily: fontFamily,
-                          //         fontSize: 12),
-                          //   ),
-                          //   icon: Image.asset(
-                          //     'assets/images/skip.png',
-                          //     height: 15,
-                          //     width: 15,
-                          //   ),
-                          // ),
+                        Row(
+                          children: [
+                            const SizedBox(
+                              width: 5,
+                            ),
 
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          ElevatedButton.icon(
-                            style: ButtonStyle(
-                                fixedSize: const MaterialStatePropertyAll(
-                                  Size(100, 10),
+                            // button to move to next screen
+
+                            Consumer<NoteProvider>(
+                                builder: (context, notePro, _) {
+                              return ElevatedButton.icon(
+                                style: ButtonStyle(
+                                    fixedSize: const WidgetStatePropertyAll(
+                                      Size(100, 10),
+                                    ),
+                                    backgroundColor:
+                                        WidgetStatePropertyAll(whiteColor)),
+                                onPressed: () {
+                                  if (_selectedOption.isNotEmpty) {
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                      builder: (context) {
+                                        //  it would carry some data to the hashtag screen to create the post in a final step
+
+                                        return AddHashtagsScreen(
+                                          isGalleryThumbnail:
+                                              widget.isGalleryThumbnail,
+                                          thumbnailPath: widget.thumbnailPath,
+                                          filePath: widget.path,
+                                          backgroundType: widget.type.isNotEmpty
+                                              ? widget.type
+                                              : notePro.fileType,
+                                          backGroundImage: widget
+                                                  .backImage.isNotEmpty
+                                              ? widget.backImage
+                                              : notePro.selectedImage.isEmpty
+                                                  ? notePro.selectedVideo
+                                                  : notePro.selectedImage,
+                                          title: widget.title,
+                                          taggedPeople: widget.taggedPeople,
+                                          // waveformdata: waveformData,
+                                          topicColor: colors[
+                                              topics.indexOf(_selectedOption)],
+                                          selectedTopic: _selectedOption,
+                                        );
+                                      },
+                                    ));
+                                  } else {
+                                    //  if the user has not selected the topic
+
+                                    showWhiteOverlayPopup(
+                                        context, null, 'assets/icons/Info (1).svg',null,
+                                        title: 'Error',
+                                        message: 'Please select a topic',
+                                        isUsernameRes: false);
+                                  }
+                                },
+                                label: Text(
+                                  'Next',
+                                  style: TextStyle(
+                                      color: blackColor,
+                                      fontFamily: fontFamily,
+                                      fontSize: 12),
                                 ),
-                                backgroundColor:
-                                    MaterialStatePropertyAll(whiteColor)),
-                            onPressed: () {
-                              if (_selectedOption.isNotEmpty) {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) {
-                                    return AddHashtagsScreen(
-                                      title: widget.title,
-                                      taggedPeople: widget.taggedPeople,
-                                      waveformdata: waveformData,
-                                      topicColor: colors[
-                                          topics.indexOf(_selectedOption)],
-                                      selectedTopic: _selectedOption,
-                                    );
-                                  },
-                                ));
-                              } else {
-                                showWhiteOverlayPopup(
-                                    context, Icons.error_outline, null,
-                                    title: 'Error',
-                                    message: 'Please select a topic',
-                                    isUsernameRes: false);
-                              }
-                            },
-                            label: Text(
-                              'Next',
-                              style: TextStyle(
-                                  color: blackColor,
-                                  fontFamily: fontFamily,
-                                  fontSize: 12),
-                            ),
-                            icon: Image.asset(
-                              'assets/images/next_black.png',
-                              height: 15,
-                              width: 15,
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
+                                icon: Image.asset(
+                                  'assets/images/next_black.png',
+                                  height: 15,
+                                  width: 15,
+                                ),
+                              );
+                            }),
+                          ],
+                        )
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

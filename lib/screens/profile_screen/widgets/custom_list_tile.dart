@@ -291,7 +291,7 @@ class _CustomListTileState extends State<CustomListTile> {
                                           borderSide: BorderSide.none),
                                       contentPadding: const EdgeInsets.only(
                                         bottom: 0,
-                                        top: 0,
+                                        top: 6,
                                         left: 14,
                                         right: 0,
                                       ),
@@ -299,7 +299,7 @@ class _CustomListTileState extends State<CustomListTile> {
                                       suffixIconConstraints:
                                           const BoxConstraints(
                                               minHeight: 18, minWidth: 18),
-                                      suffix: Container(
+                                      suffixIcon: Container(
                                         // height: 20,
                                         // width: 20,
                                         padding: const EdgeInsets.symmetric(

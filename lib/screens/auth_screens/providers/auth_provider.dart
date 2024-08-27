@@ -19,6 +19,31 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  addMuteAccount(String otherId) {
+    user!.mutedAccouts.add(otherId);
+    notifyListeners();
+  }
+
+  updateUserLike(bool value) {
+    user!.isLike = value;
+    notifyListeners();
+  }
+
+  updateUserFollow(bool value) {
+    user!.isFollows = value;
+    notifyListeners();
+  }
+
+  updateUserReply(bool value) {
+    user!.isReply = value;
+    notifyListeners();
+  }
+
+  removeMuteAccount(String otherId) {
+    user!.mutedAccouts.remove(otherId);
+    notifyListeners();
+  }
+
   updateUserFieldForCloseFriends(String value) {
     user!.toMap()['closeFriends'].add(value);
     notifyListeners();
@@ -77,6 +102,15 @@ class UserProvider with ChangeNotifier {
 
   pickImage() {
     ImagePicker().pickImage(source: ImageSource.gallery).then((value) {
+      if (value != null) {
+        imageFile = File(value.path);
+        notifyListeners();
+      }
+    });
+  }
+
+  pickVideo() {
+    ImagePicker().pickVideo(source: ImageSource.gallery).then((value) {
       if (value != null) {
         imageFile = File(value.path);
         notifyListeners();

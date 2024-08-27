@@ -8,6 +8,8 @@ import 'package:social_notes/screens/chat_screen.dart/model/chat_model.dart';
 class ChatController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  //  sending message function
+
   sendMessage(
       ChatModel chat,
       String chatId,
@@ -19,12 +21,18 @@ class ChatController {
       context) async {
     try {
       Provider.of<NoteProvider>(context, listen: false).setIsLoading(true);
+
+      // sending message to the sub collection
+
       await _firestore
           .collection('chats')
           .doc(usersId)
           .collection('messages')
           .doc(chatId)
           .set(chat.toMap());
+
+      //  sending to the main collection to show the recent chat user
+
       await _firestore.collection('chats').doc(usersId).set({
         'chatID': chatId,
         'senderToken': senderToken,
@@ -36,6 +44,7 @@ class ChatController {
         'senderImage': chat.avatarUrl,
         'receiverImage': receiverImage,
         'senderName': chat.name,
+        'deletedChat': [],
         'receiverName': receiverName,
         'seen': false,
         'usersId': usersId

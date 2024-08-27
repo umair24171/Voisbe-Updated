@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-showWhiteOverlayPopup(context, IconData? icon, String? image,
+showWhiteOverlayPopup(context, IconData? icon, String? svgPath, String? image,
     {required String title,
     required String message,
     required bool isUsernameRes}) {
@@ -19,10 +20,16 @@ showWhiteOverlayPopup(context, IconData? icon, String? image,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: icon != null ? 20 : 0),
-              child: Icon(icon, color: Colors.black, size: 50),
-            ),
+            if (svgPath != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: SvgPicture.asset(svgPath),
+              ),
+            if (icon != null)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Icon(icon, color: Colors.black, size: 50),
+              ),
             image != null
                 ? Image.asset(image, height: 50, width: 50)
                 : Container(),

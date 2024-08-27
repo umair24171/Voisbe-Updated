@@ -232,7 +232,8 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
                           Provider.of<SettingsProvider>(context, listen: false)
                               .addPaymentInfo(paymentInfo, context);
                         } else {
-                          showWhiteOverlayPopup(context, Icons.error, null,
+                          showWhiteOverlayPopup(
+                              context, null, 'assets/icons/Info (1).svg', null,
                               title: "Error",
                               message: "Fields cannot be empty",
                               isUsernameRes: false);
@@ -269,6 +270,7 @@ class PayFieldWidget extends StatelessWidget {
       required this.controller,
       this.isSwiftCOde = false,
       this.isAccountNum = false,
+      this.isPass = false,
       required this.maxLine});
   final String hint;
   final TextInputType keyboardType;
@@ -277,6 +279,7 @@ class PayFieldWidget extends StatelessWidget {
   // final String khularegular = '';
   bool isSwiftCOde;
   bool isAccountNum;
+  bool isPass;
   @override
   Widget build(BuildContext context) {
     double mdWidth = MediaQuery.of(context).size.width;
@@ -297,6 +300,7 @@ class PayFieldWidget extends StatelessWidget {
           ],
           keyboardType: keyboardType,
           maxLines: maxLine,
+          obscureText: isPass ? true : false,
           style: TextStyle(fontFamily: khulaRegular, color: Colors.black),
           decoration: InputDecoration(
             contentPadding: EdgeInsets.only(

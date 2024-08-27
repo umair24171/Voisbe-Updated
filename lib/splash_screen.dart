@@ -31,15 +31,15 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
-          width: double.infinity,
-          child: Image.asset(
-            'assets/images/splashscreen.jpg',
-            fit: BoxFit.fill,
-            // alignment: Alignment.center,
-          ),
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      body: SizedBox(
+        height: MediaQuery.of(context).size.height,
+        width: double.infinity,
+        child: Image.asset(
+          'assets/images/splashscreen.jpg',
+          fit: BoxFit.fill,
+          // alignment: Alignment.center,
         ),
       ),
     );

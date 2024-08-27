@@ -7,25 +7,250 @@ import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:provider/provider.dart';
 // import 'package:social_notes/resources/show_snack.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
+import 'package:social_notes/screens/add_note_screen/model/personalize_model.dart';
 import 'package:social_notes/screens/add_note_screen/provider/note_provider.dart';
 import 'package:social_notes/screens/auth_screens/controller/notifications_methods.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/home_screen/model/book_mark_model.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
 import 'package:social_notes/screens/home_screen/model/sub_comment_model.dart';
+// import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 import 'package:social_notes/screens/notifications_screen/model/comment_notofication_model.dart';
-import 'package:social_notes/screens/notifications_screen/model/like_notification.dart';
+// import 'package:social_notes/screens/notifications_screen/model/like_notification.dart';
 
 class DisplayNotesProvider with ChangeNotifier {
   List<NoteModel> notes = [];
+  List<UserModel> likedUsers = [];
   List<NoteModel> currentUserPosts = [];
-
+  bool isExist = false;
+  PersonalizeModel? userPersonalizeData;
   List<UserModel> allUsers = [];
   List<UserModel> searchedUsers = [];
   bool isSearching = false;
+  bool isPlaying = false;
+  Duration duration = Duration.zero;
+  Duration position = Duration.zero;
+  int changeIndex = 0;
+  AudioPlayer audioPlayer = AudioPlayer();
+  bool isHomeActive = true;
+
+  // DisplayNotesProvider() {
+  //   _initAudioPlayer();
+  // }
+
+  void setHomeActive(bool active) {
+    isHomeActive = active;
+    if (!active) {
+      pausePlayer();
+    }
+    notifyListeners();
+  }
+
+  // Future<void> pausePlayer() async {
+  //   if (audioPlayer.state == PlayerState.playing) {
+  //     await audioPlayer.pause();
+  //     setIsPlaying(false);
+  //   }
+  // }
+
+  updateTag(String noteId, String userID, int index) {
+    notes[index].tagPeople.remove(userID);
+    notifyListeners();
+  }
+
+  addOneNote(NoteModel note) {
+    notes.insert(0, note);
+    notifyListeners();
+  }
+
+  void _initAudioPlayer() {
+    audioPlayer.onPlayerComplete.listen((event) {
+      setIsPlaying(false);
+      setChangeIndex(-1);
+      setPosition(Duration.zero);
+    });
+
+    audioPlayer.onPositionChanged.listen((position) {
+      setPosition(position);
+    });
+
+    audioPlayer.onDurationChanged.listen((duration) {
+      setDuration(duration);
+    });
+  }
+
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    audioPlayer!.dispose();
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
+
+  // void activate() {
+  //   if (!_isActive) {
+  //     _isActive = true;
+  //     initAudioPlayers();
+  //   }
+  // }
+
+  // void deactivate() {
+  //   if (_isActive) {
+  //     _isActive = false;
+  //     pausePlayer();
+  //     disposePlayer();
+  //   }
+  // }
+
+  initAudioPlayers() {
+    audioPlayer = AudioPlayer();
+    notifyListeners();
+  }
+
+  Future<void> pausePlayer() async {
+    if (audioPlayer.state == PlayerState.playing) {
+      await audioPlayer.pause();
+      setIsPlaying(false);
+    }
+  }
+
+  playAudioPlayer(String url, int index) async {
+    await audioPlayer!.play(UrlSource(url)).then((value) async {
+      setChangeIndex(index);
+      setIsPlaying(true);
+      // setState(() {
+      //   _currentIndex = index;
+      //   _isPlaying = true;
+      // });
+      duration = (await audioPlayer!.getDuration())!;
+      setDuration(duration);
+    });
+    notifyListeners();
+  }
+
+  resumeAudioPlayer() {
+    audioPlayer!.resume();
+    notifyListeners();
+  }
+
+  disposePlayer() {
+    audioPlayer!.stop();
+    audioPlayer!.dispose();
+    notifyListeners();
+  }
+
+  setChangeIndex(int index) {
+    changeIndex = index;
+    notifyListeners();
+  }
+
+  setDuration(Duration dura) {
+    duration = dura;
+    notifyListeners();
+  }
+
+  setPosition(Duration posi) {
+    position = posi;
+    notifyListeners();
+  }
+
+  setIsPlaying(bool value) {
+    isPlaying = value;
+    notifyListeners();
+  }
+
+  void playPause(String url, int index) async {
+    // if (!isHomeActive) return;
+    // Check if the file is already cached
+    final cacheManager = DefaultCacheManager();
+    FileInfo? fileInfo = await cacheManager.getFileFromCache(url);
+
+    if (fileInfo == null) {
+      // File is not cached, download and cache it
+      try {
+        fileInfo = await cacheManager.downloadFile(url, key: url);
+      } catch (e) {
+        print('Error downloading file: $e');
+        return;
+      }
+    }
+
+    // Use the cached file for playback
+    if (isPlaying && changeIndex != index) {
+      // await audioPlayer!.stop();
+      pausePlayer();
+      setChangeIndex(-1);
+      setIsPlaying(false);
+    }
+
+    if (changeIndex == index && isPlaying) {
+      if (audioPlayer!.state == PlayerState.playing) {
+        pausePlayer();
+        setChangeIndex(-1);
+        setIsPlaying(false);
+        // setState(() {
+        //   _currentIndex = -1;
+        //   _isPlaying = false;
+        // });
+      } else {
+        resumeAudioPlayer();
+        setChangeIndex(index);
+        setIsPlaying(true);
+        // setState(() {
+        //   _currentIndex = index;
+        //   _isPlaying = true;
+        // });
+      }
+    } else {
+      playAudioPlayer(fileInfo.file.path, index);
+      // await audioPlayer!
+      //     .play(
+      //   UrlSource(fileInfo.file.path),
+      // )
+      //     .then((value) async {
+      //   setChangeIndex(index);
+      //   setIsPlaying(true);
+      //   // setState(() {
+      //   //   _currentIndex = index;
+      //   //   _isPlaying = true;
+      //   // });
+      //   duration = (await audioPlayer!.getDuration())!;
+      //   setDuration(duration);
+      //   // setState(() {});
+      // });
+    }
+
+    audioPlayer!.onPositionChanged.listen((event) {
+      if (changeIndex == index) {
+        setPosition(event);
+        // setState(() {
+        //   position = event;
+        // });
+      }
+    });
+    audioPlayer!.onPlayerComplete.listen((event) {
+      setChangeIndex(-1);
+      setIsPlaying(false);
+      setPosition(Duration.zero);
+      // setState(() {
+      //   _isPlaying = false;
+      //   _currentIndex = -1;
+      //   position = Duration.zero;
+      // });
+    });
+  }
 
   setIsSearching(bool value) {
     isSearching = value;
@@ -77,7 +302,7 @@ class DisplayNotesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  getAllNotes() async {
+  getAllNotes(context) async {
     await _firestore
         .collection('notes')
         .orderBy('publishedDate', descending: true)
@@ -91,8 +316,11 @@ class DisplayNotesProvider with ChangeNotifier {
       //     notesAll.remove(note);
       //   }
       // }
+
       notes = notesAll;
       notifyListeners();
+      // Provider.of<FilterProvider>(context, listen: false)
+      //     .setDetailNote(notesAll.first);
     });
   }
 
@@ -149,19 +377,29 @@ class DisplayNotesProvider with ChangeNotifier {
   }
 
   likePost(
-    List likes,
-    String postId,
-    CommentNotoficationModel commentNotoficationModel,
-    String userToken,
-    String userName,
-  ) async {
+      List likes,
+      String postId,
+      CommentNotoficationModel commentNotoficationModel,
+      String userToken,
+      String userName,
+      String userId,
+      String currentUserID) async {
     if (likes.contains(FirebaseAuth.instance.currentUser!.uid)) {
       likes.remove(FirebaseAuth.instance.currentUser!.uid);
     } else {
       likes.add(FirebaseAuth.instance.currentUser!.uid);
-      addLikeNotification(commentNotoficationModel);
-      NotificationMethods.sendPushNotification(
-          userToken, 'liked your post', userName);
+      DocumentSnapshot<Map<String, dynamic>> userModel = await FirebaseFirestore
+          .instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      UserModel toNotiUser = UserModel.fromMap(userModel.data()!);
+      if (toNotiUser.isLike && currentUserID != userId) {
+        addLikeNotification(commentNotoficationModel);
+        NotificationMethods.sendPushNotification(
+            userId, userToken, 'liked your post', userName, 'notification', '');
+      }
     }
     await _firestore.collection('notes').doc(postId).update({
       'likes': likes,
@@ -190,6 +428,25 @@ class DisplayNotesProvider with ChangeNotifier {
     bookMarkPosts =
         snapshot.docs.map((e) => BookmarkModel.fromMap(e.data())).toList();
     notifyListeners();
+  }
+
+  deleteBookMark(String id) async {
+    bookMarkPosts.removeWhere(
+      (book) => book.postId == id,
+    );
+
+    notifyListeners();
+    await FirebaseFirestore.instance
+        .collection('bookmarks')
+        .where('postId', isEqualTo: id)
+        .get()
+        .then((value) async {
+      BookmarkModel model = BookmarkModel.fromMap(value.docs.first.data());
+      await FirebaseFirestore.instance
+          .collection('bookmarks')
+          .doc(model.bookmarkId)
+          .delete();
+    });
   }
 
   addPostToSaved(BookmarkModel bookmarkModel, context) async {
@@ -260,5 +517,21 @@ class DisplayNotesProvider with ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  getAllLikedUsers(List likes) async {
+    try {
+      await _firestore
+          .collection('users')
+          .where('uid', whereIn: likes)
+          .get()
+          .then((value) {
+        likedUsers =
+            value.docs.map((e) => UserModel.fromMap(e.data())).toList();
+        notifyListeners();
+      });
+    } catch (e) {
+      log(e.toString());
+    }
   }
 }

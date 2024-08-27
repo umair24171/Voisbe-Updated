@@ -1,13 +1,17 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/resources/navigation.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
+import 'package:social_notes/screens/custom_bottom_bar.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
+import 'package:social_notes/screens/home_screen/view/home_screen.dart';
 import 'package:social_notes/screens/search_screen/view/note_details_screen.dart';
 import 'package:social_notes/screens/settings_screen/view/widgets/single_bookmark_item.dart';
 import 'package:social_notes/screens/upload_sounds/provider/sound_provider.dart';
+import 'package:social_notes/screens/bottom_provider.dart';
 
 class BookMarkScreenSettings extends StatefulWidget {
   const BookMarkScreenSettings({super.key});
@@ -20,12 +24,13 @@ class _BookMarkScreenSettingsState extends State<BookMarkScreenSettings> {
   @override
   void initState() {
     super.initState();
+
+    //  getting the bookmark posts
+
     Provider.of<DisplayNotesProvider>(context, listen: false)
         .getBookMarkPosts();
   }
 
-  AudioPlayer _audioPlayer = AudioPlayer();
-  PageController controller = PageController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,6 +58,8 @@ class _BookMarkScreenSettingsState extends State<BookMarkScreenSettings> {
         ),
       ),
       body: Consumer<DisplayNotesProvider>(builder: (context, displayPro, _) {
+        //  getting all the the notes and matching the ids of the saved notes
+
         List<NoteModel> allNotes = [];
         for (var note in displayPro.notes) {
           for (var bookmark in displayPro.bookMarkPosts) {
@@ -69,29 +76,55 @@ class _BookMarkScreenSettingsState extends State<BookMarkScreenSettings> {
               mainAxisExtent: 121,
               crossAxisCount: 3),
           itemBuilder: (context, index) {
-            return InkWell(
-              onLongPress: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => NoteDetailsScreen(
-                        audioPlayer: _audioPlayer,
-                        changeIndex: 0,
-                        currentIndex: index,
-                        duration: Duration.zero,
-                        isPlaying: true,
-                        pageController: controller,
-                        playPause: () {
-                          // playPause(userPosts[index].noteUrl, index);
+            //  the template of the bookmark post
+
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(0),
+              child: Slidable(
+                direction: Axis.horizontal,
+                endActionPane: ActionPane(
+                  motion: const ScrollMotion(),
+                  children: [
+                    SlidableAction(
+                        padding: const EdgeInsets.all(0),
+                        onPressed: (context) async {
+                          // deleting the book mark post fucntion
+
+                          Provider.of<DisplayNotesProvider>(context,
+                                  listen: false)
+                              .deleteBookMark(allNotes[index].noteId);
+
+                          //  after deleting updating the book mark posts
+
+                          Provider.of<DisplayNotesProvider>(context,
+                                  listen: false)
+                              .getBookMarkPosts();
                         },
-                        position: Duration.zero,
-                        stopMainPlayer: () {},
-                        size: MediaQuery.of(context).size,
-                        note: allNotes[index]),
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        flex: 4,
+                        borderRadius: BorderRadius.zero,
+                        autoClose: true,
+                        icon: Icons.delete,
+                        label: "Delete"),
+                  ],
+                ),
+                child: InkWell(
+                  onLongPress: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) => HomeScreen(
+                                note: allNotes[index],
+                              )),
+                    );
+                  },
+
+                  //  template or widget of the single book mark post
+
+                  child: SingleBookMarkItem(
+                    note: allNotes[index],
                   ),
-                );
-              },
-              child: SingleBookMarkItem(
-                note: allNotes[index],
+                ),
               ),
             );
           },

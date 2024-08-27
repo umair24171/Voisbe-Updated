@@ -1,7 +1,6 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:ui';
 
-import 'package:social_notes/screens/auth_screens/model/user_model.dart';
+// defining the post model to make things easier for us
 
 class NoteModel {
   String noteId;
@@ -10,7 +9,7 @@ class NoteModel {
   String userToken;
   String title;
   String userUid;
-  List<UserModel> tagPeople;
+  List tagPeople;
   String noteUrl;
   DateTime publishedDate;
   bool isPinned;
@@ -18,21 +17,30 @@ class NoteModel {
   List comments;
   String topic;
   Color topicColor;
-  List<double> waveformData;
+  String backgroundType;
+  List<double> mostListenedWaves;
+  String videoThumbnail;
+
   List<String> hashtags;
+  bool isPostForSubscribers;
+  String backgroundImage;
   NoteModel({
     required this.noteId,
     required this.username,
     required this.photoUrl,
     required this.title,
     required this.userUid,
+    required this.mostListenedWaves,
+    required this.videoThumbnail,
     required this.tagPeople,
-    required this.waveformData,
     required this.likes,
     required this.userToken,
     required this.noteUrl,
     required this.publishedDate,
+    required this.backgroundType,
+    required this.isPostForSubscribers,
     required this.comments,
+    required this.backgroundImage,
     required this.topic,
     required this.isPinned,
     required this.topicColor,
@@ -45,12 +53,16 @@ class NoteModel {
       'username': username,
       'photoUrl': photoUrl,
       'title': title,
+      'backgroundType': backgroundType,
+      'videoThumbnail': videoThumbnail,
+      'mostListenedWaves': mostListenedWaves,
       'userUid': userUid,
-      'tagPeople': tagPeople.map((user) => user.toMap()).toList(),
-      'waveformData': waveformData,
+      'tagPeople': tagPeople,
       'noteUrl': noteUrl,
       'publishedDate': publishedDate,
+      'backgroundImage': backgroundImage,
       'userToken': userToken,
+      'isPostForSubscribers': isPostForSubscribers,
       'comments': comments,
       'isPinned': isPinned,
       'topicColor': topicColor.value,
@@ -65,15 +77,17 @@ class NoteModel {
       noteId: map['noteId'] as String,
       username: map['username'] as String,
       photoUrl: map['photoUrl'] as String,
+      backgroundImage: map['backgroundImage'] as String,
+      videoThumbnail: map['videoThumbnail'] as String,
       title: map['title'] as String,
       topicColor: map['topicColor'] as int == 0
           ? const Color(0xffFFD700)
           : Color(map['topicColor'] as int),
+      backgroundType: map['backgroundType'] as String,
       userUid: map['userUid'] as String,
-      tagPeople: List.from(map['tagPeople'] as List)
-          .map((userMap) => UserModel.fromMap(userMap))
-          .toList(),
-      waveformData: List<double>.from(map['waveformData'] as List),
+      isPostForSubscribers: map['isPostForSubscribers'] as bool,
+      tagPeople: List.from(map['tagPeople'] as List),
+      mostListenedWaves: List.from(map['mostListenedWaves'] as List),
       comments: List.from(map['comments'] as List),
       likes: List.from(map['likes'] as List),
       userToken: map['userToken'] as String,

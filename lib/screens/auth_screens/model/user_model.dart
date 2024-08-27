@@ -26,6 +26,14 @@ class UserModel {
   DateTime dateOfBirth;
   List followReq;
   List followTo;
+  List mutedAccouts;
+  bool isLike;
+  bool isReply;
+  bool isFollows;
+  bool isTwoFa;
+  List notificationsEnable;
+  bool isOtpVerified;
+  // bool deactivate;
 
   String pushToken;
   UserModel(
@@ -35,6 +43,13 @@ class UserModel {
       required this.photoUrl,
       required this.password,
       required this.closeFriends,
+      required this.notificationsEnable,
+      required this.isOtpVerified,
+      // required this.deactivate,
+      required this.isLike,
+      required this.isReply,
+      required this.isFollows,
+      required this.isTwoFa,
       required this.following,
       required this.pushToken,
       required this.blockedUsers,
@@ -48,6 +63,7 @@ class UserModel {
       required this.name,
       required this.subscribedSoundPacks,
       required this.isSubscriptionEnable,
+      required this.mutedAccouts,
       required this.link,
       required this.isPrivate,
       required this.followReq,
@@ -58,6 +74,7 @@ class UserModel {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
+      // 'deactivate': deactivate,
       'uid': uid,
       'username': username,
       'email': email,
@@ -66,6 +83,11 @@ class UserModel {
       'following': following,
       'password': password,
       'closeFriends': closeFriends,
+      'mutedAccouts': mutedAccouts,
+      'isOtpVerified': isOtpVerified,
+      'isLike': isLike,
+      'isFollows': isFollows,
+      'isReply': isReply,
       'isPrivate': isPrivate,
       'token': token,
       'blockedUsers': blockedUsers,
@@ -83,12 +105,21 @@ class UserModel {
       'price': price,
       'contact': contact,
       'isSubscriptionEnable': isSubscriptionEnable,
-      'soundPacks': soundPacks
+      'soundPacks': soundPacks,
+      'isTwoFa': isTwoFa,
+      'notificationsEnable': notificationsEnable
     };
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
+        isTwoFa: map['isTwoFa'] as bool,
+        isFollows: map['isFollows'] as bool,
+        isLike: map['isLike'] as bool,
+        isOtpVerified: map['isOtpVerified'] as bool,
+        isReply: map['isReply'],
+        notificationsEnable: List.from((map['notificationsEnable'] as List)),
+        // deactivate: map['deactivate'] as bool,
         uid: map['uid'] as String,
         username: map['username'] as String,
         email: map['email'] as String,
@@ -100,6 +131,7 @@ class UserModel {
         token: map['token'] as String,
         password: map['password'] as String,
         following: List.from((map['following'] as List)),
+        mutedAccouts: List.from((map['mutedAccouts'] as List)),
         followReq: List.from((map['followReq'] as List)),
         followTo: List.from((map['followTo'] as List)),
         subscribedUsers: List.from(

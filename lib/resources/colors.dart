@@ -49,8 +49,8 @@ Widget verifiedIcon() {
       verifiedPath,
       fit: BoxFit.cover,
       // color: Colors.blue,
-      height: 13,
-      width: 13,
+      height: 16,
+      width: 16,
     ),
   );
 }

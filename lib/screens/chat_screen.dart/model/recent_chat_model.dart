@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+//  creating model to show the recent chat user
+
 class RecentChatModel {
   final String? chatId;
   final String? senderId;
@@ -17,6 +19,7 @@ class RecentChatModel {
   final String? receiverToken;
   final bool? seen;
   final String? usersId;
+  final List? deletedChat;
 
   RecentChatModel({
     required this.chatId,
@@ -31,6 +34,7 @@ class RecentChatModel {
     required this.receiverImage,
     required this.senderToken,
     required this.receiverToken,
+    required this.deletedChat,
     required this.seen,
   });
 
@@ -45,6 +49,7 @@ class RecentChatModel {
       'senderToken': senderToken,
       'receiverToken': receiverToken,
       'senderName': senderName,
+      'deletedChat': deletedChat,
       'receiverName': receiverName,
       'receiverImage': receiverImage,
       'usersId': usersId,
@@ -54,6 +59,9 @@ class RecentChatModel {
 
   factory RecentChatModel.fromMap(Map<String, dynamic> map) {
     return RecentChatModel(
+      deletedChat: List.from(
+        (map['deletedChat'] as List),
+      ),
       chatId: map['chatId'] as String?,
       senderId: map['senderId'] as String?,
       receiverId: map['receiverId'] as String?,

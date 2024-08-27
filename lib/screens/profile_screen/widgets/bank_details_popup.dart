@@ -39,6 +39,9 @@ class _BankDetailsState extends State<BankDetails> {
   TextEditingController bankNameController = TextEditingController();
 
   TextEditingController addressController = TextEditingController();
+
+  //  get the payment info of the user if already added
+
   getPaymentInfo() async {
     // var user = Provider.of<UserProvider>(context, listen: false).user;
     stream = FirebaseFirestore.instance
@@ -65,6 +68,8 @@ class _BankDetailsState extends State<BankDetails> {
 
   @override
   void initState() {
+    // getting info before building the popup
+
     getPaymentInfo();
     super.initState();
   }
@@ -73,8 +78,6 @@ class _BankDetailsState extends State<BankDetails> {
   Widget build(BuildContext context) {
     double mdWidth = MediaQuery.of(context).size.width;
     double mdHeight = MediaQuery.of(context).size.height;
-    // AudioWaveFormRenderPainter()
-    // var currentUser = Provider.of<UserProvider>(context, listen: false).user;
 
     return Container(
       padding: EdgeInsets.all(25),
@@ -86,13 +89,7 @@ class _BankDetailsState extends State<BankDetails> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Text(
-          //   'Enter your payout details',
-          //   style: TextStyle(
-          //       color: Colors.blue,
-          //       fontFamily: khularegular,
-          //       fontSize: mdWidth * .03),
-          // ),
+          //  field to show the already added data or change
 
           Column(
             children: [
@@ -145,35 +142,7 @@ class _BankDetailsState extends State<BankDetails> {
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
                 child: Row(
                   children: [
-                    // Padding(
-                    //   padding: const EdgeInsets.symmetric(horizontal: 14),
-                    //   child: ElevatedButton(
-                    //     style: ButtonStyle(
-                    //       backgroundColor: WidgetStatePropertyAll(blackColor),
-                    //       elevation: const WidgetStatePropertyAll(0),
-                    //     ),
-                    //     onPressed: () {
-                    //       Provider.of<SettingsProvider>(context, listen: false)
-                    //           .removePaymentInfo(widget.user.uid, context);
-                    //       nameController.clear();
-                    //       ibanController.clear();
-                    //       swiftCodeController.clear();
-                    //       bankNameController.clear();
-                    //       addressController.clear();
-                    //     },
-                    //     child: Padding(
-                    //       padding: const EdgeInsets.only(top: 4),
-                    //       child: Text(
-                    //         'Update',
-                    //         style: TextStyle(
-                    //             color: whiteColor,
-                    //             fontWeight: FontWeight.w600,
-                    //             fontSize: 17,
-                    //             fontFamily: khulaRegular),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
+//  function to update the data of the user bank info
 
                     ElevatedButton(
                       style: ButtonStyle(
@@ -202,7 +171,8 @@ class _BankDetailsState extends State<BankDetails> {
                           widget.changeSub();
                           widget.stripeFunction();
                         } else {
-                          showWhiteOverlayPopup(context, Icons.error, null,
+                          showWhiteOverlayPopup(
+                              context, null, 'assets/icons/Info (1).svg', null,
                               title: "Error",
                               message: "Fields cannot be empty",
                               isUsernameRes: false);
@@ -211,7 +181,7 @@ class _BankDetailsState extends State<BankDetails> {
                       child: Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
-                          'Save New Details',
+                          'Save Details',
                           style: TextStyle(
                               color: whiteColor,
                               fontWeight: FontWeight.w600,

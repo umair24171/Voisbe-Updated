@@ -1,14 +1,16 @@
 // import 'dart:developer';
 
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:just_audio/just_audio.dart';
 // import 'package:flutter/widgets.dart';
-import 'package:simple_waveform_progressbar/simple_waveform_progressbar.dart';
 import 'package:social_notes/resources/colors.dart';
+import 'package:social_notes/screens/home_screen/view/widgets/main_player.dart';
+import 'package:waveform_extractor/waveform_extractor.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class ChatPlayer extends StatefulWidget {
   ChatPlayer(
@@ -19,8 +21,15 @@ class ChatPlayer extends StatefulWidget {
       required this.mainWidth,
       required this.mainHeight,
       this.backgroundColor = Colors.white,
+      required this.playPause,
       this.isShare = false,
       this.isOtherMsg = false,
+      required this.changeIndex,
+      required this.currentIndex,
+      required this.messageId,
+      required this.player,
+      required this.position,
+      required this.isPlaying,
       this.size = 35,
       this.waveColor})
       : super(key: key);
@@ -36,113 +45,110 @@ class ChatPlayer extends StatefulWidget {
 
   Color? waveColor;
   bool isShare;
+  AudioPlayer player;
+  final Duration position;
+  final int changeIndex;
+  final int currentIndex;
+  final bool isPlaying;
+  final VoidCallback playPause;
+  final String messageId;
 
   @override
   State<ChatPlayer> createState() => _ChatPlayerState();
 }
 
 class _ChatPlayerState extends State<ChatPlayer> {
-  final _player = AudioPlayer();
-  bool isPlaying = false;
+  late AudioPlayer player;
+  late ScrollController _scrollController;
+  String? _cachedFilePath;
+  final waveformExtractor = WaveformExtractor();
+  List<double> waveForm = [];
+  // final _player = AudioPlayer();
+  // final audoPlayer = audo.AudioPlayer();
+  // bool isPlaying = false;
   bool isBuffering = false;
   double _playbackSpeed = 1.0;
   Duration duration = Duration.zero;
-  Duration position = Duration.zero;
+  // late audo.AudioPlayer player;
+
+  // Duration position = Duration.zero;
 
   @override
   void initState() {
     super.initState();
-    _init();
-    _player.playerStateStream.listen((event) {
-      if (event.processingState == ProcessingState.completed) {
-        setState(() {
-          isPlaying = false;
-          // duration = Duration.zero;
-          // position = Duration.zero;
-        });
-      }
+    _scrollController = ScrollController();
+    player = AudioPlayer();
+    // player = audo.AudioPlayer();
+    extractWavedata();
+    // _init();
+    player.setReleaseMode(ReleaseMode.stop);
+    player.setSourceUrl(widget.noteUrl).then((value) {
+      // widget.player.getDuration().then(
+      //       (value) => setState(() {
+      //         duration = value!;
+      //         // playPause();
+      //       }),
+      //     );
     });
-    _player.playingStream.listen((event) {
-      if (event == true) {
-        setState(() {
-          isPlaying = true;
-        });
-      } else {
-        setState(() {
-          isPlaying = false;
-        });
-      }
-    });
-  }
-
-  Future<void> _init() async {
-    _player.playbackEventStream.listen((event) {},
-        onError: (Object e, StackTrace stackTrace) {
-      print('A stream error occurred: $e');
-    });
-    // Try to load audio from a source and catch any errors.
-    try {
-      // AAC example: https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.aac
-      await _player
-          .setAudioSource(AudioSource.uri(Uri.parse(widget.noteUrl)))
-          .then((value) {
-        setState(() {
-          duration = value!;
-        });
-      }); // Load a remote audio file and play.
-      _player.durationStream.listen((value) {
-        setState(() {
-          duration = value!;
-        });
-      });
-      _player.positionStream.listen((event) {
-        setState(() {
-          position = event;
-        });
-      });
-      _player.processingStateStream.listen((event) {
-        if (event == ProcessingState.loading) {
-          setState(() {
-            isBuffering = true;
-          });
-        } else {
-          setState(() {
-            isBuffering = false;
-          });
-        }
-      });
-    } on PlayerException catch (e) {
-      print("Error loading audio source: $e");
-    }
-  }
-
-  playAudio() async {
-    try {
+    player.onDurationChanged.listen((event) {
       setState(() {
-        isPlaying = true;
+        duration = event;
       });
-      log("playing");
-      final audioSource = LockCachingAudioSource(Uri.parse(widget.noteUrl));
-      var da = await _player.setAudioSource(audioSource);
+    });
+  }
 
-      await _player.play();
-    } catch (e) {
-      log(e.toString());
+  // Future<void> extractWavedata() async {
+  //   final result =
+  //       await waveformExtractor.extractWaveform(widget.noteUrl, useCache: true);
+  //   List<int> waveForms = result.waveformData;
+  //   setState(() {
+  //     waveForm = waveForms.map((int e) => e < 1 ? 6.0 : e.toDouble()).toList();
+  //   });
+  // }
+  Future<void> extractWavedata() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String cacheKey = widget.messageId;
+
+    List<String>? cachedData = prefs.getStringList(cacheKey);
+
+    if (cachedData != null && cachedData.isNotEmpty) {
+      waveForm = cachedData.map((e) => double.tryParse(e) ?? 6.0).toList();
+      setState(() {
+        waveForm = waveForm.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
+      });
+    } else {
+      final result = await waveformExtractor.extractWaveform(
+        widget.noteUrl,
+        useCache: true,
+        cacheKey: cacheKey,
+      );
+      List<int> waveForms = result.waveformData;
+
+      setState(() {
+        waveForm = waveForms.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
+      });
+
+      await prefs.setStringList(
+          cacheKey, waveForms.map((e) => e.toString()).toList());
     }
   }
 
-  stopAudio() async {
-    setState(() {
-      isPlaying = false;
-    });
-    await _player.stop();
+  void scrollToPosition(Duration position) {
+    final progressPercent = position.inMilliseconds / duration.inMilliseconds;
+    final targetScrollOffset =
+        progressPercent * waveForm.length * widget.width - widget.width / 2;
+    _scrollController.animateTo(
+      targetScrollOffset,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   void dispose() {
-    _player.dispose();
-    duration = Duration.zero;
-    position = Duration.zero;
+    // widget.player.dispose();
+    // duration = Duration.zero;
+    // widget.position = Duration.zero;
 
     super.dispose();
   }
@@ -179,28 +185,25 @@ class _ChatPlayerState extends State<ChatPlayer> {
           children: [
             IconButton(
               onPressed: () {
-                if (isPlaying) {
-                  stopAudio();
-                } else {
-                  playAudio();
-                }
+                widget.playPause();
               },
-              icon: isPlaying
-                  ? Icon(
-                      Icons.pause_circle_filled,
-                      color: widget.waveColor ?? Colors.red,
-                      size: widget.size,
-                    )
-                  : Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Icon(
-                          Icons.play_circle_fill,
+              icon:
+                  widget.isPlaying && widget.currentIndex == widget.changeIndex
+                      ? Icon(
+                          Icons.pause_circle_filled,
                           color: widget.waveColor ?? Colors.red,
                           size: widget.size,
+                        )
+                      : Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Icon(
+                              Icons.play_circle_fill,
+                              color: widget.waveColor ?? Colors.red,
+                              size: widget.size,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
             ),
             SizedBox(
               height: widget.height,
@@ -211,23 +214,93 @@ class _ChatPlayerState extends State<ChatPlayer> {
                 builder: (context, progress, child) {
                   final color = duration.inSeconds > 0
                       ? Color.lerp(primaryColor, Colors.black,
-                          position.inSeconds / duration.inSeconds)!
+                          widget.position.inSeconds / duration.inSeconds)!
                       : primaryColor;
-                  return WaveformProgressbar(
-                    color: widget.waveColor == null
-                        ? primaryColor.withOpacity(0.5)
-                        : widget.waveColor!.withOpacity(0.5),
-                    progressColor:
-                        widget.waveColor == null ? color : widget.waveColor!,
-                    progress: position.inSeconds /
-                        duration
-                            .inSeconds, // Stop progressing when audio is loaded
-                    onTap: (progress) {
-                      Duration seekPosition = Duration(
-                          seconds: (progress * duration.inSeconds).round());
-                      _player.seek(seekPosition);
-                    },
+                  return SizedBox(
+                    height: widget.height,
+                    width: widget.width,
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      scrollDirection: Axis.horizontal,
+                      child: GestureDetector(
+                        onHorizontalDragStart: (details) {
+                          final position = details.localPosition.dx /
+                              widget.width *
+                              duration.inMilliseconds;
+                          final seekPosition =
+                              Duration(milliseconds: position.toInt());
+                          widget.player.seek(seekPosition);
+                        },
+                        onHorizontalDragEnd: (details) {
+                          final position = details.localPosition.dx /
+                              widget.width *
+                              duration.inMilliseconds;
+                          final seekPosition =
+                              Duration(milliseconds: position.toInt());
+                          widget.player.seek(seekPosition);
+                        },
+                        onTapUp: (details) {
+                          final position = details.localPosition.dx /
+                              widget.width *
+                              duration.inMilliseconds;
+                          final seekPosition =
+                              Duration(milliseconds: position.toInt());
+                          widget.player.seek(seekPosition);
+                          scrollToPosition(seekPosition);
+                        },
+                        child: CustomPaint(
+                          size: Size(widget.width, widget.height),
+                          painter: RectangleActiveWaveformPainter(
+                            onSeek: (p0) {
+                              widget.player.seek(p0);
+                            },
+                            activeColor:
+                                widget.changeIndex == widget.currentIndex &&
+                                        widget.isPlaying
+                                    ? widget.waveColor == null
+                                        ? color
+                                        : widget.waveColor!
+                                    : widget.waveColor == null
+                                        ? primaryColor.withOpacity(0.5)
+                                        : widget.waveColor!.withOpacity(0.5),
+                            inactiveColor: widget.waveColor == null
+                                ? primaryColor.withOpacity(0.5)
+                                : widget.waveColor!.withOpacity(0.5),
+                            scrollController: _scrollController,
+                            duration: duration,
+                            position: widget.position,
+                            style: PaintingStyle.fill,
+                            activeSamples: waveForm,
+                            borderColor: primaryColor.withOpacity(0.5),
+                            sampleWidth: 2.5,
+                            borderWidth: BorderSide.strokeAlignCenter,
+                            color: widget.waveColor == null
+                                ? primaryColor.withOpacity(0.5)
+                                : widget.waveColor!.withOpacity(0.5),
+                            isCentered: true,
+                            isRoundedRectangle: true,
+                            waveformAlignment: WaveformAlignment.center,
+                          ),
+                        ),
+                      ),
+                    ),
                   );
+                  // return WaveformProgressbar(
+                  //   color:
+                  // widget.waveColor == null
+                  //       ? primaryColor.withOpacity(0.5)
+                  //       : widget.waveColor!.withOpacity(0.5),
+                  //   progressColor:
+                  //       widget.waveColor == null ? color : widget.waveColor!,
+                  //   progress: position.inSeconds /
+                  //       duration
+                  //           .inSeconds, // Stop progressing when audio is loaded
+                  //   onTap: (progress) {
+                  //     Duration seekPosition = Duration(
+                  //         seconds: (progress * duration.inSeconds).round());
+                  //     _player.seek(seekPosition);
+                  //   },
+                  // );
                 },
               ),
             ),
@@ -237,7 +310,7 @@ class _ChatPlayerState extends State<ChatPlayer> {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                position.inSeconds == 0
+                widget.position.inSeconds == 0
                     ? Text(
                         getInitialDurationnText(duration),
                         style: TextStyle(
@@ -247,7 +320,10 @@ class _ChatPlayerState extends State<ChatPlayer> {
                         ),
                       )
                     : Text(
-                        getReverseDuration(position, duration),
+                        widget.changeIndex == widget.currentIndex &&
+                                widget.isPlaying
+                            ? getReverseDuration(widget.position, duration)
+                            : getInitialDurationnText(duration),
                         style: TextStyle(
                           fontFamily: fontFamily,
                           fontSize: 12,
@@ -266,8 +342,8 @@ class _ChatPlayerState extends State<ChatPlayer> {
                         _playbackSpeed = 1.0;
                       }
                       // Set playback speed if audio is already playing
-                      if (isPlaying) {
-                        _player.setSpeed(_playbackSpeed);
+                      if (widget.isPlaying) {
+                        widget.player.setPlaybackRate(_playbackSpeed);
                       }
                     });
                   },

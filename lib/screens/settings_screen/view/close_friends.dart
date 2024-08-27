@@ -25,7 +25,8 @@ class CloseFriendsScreen extends StatefulWidget {
 class _CloseFriendsScreenState extends State<CloseFriendsScreen> {
   @override
   void initState() {
-    // FirebaseFirestore.instance.collection('users').d
+    // getting the close friends list and saving in the provider
+
     log('close firends ids ${Provider.of<UserProvider>(context, listen: false).user!.closeFriends}');
     Provider.of<UserProfileProvider>(context, listen: false).getCloseFriends(
         Provider.of<UserProvider>(context, listen: false).user!.closeFriends);
@@ -64,6 +65,9 @@ class _CloseFriendsScreenState extends State<CloseFriendsScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
+
+            //  searching the friend
+
             child: TextFormField(
               decoration: InputDecoration(
                   prefixIcon: Icon(
@@ -95,48 +99,26 @@ class _CloseFriendsScreenState extends State<CloseFriendsScreen> {
                   )),
             ),
           ),
+
+//  building the close friend list
+
           Consumer<UserProfileProvider>(builder: (context, userPro, _) {
+            //  getting the close friend list saved in the provider
+
             log('close friends ${userPro.closeFriends}');
             return ListView.builder(
                 shrinkWrap: true,
                 itemCount: userPro.closeFriends.length,
                 itemBuilder: (context, index) {
                   UserModel user = userPro.closeFriends[index];
+
+                  //  template of the close friend
+
                   return CloseFriendListTile(
                     user: user,
                   );
                 });
           }),
-          // const SubsccriptionListTile(
-          //     currentUserId: '',
-          //     userId: '',
-          //     image: '',
-          //     username: 'Username',
-          //     subscritpionStatus: 'Cancel'),
-          // const SubsccriptionListTile(
-          //     currentUserId: '',
-          //     userId: '',
-          //     image: '',
-          //     username: 'Username',
-          //     subscritpionStatus: 'Cancel'),
-          // const SubsccriptionListTile(
-          //     currentUserId: '',
-          //     userId: '',
-          //     image: '',
-          //     username: 'Username',
-          //     subscritpionStatus: 'Cancel'),
-          // const SubsccriptionListTile(
-          //     currentUserId: '',
-          //     userId: '',
-          //     image: '',
-          //     username: 'Username',
-          //     subscritpionStatus: 'Cancel'),
-          // const SubsccriptionListTile(
-          //     currentUserId: '',
-          //     userId: '',
-          //     image: '',
-          //     username: 'Username',
-          //     subscritpionStatus: 'Cancel'),
         ],
       ),
     );
@@ -150,6 +132,8 @@ class CloseFriendListTile extends StatelessWidget {
   });
   final UserModel user;
 
+  //  getting the user model from the constructor
+
   @override
   Widget build(BuildContext context) {
     var userProvider = Provider.of<UserProvider>(context, listen: false).user;
@@ -161,6 +145,9 @@ class CloseFriendListTile extends StatelessWidget {
                 builder: (context) => OtherUserProfile(userId: user.uid),
               ));
         },
+
+        //  image of the user
+
         leading: CircleAvatar(
           radius: 20,
           backgroundImage: NetworkImage(
@@ -171,6 +158,8 @@ class CloseFriendListTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           // mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            //  name of the user
+
             Text(
               user.name,
               style: TextStyle(
@@ -179,6 +168,9 @@ class CloseFriendListTile extends StatelessWidget {
                   fontFamily: khulaRegular,
                   fontWeight: FontWeight.w600),
             ),
+
+            //  if the user is verified or nott
+
             if (user.isVerified)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
@@ -196,6 +188,8 @@ class CloseFriendListTile extends StatelessWidget {
             splashColor: Colors.transparent,
             onTap: () async {
               if (userPro.user!.closeFriends.contains(user.uid)) {
+                //  removing user as  a closing friend
+
                 userPro.removeUSerFieldForCloseFriends(user.uid);
                 await FirebaseFirestore.instance
                     .collection('users')
@@ -204,6 +198,8 @@ class CloseFriendListTile extends StatelessWidget {
                   'closeFriends': FieldValue.arrayRemove([user.uid])
                 });
               } else {
+                //  adding user as a close friend
+
                 userPro.updateUserFieldForCloseFriends(user.uid);
                 await FirebaseFirestore.instance
                     .collection('users')
@@ -227,6 +223,9 @@ class CloseFriendListTile extends StatelessWidget {
                     color: const Color(0xff868686),
                   ),
                 ),
+
+                //  showing the icon based on the close friend or nott
+
                 child: userPro.user!.closeFriends.contains(user.uid)
                     ? SvgPicture.asset(
                         'assets/icons/x.svg',
@@ -242,28 +241,6 @@ class CloseFriendListTile extends StatelessWidget {
                 // Icon(Icons.check, color: whiteColor, size: 20),
                 ),
           );
-        })
-        //  ElevatedButton(
-        //   style:
-        //    ButtonStyle(
-        //     minimumSize: const MaterialStatePropertyAll(Size(33, 33)),
-        //     alignment: Alignment.center,
-        //     elevation: const MaterialStatePropertyAll(0),
-        //     backgroundColor: MaterialStateProperty.all(whiteColor),
-        //     side: const MaterialStatePropertyAll(
-        //       BorderSide(color: Color(0xff868686), width: 1),
-        //     ),
-        //   ),
-        //   onPressed: () {},
-        //   child:
-        // Text('Cancel',
-        //       textAlign: TextAlign.center,
-        //       style: TextStyle(
-        //           color: blackColor,
-        //           fontSize: 18,
-        //           fontFamily: khulaRegular,
-        //           fontWeight: FontWeight.w600)),
-        // ),
-        );
+        }));
   }
 }

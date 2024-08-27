@@ -1,24 +1,27 @@
-// import 'dart:developer';
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:file_picker/file_picker.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
-import 'package:social_notes/screens/profile_screen/model/sound_pack_model.dart';
-import 'package:uuid/uuid.dart';
-// import 'package:flutter_archive/flutter_archive.dart';
 
 class UpdateProfileProvider with ChangeNotifier {
   List<String> fileUrls = [];
   List<String> userNames = [];
   String price = '';
 
+  //  setting price in profile screen
+
   setPrice(String price1) {
     price = price1;
     notifyListeners();
+  }
+//   getting all the usernames to add checks in the profile screen username field
+
+  getAllUserNames() async {
+    await FirebaseFirestore.instance.collection('users').get().then((value) {
+      List<UserModel> userModel =
+          value.docs.map((e) => UserModel.fromMap(e.data())).toList();
+      userNames = userModel.map((e) => e.name).toList();
+      notifyListeners();
+    });
   }
   // Future<void> pickAndUploadFiles() async {
   //   // Allow the user to pick files
@@ -45,50 +48,41 @@ class UpdateProfileProvider with ChangeNotifier {
   //   }
   // }
 
-  Future<void> createSoundCollection(
-      String username,
-      String soundPackName,
-      String spotifyUrl,
-      SoundPackType type,
-      bool isSubscribed,
-      bool isSpotify) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    FirebaseAuth auth = FirebaseAuth.instance;
-    if (!isSpotify) {
-      for (var i in fileUrls) {
-        var id = const Uuid().v4();
-        var data = SoundPackModel(
-            userId: auth.currentUser!.uid,
-            soundId: id,
-            username: username,
-            soundPackName: soundPackName,
-            soundPackUrl: i,
-            soundPackType: type,
-            subscriptionEnable: isSubscribed);
-        await firestore.collection('soundPacks').doc(id).set(data.toMap());
-      }
-    } else {
-      var id = const Uuid().v4();
-      var data = SoundPackModel(
-          userId: auth.currentUser!.uid,
-          soundId: id,
-          username: username,
-          soundPackName: soundPackName,
-          soundPackUrl: spotifyUrl,
-          soundPackType: type,
-          subscriptionEnable: isSubscribed);
-      await firestore.collection('soundPacks').doc(id).set(data.toMap());
-    }
-  }
-
-  getAllUserNames() async {
-    await FirebaseFirestore.instance.collection('users').get().then((value) {
-      List<UserModel> userModel =
-          value.docs.map((e) => UserModel.fromMap(e.data())).toList();
-      userNames = userModel.map((e) => e.name).toList();
-      notifyListeners();
-    });
-  }
+  // Future<void> createSoundCollection(
+  //     String username,
+  //     String soundPackName,
+  //     String spotifyUrl,
+  //     SoundPackType type,
+  //     bool isSubscribed,
+  //     bool isSpotify) async {
+  //   FirebaseFirestore firestore = FirebaseFirestore.instance;
+  //   FirebaseAuth auth = FirebaseAuth.instance;
+  //   if (!isSpotify) {
+  //     for (var i in fileUrls) {
+  //       var id = const Uuid().v4();
+  //       var data = SoundPackModel(
+  //           userId: auth.currentUser!.uid,
+  //           soundId: id,
+  //           username: username,
+  //           soundPackName: soundPackName,
+  //           soundPackUrl: i,
+  //           soundPackType: type,
+  //           subscriptionEnable: isSubscribed);
+  //       await firestore.collection('soundPacks').doc(id).set(data.toMap());
+  //     }
+  //   } else {
+  //     var id = const Uuid().v4();
+  //     var data = SoundPackModel(
+  //         userId: auth.currentUser!.uid,
+  //         soundId: id,
+  //         username: username,
+  //         soundPackName: soundPackName,
+  //         soundPackUrl: spotifyUrl,
+  //         soundPackType: type,
+  //         subscriptionEnable: isSubscribed);
+  //     await firestore.collection('soundPacks').doc(id).set(data.toMap());
+  //   }
+  // }
 
   // Future<void> pickAndZipFiles() async {
   //   // Allow the user to pick files

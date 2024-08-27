@@ -56,58 +56,58 @@ class SoundProvider extends ChangeNotifier {
     });
   }
 
-  List<SavedNoteModel> savedNotes = [];
+  // List<SavedNoteModel> savedNotes = [];
 
-  getSavedNotes() async {
-    QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-        .instance
-        .collection('savedNotes')
-        .where('uid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-        .get();
-    savedNotes =
-        snapshot.docs.map((e) => SavedNoteModel.fromMap(e.data())).toList();
-    notifyListeners();
-  }
+  // getSavedNotes() async {
+  //   QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
+  //       .instance
+  //       .collection('savedNotes')
+  //       .where('uid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+  //       .get();
+  //   savedNotes =
+  //       snapshot.docs.map((e) => SavedNoteModel.fromMap(e.data())).toList();
+  //   notifyListeners();
+  // }
 
-  addSavedNote(SavedNoteModel note, String saveId) async {
-    QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-        .instance
-        .collection('savedNotes')
-        .where('uid', isEqualTo: note.uid)
-        .get();
-    bool isSaved = false;
-    SavedNoteModel? savedNoteModel;
-    for (var doc in snapshot.docs) {
-      SavedNoteModel savedNote = SavedNoteModel.fromMap(doc.data());
-      if (savedNote.soundId == note.soundId) {
-        savedNoteModel = savedNote;
-        isSaved = true;
+  // addSavedNote(SavedNoteModel note, String saveId) async {
+  //   QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
+  //       .instance
+  //       .collection('savedNotes')
+  //       .where('uid', isEqualTo: note.uid)
+  //       .get();
+  //   bool isSaved = false;
+  //   SavedNoteModel? savedNoteModel;
+  //   for (var doc in snapshot.docs) {
+  //     SavedNoteModel savedNote = SavedNoteModel.fromMap(doc.data());
+  //     if (savedNote.soundId == note.soundId) {
+  //       savedNoteModel = savedNote;
+  //       isSaved = true;
 
-        break;
-      }
-    }
+  //       break;
+  //     }
+  //   }
 
-    if (isSaved) {
-      // Note exists, update it
-      await FirebaseFirestore.instance
-          .collection('savedNotes')
-          .doc(savedNoteModel!.savedNoteId)
-          .delete();
-      savedNotes.removeWhere((element) => element.soundId == note.soundId);
-      notifyListeners();
-      log('Note deleted successfully');
-    } else {
-      // Note does not exist, save it
-      await FirebaseFirestore.instance
-          .collection('savedNotes')
-          .doc(saveId)
-          .set(note.toMap());
-      savedNotes.add(note);
-      notifyListeners();
-      log('Note saved successfully');
-    }
-  }
-  // getSoundPacksFromUsersWithoutSubscription() async {
+  //   if (isSaved) {
+  //     // Note exists, update it
+  //     await FirebaseFirestore.instance
+  //         .collection('savedNotes')
+  //         .doc(savedNoteModel!.savedNoteId)
+  //         .delete();
+  //     savedNotes.removeWhere((element) => element.soundId == note.soundId);
+  //     notifyListeners();
+  //     log('Note deleted successfully');
+  //   } else {
+  //     // Note does not exist, save it
+  //     await FirebaseFirestore.instance
+  //         .collection('savedNotes')
+  //         .doc(saveId)
+  //         .set(note.toMap());
+  //     savedNotes.add(note);
+  //     notifyListeners();
+  //     log('Note saved successfully');
+  //   }
+  // }
+  // // getSoundPacksFromUsersWithoutSubscription() async {
   //   // Query users with isSubscriptionEnable set to false
   //   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
   //       .collection('users')

@@ -103,6 +103,31 @@ class FollowingScreen extends StatelessWidget {
                                   UserModel.fromMap(snapshot.data!.data()!);
                               bool isContains = followUSer.followers
                                   .contains(userProvider!.uid);
+                              String text = '';
+                              if (followUSer.isPrivate) {
+                                if (followUSer.followReq
+                                    .contains(userProvider.uid)) {
+                                  text = 'Requested';
+                                } else if (followUSer.followers
+                                    .contains(userProvider.uid)) {
+                                  text = 'Following';
+                                } else if (followUSer.following
+                                    .contains(userProvider.uid)) {
+                                  text = 'Follow back';
+                                } else {
+                                  text = 'Follow';
+                                }
+                              } else {
+                                if (followUSer.followers
+                                    .contains(userProvider.uid)) {
+                                  text = 'Following';
+                                } else if (followUSer.following
+                                    .contains(userProvider.uid)) {
+                                  text = 'Follow back';
+                                } else {
+                                  text = 'Follow';
+                                }
+                              }
 
                               return ElevatedButton(
                                   style: ElevatedButton.styleFrom(
@@ -127,7 +152,7 @@ class FollowingScreen extends StatelessWidget {
                                         .followUser(userProvider, user);
                                   },
                                   child: Text(
-                                    isContains ? 'Unfollow' : 'Follow',
+                                    text,
                                     style: TextStyle(
                                         color: isContains
                                             ? blackColor

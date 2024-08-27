@@ -1,92 +1,136 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:math';
 // import 'dart:developer';
 
+import 'package:audio_waveforms/audio_waveforms.dart' as audo;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:firebase_core/firebase_core.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/add_note_screen/controllers/add_note_controller.dart';
+import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
 import 'package:social_notes/screens/add_note_screen/provider/note_provider.dart';
 import 'package:social_notes/screens/auth_screens/controller/notifications_methods.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
+import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
+import 'package:social_notes/screens/home_screen/view/widgets/main_player.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/voice_message.dart';
 import 'package:social_notes/screens/notifications_screen/controller/notification_provider.dart';
 import 'package:social_notes/screens/notifications_screen/model/comment_notofication_model.dart';
 import 'package:uuid/uuid.dart';
 
 class CircleComments extends StatefulWidget {
-  const CircleComments(
-      {super.key,
-      required this.postId,
-      required this.userId,
-      required this.mainAudioPlayer,
-      required this.stopMainPlayer,
-      required this.userToken,
-      required this.userName});
-  final String postId;
-  final String userId;
-  final String userToken;
-  final String userName;
+  const CircleComments({
+    super.key,
+    required this.mainAudioPlayer,
+    required this.stopMainPlayer,
+    required this.noteModel,
+  });
+  final NoteModel noteModel;
 
   final AudioPlayer mainAudioPlayer;
   final VoidCallback stopMainPlayer;
+
+  //  getting the required data from the constructor
+
   @override
   State<CircleComments> createState() => _CircleCommentsState();
 }
 
 class _CircleCommentsState extends State<CircleComments> {
+  //  controller for the wave generattion during recording
+
+  late final audo.RecorderController recorderController;
+
+  //  create the empty list of comments
+
   List<CommentModel> firstListViewComments = [];
+
+//  instance of the audio player to play the reply
+
   AudioPlayer _audioPlayer = AudioPlayer();
+
   int _currentIndex = 0;
   bool _isPlaying = false;
   Duration position = Duration.zero;
   int? indexNewComment;
+
+  //  subsription to get the replies
+
   late StreamSubscription<QuerySnapshot> _subscription;
+
+  // get the user data subscrition
+
   late StreamSubscription<DocumentSnapshot> _userSubscription;
+
+  //  creating the empty lists to manage the colors based on the certain logics
+
   List<int> subscriberCommentsIndexes = [];
 
   List<int> closeFriendIndexes = [];
   List<int> remainingCommentsIndex = [];
   List<CommentModel> commentsList = [];
   int engageCommentIndex = 0;
+  String? path;
+  late Directory directory;
   // int indexOfNewComent = -1;
   @override
   void initState() {
     super.initState();
+    //  initializing the player
     _audioPlayer = AudioPlayer();
+
+    // getting 7 replies
+
     getStreamComments();
+
+    //  initilizing wave generate controller
+
+    _initialiseController();
+  }
+
+  void _initialiseController() {
+    recorderController = audo.RecorderController()
+      ..androidEncoder = audo.AndroidEncoder.aac
+      ..androidOutputFormat = audo.AndroidOutputFormat.mpeg4
+      ..iosEncoder = audo.IosEncoder.kAudioFormatMPEG4AAC
+      ..sampleRate = 16000;
   }
 
   getStreamComments() async {
     UserModel? currentNoteUser;
-    // await FirebaseFirestore.instance
-    //     .collection("users")
-    //     .doc(widget.userId)
-    //     .get()
-    //     .then((value) {
-    //   currentNoteUser = UserModel.fromMap(value.data() ?? {});
-    // });
+
+    var currentUser = Provider.of<UserProvider>(context, listen: false).user;
     _userSubscription = FirebaseFirestore.instance
         .collection("users")
-        .doc(widget.userId)
+        .doc(widget.noteModel.userUid)
         .snapshots()
         .listen((snapshot) {
       currentNoteUser = UserModel.fromMap(snapshot.data() ?? {});
     });
 
+    //  reply deletion is managed by the shared prefs if user is  not the reply owner
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    //  getting all the replies time based
+
     _subscription = FirebaseFirestore.instance
         .collection('notes')
-        .doc(widget.postId)
+        .doc(widget.noteModel.noteId)
         .collection('comments')
         .orderBy('time', descending: true)
         .snapshots()
@@ -99,22 +143,36 @@ class _CircleCommentsState extends State<CircleComments> {
         List<int> subcomments = [];
         List<int> closeComm = [];
         List<int> remainCom = [];
+        List<CommentModel> itemsToRemove = [];
+        List<String>? commentIDs = preferences.getStringList(currentUser!.uid);
+        if (commentIDs != null) {
+          for (var item in list) {
+            for (var id in commentIDs) {
+              if (item.commentid.contains(id)) {
+                itemsToRemove.add(item);
+                break; // Break inner loop if match is found
+              }
+            }
+          }
+        }
+
+        // Remove the collected items from the list
+        list.removeWhere((item) => itemsToRemove.contains(item));
         closeFriendIndexes.clear();
         subscriberCommentsIndexes.clear();
         remainingCommentsIndex.clear();
+
+        //  filtering the replies and adding them to different lists based on certain conditions
 
         for (var index = 0; index < list.length; index++) {
           var comment = list[index];
           if (currentNoteUser!.closeFriends.contains(comment.userId)) {
             closeFriendIndexes.add(index);
-            log('Close Friends Comments: $closeFriendIndexes');
           } else if (currentNoteUser!.subscribedUsers
               .contains(comment.userId)) {
             subscriberCommentsIndexes.add(index);
-            log('Subscriber Comments: $subscriberCommentsIndexes');
           } else {
             remainingCommentsIndex.add(index);
-            log('Remaining Comments: $remainingCommentsIndex');
           }
         }
         List<CommentModel> engageComments = List.from(list);
@@ -125,25 +183,10 @@ class _CircleCommentsState extends State<CircleComments> {
         CommentModel mostEngageComment = engageComments[0];
         int indexOfEngageComment = list.indexWhere(
             (element) => element.commentid == mostEngageComment.commentid);
-        // if (list.isNotEmpty) {
-        //   setState(() {
-        //     indexOfNewComent = list.indexWhere((element) =>
-        //         element.commentid == widget.newlyComment!.commentid);
-        //   });
-        //   list.removeWhere(
-        //       (element) => element.commentid == widget.newlyComment!.commentid);
-        //   log('New Index Comment $indexOfNewComent');
-        // }
 
-        // log('index of subscriber comments: $subscriberCommentsIndexes');
-        // // log('MostLikedComment: $mostEngagedComment');
-        // // log('CommentContainsSubscriber: $commentContainsSubscriber');
-        // log('RemainingComments: $remainCom');
-        // // log('CloseFriendsComments: $closeFriendsComments');
-        // log('CloseFriednIndexes: $closeFriendIndexes');
+        //  update the lists with the global lists
+
         setState(() {
-          // Update the local list with the sorted list
-
           commentsList = list;
           subcomments = subscriberCommentsIndexes;
           closeComm = closeFriendIndexes;
@@ -155,15 +198,19 @@ class _CircleCommentsState extends State<CircleComments> {
     });
   }
 
+  //  updating the value of the comment in the for most played
+
   void _updatePlayedComment(String commentId, int playedComment) async {
     int updateCommentCounter = playedComment + 1;
     await FirebaseFirestore.instance
         .collection('notes')
-        .doc(widget.postId)
+        .doc(widget.noteModel.noteId)
         .collection('comments')
         .doc(commentId)
         .update({'playedComment': updateCommentCounter});
   }
+
+  //  function to play one audio at a time
 
   void _playAudio(
     String url,
@@ -221,72 +268,27 @@ class _CircleCommentsState extends State<CircleComments> {
     });
   }
 
+  //  disposing all the players when no longer needs
+
   @override
   void dispose() {
     // Cancel the subscription when the widget is disposed
     _audioPlayer.dispose();
-    _subscription.cancel();
+    // _subscription.cancel();
     _userSubscription.cancel();
+    // _controller.dispose();
     super.dispose();
   }
 
-  // @override
-  // void didUpdateWidget(covariant CircleComments oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  //   // Update commentsList when the widget is updated
-  //   updateCommentsList();
-  // }
-
-  // void updateCommentsList() {
-  //   // Reset commentsList
-  //   commentsList = [];
-
-  //   // Fetch comments from Firestore
-  //   FirebaseFirestore.instance
-  //       .collection('notes')
-  //       .doc(widget.postId)
-  //       .collection('comments')
-  //       .snapshots()
-  //       .listen((snapshot) {
-  //     setState(() {
-  //       commentsList = snapshot.docs
-  //           .map((doc) => CommentModel.fromMap(doc.data()))
-  //           .toList();
-
-  //       // Remove newlyComment if it exists
-  //       commentsList.removeWhere(
-  //           (comment) => comment.commentid == widget.newlyComment?.commentid);
-  //     });
-  //   });
-  // }
-
-  // @override
-  // void didUpdateWidget(covariant CircleComments oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  //   // Update commentsList when the widget is updated
-  //   updateCommentsList();
-  // }
-
-  // void updateCommentsList() {
-  //   List<CommentModel> updatedList = List.from(commentsList);
-
-  //   // Remove the newly added comment from the list
-  //   updatedList.removeWhere(
-  //     (element) => element.commentid == widget.newlyComment?.commentid,
-  //   );
-
-  //   // Limit the number of items to show to 3 after removing the new comment
-  //   firstListViewComments = updatedList.length > 3
-  //       ? updatedList.sublist(0, 3)
-  //       : List.from(updatedList);
-
-  //   setState(() {});
-  // }
-
   @override
   Widget build(BuildContext context) {
+    //  getting the provider
+
     var commentProvider =
         Provider.of<DisplayNotesProvider>(context, listen: false);
+
+    //  getting the current user data
+
     var userProvider = Provider.of<UserProvider>(context, listen: false).user;
     var size = MediaQuery.of(context).size;
 
@@ -298,19 +300,21 @@ class _CircleCommentsState extends State<CircleComments> {
           child: Row(
             children: [
               Expanded(
-                // height: size.height * 0.15,
+                //   wrap to manage the 7 replies and recording widget
+
                 child: Padding(
                   padding: const EdgeInsets.only(left: 11),
                   child: Wrap(
                     spacing: 4,
                     runSpacing: 7,
-
-                    // spacing: 4,
-
-                    // spacing: 2,
-                    // runSpacing: 12,
-
                     children: [
+                      //  recording widget
+                      //  recording based on certain conditions
+                      //  cancel reply
+                      //  send reply
+                      // show loading
+                      //  show waves
+
                       Consumer<NoteProvider>(
                         builder: (context, noteProvider, child) {
                           return Padding(
@@ -340,12 +344,16 @@ class _CircleCommentsState extends State<CircleComments> {
                                 } else if (await noteProvider.recorder
                                     .isRecording()) {
                                   noteProvider.setIsSending(true);
-                                  noteProvider.stop();
+                                  noteProvider.stop(context);
+                                  recorderController.stop();
                                 } else if (noteProvider.isSending) {
                                   Provider.of<NoteProvider>(context,
                                           listen: false)
                                       .setIsLoading(true);
                                   String commentId = const Uuid().v4();
+
+                                  //  uploading the recorded comment to storage
+
                                   String comment = await AddNoteController()
                                       .uploadFile('comments',
                                           noteProvider.voiceNote!, context);
@@ -355,117 +363,191 @@ class _CircleCommentsState extends State<CircleComments> {
                                     username: userProvider!.name,
                                     time: DateTime.now(),
                                     userId: userProvider.uid,
-                                    postId: widget.postId,
+                                    postId: widget.noteModel.noteId,
                                     likes: [],
                                     playedComment: 0,
                                     userImage: userProvider.photoUrl,
                                   );
 
+                                  //  adding comment to firestore
+
                                   commentProvider
-                                      .addComment(widget.postId, commentId,
-                                          commentModel, context)
-                                      .then((value) {
+                                      .addComment(widget.noteModel.noteId,
+                                          commentId, commentModel, context)
+                                      .then((value) async {
                                     String notificationId = const Uuid().v4();
-                                    NotificationMethods.sendPushNotification(
-                                        widget.userToken,
-                                        'replied',
-                                        userProvider.username);
-                                    CommentNotoficationModel noti =
-                                        CommentNotoficationModel(
-                                            isRead: '',
-                                            notificationId: notificationId,
-                                            notification: comment,
-                                            currentUserId: userProvider.uid,
-                                            notificationType: 'comment',
-                                            toId: widget.userId);
-                                    Provider.of<NotificationProvider>(context,
-                                            listen: false)
-                                        .addCommentNotification(noti);
+
+                                    //  removing everything setting false the values
 
                                     noteProvider.removeVoiceNote();
                                     noteProvider.setIsSending(false);
                                     Provider.of<NoteProvider>(context,
                                             listen: false)
                                         .setIsLoading(false);
+                                    DocumentSnapshot<Map<String, dynamic>>
+                                        userModel = await FirebaseFirestore
+                                            .instance
+                                            .collection('users')
+                                            .doc(widget.noteModel.userUid)
+                                            .get();
+
+                                    UserModel toNotiUser =
+                                        UserModel.fromMap(userModel.data()!);
+
+                                    //  sending notification to the post owner
+
+                                    if (toNotiUser.isReply &&
+                                        userProvider.uid !=
+                                            widget.noteModel.userUid) {
+                                      NotificationMethods.sendPushNotification(
+                                          widget.noteModel.userUid,
+                                          widget.noteModel.userToken,
+                                          'replied',
+                                          userProvider.name,
+                                          'notification',
+                                          '');
+
+                                      CommentNotoficationModel noti =
+                                          CommentNotoficationModel(
+                                              postBackground: widget
+                                                  .noteModel.backgroundImage,
+                                              postThumbnail: widget
+                                                  .noteModel.videoThumbnail,
+                                              postType: widget
+                                                  .noteModel.backgroundType,
+                                              noteUrl: widget.noteModel.noteUrl,
+                                              isRead: '',
+                                              notificationId: notificationId,
+                                              notification: comment,
+                                              currentUserId: userProvider.uid,
+                                              notificationType: 'comment',
+                                              toId: widget.noteModel.userUid);
+                                      Provider.of<NotificationProvider>(context,
+                                              listen: false)
+                                          .addCommentNotification(noti);
+                                    }
                                   });
                                 } else {
-                                  noteProvider.record();
+                                  directory =
+                                      await getApplicationDocumentsDirectory();
+                                  path = "${directory.path}/test_audio.aac";
+                                  await recorderController.record(path: path);
+                                  // update state here to, for eample, change the button's state
+
+                                  noteProvider.record(context);
                                 }
                               },
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  Container(
-                                    height: size.width > 400
-                                        ? 98
-                                        : size.height * 0.107,
-                                    width: size.height * 0.106,
-                                    padding: EdgeInsets.all(
-                                        noteProvider.isLoading ? 4 : 0),
-                                    decoration: BoxDecoration(
-                                      color: whiteColor,
-                                      borderRadius: BorderRadius.circular(50),
-                                    ),
-                                    child: noteProvider.isLoading
-                                        ? SizedBox(
-                                            height: 35,
-                                            width: 35,
-                                            child: CircularProgressIndicator(
-                                              color: primaryColor,
-                                            ),
-                                          )
-                                        : noteProvider.isCancellingReply
-                                            ? Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  SvgPicture.asset(
-                                                    'assets/icons/Refresh.svg',
-                                                    height: 40,
-                                                    width: 40,
-                                                  ),
-                                                ],
-                                              )
-                                            : noteProvider.isSending
-                                                ? Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      SvgPicture.asset(
-                                                        'assets/icons/Send comment.svg',
-                                                        height: 40,
-                                                        width: 40,
-                                                      ),
-                                                    ],
-                                                  )
-                                                : noteProvider.isRecording
-                                                    ? Icon(
-                                                        Icons.stop,
-                                                        color: primaryColor,
-                                                        size: 40,
-                                                      )
-                                                    : Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Image.asset(
-                                                            'assets/images/microphone_recordbutton.png',
-                                                            height: 40,
-                                                            width: 40,
+                                  //  showing icons based on the certain conditions
+
+                                  Consumer<FilterProvider>(
+                                      builder: (context, filterPro, _) {
+                                    return Container(
+                                      height: size.width > 400
+                                          ? 98
+                                          : size.height * 0.107,
+                                      width: size.height * 0.106,
+                                      padding: EdgeInsets.all(
+                                          noteProvider.isLoading ? 4 : 0),
+                                      decoration: BoxDecoration(
+                                        color: whiteColor,
+                                        borderRadius: BorderRadius.circular(50),
+                                      ),
+                                      child: noteProvider.isLoading
+                                          ? SizedBox(
+                                              height: 35,
+                                              width: 35,
+                                              child: CircularProgressIndicator(
+                                                color: primaryColor,
+                                              ),
+                                            )
+                                          : noteProvider.isCancellingReply
+                                              ? Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    SvgPicture.asset(
+                                                      'assets/icons/Refresh.svg',
+                                                      height: 40,
+                                                      width: 40,
+                                                      color: filterPro
+                                                              .selectedFilter
+                                                              .contains(
+                                                                  'Close Friends')
+                                                          ? greenColor
+                                                          : null,
+                                                    ),
+                                                  ],
+                                                )
+                                              : noteProvider.isSending
+                                                  ? Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        SvgPicture.asset(
+                                                          'assets/icons/Send comment.svg',
+                                                          height: 40,
+                                                          width: 40,
+                                                          color: filterPro
+                                                                  .selectedFilter
+                                                                  .contains(
+                                                                      'Close Friends')
+                                                              ? greenColor
+                                                              : null,
+                                                        ),
+                                                      ],
+                                                    )
+                                                  : noteProvider.isRecording
+                                                      ? audo.AudioWaveforms(
+                                                          size: const Size(
+                                                              85, 85),
+                                                          recorderController:
+                                                              recorderController,
+                                                          // density: 1.5,
+                                                          waveStyle:
+                                                              audo.WaveStyle(
+                                                            showMiddleLine:
+                                                                false,
+                                                            extendWaveform:
+                                                                true,
+                                                            waveColor:
+                                                                primaryColor,
+                                                            // scaleFactor: 0.8,
+                                                            waveCap:
+                                                                StrokeCap.butt,
                                                           ),
-                                                        ],
-                                                      ),
-                                  ),
+                                                        )
+                                                      : Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Image.asset(
+                                                              'assets/images/microphone_recordbutton.png',
+                                                              height: 40,
+                                                              width: 40,
+                                                              color: filterPro
+                                                                      .selectedFilter
+                                                                      .contains(
+                                                                          'Close Friends')
+                                                                  ? greenColor
+                                                                  : null,
+                                                            ),
+                                                          ],
+                                                        ),
+                                    );
+                                  }),
                                   Text(
                                     noteProvider.isCancellingReply
                                         ? 'Cancel'
@@ -487,34 +569,15 @@ class _CircleCommentsState extends State<CircleComments> {
                         },
                       ),
 
-                      // if (widget.commentsLength >= 1)
-                      //   Padding(
-                      //     padding: const EdgeInsets.only(top: 10, left: 0),
-                      //     child: CircleVoiceNotes(
-                      //       audioPlayer: _audioPlayer,
-                      //       changeIndex: _currentIndex,
-                      //       onPlayPause: () {
-                      //         _playAudio(
-                      //             widget.newlyComment!.comment,
-                      //             indexOfNewComent,
-                      //             widget.newlyComment!.commentid,
-                      //             widget.newlyComment!.playedComment);
-                      //       },
-                      //       isPlaying: _isPlaying,
-                      //       position: position,
-                      //       index: indexOfNewComent,
-                      //       commentModel: widget.newlyComment!,
-                      //       subscriberCommentIndex: subscriberCommentsIndexes,
-                      //       closeFriendIndexs: closeFriendIndexes,
-                      //       onPlayStateChanged: (isPlaying) {},
-                      //     ),
-                      //   ),
+                      //  filterd list to display 3 replies in first row
+
                       ...commentsList.take(3).map((comment) {
                         final key =
                             ValueKey<String>('comment_${comment.commentid}');
                         return KeyedSubtree(
                           key: key,
                           child: CircleVoiceNotes(
+                            // backGround: widget.,
                             audioPlayer: _audioPlayer,
                             engageCommentIndex: engageCommentIndex,
                             changeIndex: _currentIndex,
@@ -536,6 +599,9 @@ class _CircleCommentsState extends State<CircleComments> {
                         );
                       }),
                       const SizedBox(width: 10),
+
+                      //  filterd list to display next 4 replies in second row with the colors
+
                       ...commentsList.skip(3).take(4).map((comment) {
                         final key =
                             ValueKey<String>('comment_${comment.commentid}');
@@ -573,3 +639,80 @@ class _CircleCommentsState extends State<CircleComments> {
     );
   }
 }
+
+//  painter to show waves
+
+class WavePainter extends CustomPainter {
+  final List<double> amplitudes;
+  final Color activeColor;
+  final Color inactiveColor;
+  final double strokeWidth;
+
+  WavePainter({
+    required this.amplitudes,
+    this.activeColor = Colors.blue,
+    this.inactiveColor = Colors.grey,
+    this.strokeWidth = 2.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint = Paint()
+      ..color = inactiveColor
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    double midY = size.height / 2;
+    double maxAmp =
+        size.height / 2; // Maximum amplitude to scale within the container
+
+    for (int i = 0; i < amplitudes.length; i++) {
+      var amp = amplitudes[i]; // Amplitude value for this wave
+      double scaledAmp =
+          (amp / 10) * maxAmp; // Scale it to the height of the container
+      paint.color = i < amplitudes.length / 2
+          ? activeColor
+          : inactiveColor; // Change color if part of the wave is 'active'
+      canvas.drawLine(
+        Offset(i * strokeWidth * 2, midY - scaledAmp),
+        Offset(i * strokeWidth * 2, midY + scaledAmp),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+// class WavePainter extends CustomPainter {
+//   final double animationValue;
+
+//   WavePainter(this.animationValue);
+
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     final paint = Paint()
+//       ..color = Colors.blueAccent
+//       ..style = PaintingStyle.fill;
+
+//     final path = Path();
+//     for (double i = 0; i <= size.width; i++) {
+//       path.lineTo(
+//         i,
+//         sin((i / size.width * 2 * pi) + (animationValue * 2 * pi)) * 10 +
+//             size.height / 2,
+//       );
+//     }
+//     path.lineTo(size.width, size.height);
+//     path.lineTo(0, size.height);
+//     path.close();
+
+//     canvas.drawPath(path, paint);
+//   }
+
+//   @override
+//   bool shouldRepaint(covariant CustomPainter oldDelegate) {
+//     return true;
+//   }
+// }

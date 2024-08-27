@@ -15,6 +15,7 @@ class SubsccriptionListTile extends StatelessWidget {
       required this.userId,
       required this.currentUserId,
       required this.isVerified,
+      required this.price,
       required this.subscritpionStatus});
   final String image;
   final String username;
@@ -22,7 +23,7 @@ class SubsccriptionListTile extends StatelessWidget {
   final String userId;
   final String currentUserId;
   final bool isVerified;
-
+  final double price;
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -60,6 +61,14 @@ class SubsccriptionListTile extends StatelessWidget {
             //   width: 20,
             // )
           ],
+        ),
+        subtitle: Text(
+          '${price.toStringAsFixed(2)} USD per month',
+          style: TextStyle(
+              color: Color(0xff909090),
+              fontSize: 14,
+              fontFamily: khulaRegular,
+              fontWeight: FontWeight.w400),
         ),
         trailing: InkWell(
           onTap: () {

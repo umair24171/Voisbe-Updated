@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/resources/navigation.dart';
+import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 // import 'package:social_notes/screens/settings_screen/view/widgets/subscription_list_tile.dart';
 
@@ -14,6 +15,7 @@ class AccountPrivacyScreen extends StatelessWidget {
   // @override
   @override
   Widget build(BuildContext context) {
+    var user = Provider.of<UserProvider>(context, listen: false).user;
     return Scaffold(
       backgroundColor: whiteColor,
       appBar: AppBar(
@@ -47,7 +49,6 @@ class AccountPrivacyScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Row(
-                // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   SvgPicture.asset(
                     'assets/icons/Unlock.svg',
@@ -70,27 +71,40 @@ class AccountPrivacyScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              // SvgPicture.asset(
-              //   'assets/icons/Toggle.svg',
-              //   height: 30,
-              //   width: 30,
-              // ),
-              Consumer<UserProvider>(builder: (context, userPro, _) {
-                return Switch(
-                  value: userPro.user!.isPrivate,
-                  onChanged: (value) async {
-                    userPro.updateUserField(value);
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(userPro.user!.uid)
-                        .update({'isPrivate': value});
-                  },
-                  activeTrackColor: const Color(0xffFFD3A5),
-                  activeColor: const Color(0xffFFA451),
-                );
-              }),
+
+              //  changing the account to the private for the current user and showing the real time value
+
+              StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user!.uid)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      UserModel switchUser =
+                          UserModel.fromMap(snapshot.data!.data()!);
+                      return Switch(
+                        value: switchUser.isPrivate,
+                        onChanged: (value) async {
+                          // userPro.updateUserField(value);
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(user.uid)
+                              .update({'isPrivate': value});
+                        },
+                        activeTrackColor: const Color(0xffFFD3A5),
+                        activeColor: const Color(0xffFFA451),
+                      );
+                    } else {
+                      return Text('');
+                    }
+                  })
+              // }),
             ],
           ),
+
+          //  description of the account privacy
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
             child: Text(

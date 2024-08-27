@@ -119,6 +119,7 @@ class _SharePostSheetState extends State<SharePostSheet> {
                     String chatId = const Uuid().v4();
 
                     ChatModel chat = ChatModel(
+                        deletedChat: [],
                         name: userProvider!.name,
                         message: widget.note.noteUrl,
                         senderId: userProvider.uid,

@@ -14,6 +14,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 // import 'package:flutter/widgets.dart';
 // import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/add_note_screen/controllers/add_note_controller.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
@@ -48,21 +49,6 @@ class CommentModalSheet extends StatefulWidget {
 }
 
 class _CommentModalSheetState extends State<CommentModalSheet> {
-  // late final audi.RecorderController recorderController;
-  // Future<String> getOutputPath() async {
-  //   final directory = await getExternalStorageDirectory();
-  //   final outputPath = '${directory?.path}/output_audio.wav';
-  //   return outputPath;
-  // }
-
-  // void _initialiseControllers() {
-  //   recorderController = audi.RecorderController()
-  //     ..androidEncoder = audi.AndroidEncoder.aac
-  //     ..androidOutputFormat = audi.AndroidOutputFormat.mpeg4
-  //     ..iosEncoder = audi.IosEncoder.kAudioFormatMPEG4AAC
-  //     ..sampleRate = 44100;
-  // }
-
   AudioPlayer _audioPlayer = AudioPlayer();
   int _currentIndex = 0;
   bool _isPlaying = false;
@@ -90,10 +76,16 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
         position = event;
       });
     });
+    getStreamComments();
+  }
 
+  getStreamComments() async {
     // Subscribe to the Firestore collection
+    var currentUser = Provider.of<UserProvider>(context, listen: false).user;
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+
     UserModel? currentNoteUser;
-    FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection("users")
         .doc(widget.noteData.userUid)
         .get()
@@ -116,6 +108,23 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
         List<int> closeFriendIndexes = [];
         List<int> remainingCommentsIndex = [];
 
+        // Collect the items to be removed in a separate list
+        List<CommentModel> itemsToRemove = [];
+        List<String>? commentIDs = preferences.getStringList(currentUser!.uid);
+        if (commentIDs != null) {
+          for (var item in list) {
+            for (var id in commentIDs) {
+              if (item.commentid.contains(id)) {
+                itemsToRemove.add(item);
+                break; // Break inner loop if match is found
+              }
+            }
+          }
+        }
+
+        // Remove the collected items from the list
+        list.removeWhere((item) => itemsToRemove.contains(item));
+
         for (var index = 0; index < list.length; index++) {
           var comment = list[index];
           if (currentNoteUser!.closeFriends.contains(comment.userId)) {
@@ -132,10 +141,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
         }
 
         log('index of subscriber comments: $subscriberCommentsIndexes');
-        // log('MostLikedComment: $mostEngagedComment');
-        // log('CommentContainsSubscriber: $commentContainsSubscriber');
         log('RemainingComments: $remainingComments');
-        // log('CloseFriendsComments: $closeFriendsComments');
         log('CloseFriednIndexes: $closeFriendIndexes');
         setState(() {
           // Update the local list with the sorted list
@@ -148,6 +154,75 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
     });
   }
 
+  // getStreamComments() async {
+  //   // Subscribe to the Firestore collection
+  //   SharedPreferences preferences = await SharedPreferences.getInstance();
+  //   List<String>? commentIDs = preferences.getStringList('currentUser');
+  //   UserModel? currentNoteUser;
+  //   await FirebaseFirestore.instance
+  //       .collection("users")
+  //       .doc(widget.noteData.userUid)
+  //       .get()
+  //       .then((value) {
+  //     currentNoteUser = UserModel.fromMap(value.data() ?? {});
+  //   });
+
+  //   _subscription = FirebaseFirestore.instance
+  //       .collection('notes')
+  //       .doc(widget.postId)
+  //       .collection('comments')
+  //       .snapshots()
+  //       .listen((snapshot) {
+  //     if (snapshot.docs.isNotEmpty) {
+  //       List<CommentModel> list =
+  //           snapshot.docs.map((e) => CommentModel.fromMap(e.data())).toList();
+  //       list.sort((a, b) => b.playedComment.compareTo(a.playedComment));
+
+  //       List<int> subscriberCommentsIndexes = [];
+  //       List<int> closeFriendIndexes = [];
+  //       List<int> remainingCommentsIndex = [];
+  //       if (commentIDs != null) {
+  //         for (var item in list) {
+  //           for (var id in commentIDs) {
+  //             if (item.commentid.contains(id)) {
+  //               list.remove(item);
+  //             }
+  //           }
+  //         }
+  //       }
+
+  //       for (var index = 0; index < list.length; index++) {
+  //         var comment = list[index];
+  //         if (currentNoteUser!.closeFriends.contains(comment.userId)) {
+  //           closeFriendIndexes.add(index);
+  //           log('Close Friends Comments: $closeFriendIndexes');
+  //         } else if (currentNoteUser!.subscribedUsers
+  //             .contains(comment.userId)) {
+  //           subscriberCommentsIndexes.add(index);
+  //           log('Subscriber Comments: $subscriberCommentsIndexes');
+  //         } else {
+  //           remainingCommentsIndex.add(index);
+  //           log('Remaining Comments: $remainingCommentsIndex');
+  //         }
+  //       }
+
+  //       log('index of subscriber comments: $subscriberCommentsIndexes');
+  //       // log('MostLikedComment: $mostEngagedComment');
+  //       // log('CommentContainsSubscriber: $commentContainsSubscriber');
+  //       log('RemainingComments: $remainingComments');
+  //       // log('CloseFriendsComments: $closeFriendsComments');
+  //       log('CloseFriednIndexes: $closeFriendIndexes');
+  //       setState(() {
+  //         // Update the local list with the sorted list
+  //         commentsList = list;
+  //         subscriberComments = subscriberCommentsIndexes;
+  //         closeCOmments = closeFriendIndexes;
+  //         remainingComments = remainingComments;
+  //       });
+  //     }
+  //   });
+  // }
+
   void _updatePlayedComment(String commentId, int playedComment) {
     int updateCommentCounter = playedComment + 1;
     FirebaseFirestore.instance
@@ -157,6 +232,8 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
         .doc(commentId)
         .update({'playedComment': updateCommentCounter});
   }
+
+  // playing the audio function
 
   void _playAudio(
     String url,
@@ -214,6 +291,15 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
     });
   }
 
+  // stopping the audio
+
+  stopAudio() {
+    _audioPlayer.stop();
+    setState(() {
+      _isPlaying = false;
+    });
+  }
+
   @override
   void dispose() {
     // Cancel the subscription when the widget is disposed
@@ -222,6 +308,8 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
     // recorderController.dispose();
     super.dispose();
   }
+
+  final Map<String, double> _cachedHeights = {};
 
   @override
   Widget build(BuildContext context) {
@@ -270,45 +358,61 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
           ),
           Expanded(
               child: commentsList.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: commentsList.length,
-                      itemBuilder: (context, index) {
-                        final key = ValueKey<String>(
-                            'comment_${commentsList[index].commentid}');
-                        return KeyedSubtree(
-                          key: key,
-                          child: SingleCommentNote(
-                            isPlaying: _isPlaying,
-                            player: _player,
-                            position: position,
-                            index: index,
-                            commentModel: commentsList[index],
-                            subscriberCommentIndex: subscriberComments,
-                            closeFriendIndexs: closeCOmments,
-                            commentsList: commentsList,
-                            playPause: () {
-                              _playAudio(
-                                  commentsList[index].comment,
-                                  index,
-                                  commentsList[index].commentid,
-                                  commentsList[index].playedComment);
-                            },
-                            changeIndex: _currentIndex,
+                  ? SingleChildScrollView(
+                      //  building all the comments
 
-                            // comment: comment
-                          ),
-                        );
-                      },
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: commentsList.length,
+                        itemBuilder: (context, index) {
+                          final key = ValueKey<String>(
+                              'comment_${commentsList[index].commentid}');
+
+                          //  building the design  through the template
+
+                          return KeyedSubtree(
+                            key: key,
+                            child: SingleCommentNote(
+                              getStreamComments: getStreamComments,
+                              postUserId: widget.userId,
+                              stopMainPlayer: stopAudio,
+                              isPlaying: _isPlaying,
+                              player: _audioPlayer,
+                              position: position,
+                              index: index,
+                              commentModel: commentsList[index],
+                              subscriberCommentIndex: subscriberComments,
+                              closeFriendIndexs: closeCOmments,
+                              commentsList: commentsList,
+                              playPause: () {
+                                _playAudio(
+                                    commentsList[index].comment,
+                                    index,
+                                    commentsList[index].commentid,
+                                    commentsList[index].playedComment);
+                              },
+                              changeIndex: _currentIndex,
+
+                              // comment: comment
+                            ),
+                          );
+                        },
+                      ),
                     )
                   : const Text('')
 
               // }),
               ),
           Consumer<NoteProvider>(builder: (context, noteProvider, child) {
+            //
+
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(
                 children: [
+                  //  if the recorded voice note or comment note is null show the recorder icon
+
                   if (noteProvider.voiceNote == null &&
                       noteProvider.commentNoteFile == null &&
                       noteProvider.subCommentNoteFile == null)
@@ -323,6 +427,9 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                       padding: EdgeInsets.all(
                           noteProvider.voiceNote == null ? 8.0 : 0),
                       child: noteProvider.voiceNote != null
+
+                          //  if recording file is not null then show the  recorded voice
+
                           ? Row(
                               children: [
                                 SizedBox(
@@ -388,31 +495,63 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                       commentId,
                                                       commentModel,
                                                       context)
-                                                  .then((value) {
-                                                NotificationMethods
-                                                    .sendPushNotification(
-                                                        widget
-                                                            .noteData.userToken,
-                                                        'replied',
-                                                        userProvider.username);
-                                                String notificationId =
-                                                    const Uuid().v4();
-                                                CommentNotoficationModel noti =
-                                                    CommentNotoficationModel(
-                                                        isRead: '',
-                                                        notificationId:
-                                                            notificationId,
-                                                        notification: comment,
-                                                        notificationType:
-                                                            'comment',
-                                                        currentUserId:
-                                                            userProvider.uid,
-                                                        toId: widget.userId);
-                                                Provider.of<NotificationProvider>(
-                                                        context,
-                                                        listen: false)
-                                                    .addCommentNotification(
-                                                        noti);
+                                                  .then((value) async {
+                                                DocumentSnapshot<
+                                                        Map<String, dynamic>>
+                                                    userModel =
+                                                    await FirebaseFirestore
+                                                        .instance
+                                                        .collection('users')
+                                                        .doc(widget.userId)
+                                                        .get();
+
+                                                UserModel toNotiUser =
+                                                    UserModel.fromMap(
+                                                        userModel.data()!);
+
+                                                if (toNotiUser.isReply &&
+                                                    userProvider.uid !=
+                                                        widget.userId) {
+                                                  NotificationMethods
+                                                      .sendPushNotification(
+                                                          widget
+                                                              .noteData.userUid,
+                                                          widget.noteData
+                                                              .userToken,
+                                                          'replied',
+                                                          userProvider.username,
+                                                          'notification',
+                                                          '');
+                                                  String notificationId =
+                                                      const Uuid().v4();
+                                                  CommentNotoficationModel noti =
+                                                      CommentNotoficationModel(
+                                                          postBackground: widget
+                                                              .noteData
+                                                              .backgroundImage,
+                                                          postThumbnail: widget
+                                                              .noteData
+                                                              .videoThumbnail,
+                                                          postType: widget
+                                                              .noteData
+                                                              .backgroundType,
+                                                          noteUrl: widget
+                                                              .noteData.noteUrl,
+                                                          isRead: '',
+                                                          notificationId:
+                                                              notificationId,
+                                                          notification: comment,
+                                                          notificationType:
+                                                              'comment',
+                                                          currentUserId:
+                                                              userProvider.uid,
+                                                          toId: widget.userId);
+                                                  Provider.of<NotificationProvider>(
+                                                          context,
+                                                          listen: false)
+                                                      .addCommentNotification(
+                                                          noti);
+                                                }
 
                                                 // commentProvider
                                                 //     .addOneComment(commentModel);
@@ -444,6 +583,9 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                               ],
                             )
                           : noteProvider.commentNoteFile != null
+
+                              // show the recorded comment voice note
+
                               ? Row(
                                   children: [
                                     VoiceMessageView(
@@ -548,6 +690,9 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                     )
                                   ],
                                 )
+
+                              //   show the recorded sub comment
+
                               : noteProvider.subCommentNoteFile != null
                                   ? Row(
                                       children: [
@@ -664,6 +809,9 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                         )
                                       ],
                                     )
+
+                                  //  all the recorded voices are empty then show the textform field
+
                                   : TextFormField(
                                       readOnly: true,
                                       decoration: InputDecoration(
@@ -672,36 +820,19 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                             fontFamily: fontFamily,
                                             color: Colors.grey,
                                             fontSize: 13),
-                                        // label: Text(
-                                        //   'Add a reply',
-                                        //   style: TextStyle(
-                                        //       fontFamily: fontFamily,
-                                        //       color: Colors.grey,
-                                        //       fontSize: 13),
-                                        // ),
-
                                         suffixIcon: noteProvider.isReplying
                                             ? GestureDetector(
                                                 onTap: () async {
+                                                  //  if the voice is not recording then start the recording
+
+                                                  // otherwise stop the recording
+
                                                   try {
                                                     if (await noteProvider
                                                         .recorder
                                                         .isRecording()) {
                                                       noteProvider
                                                           .commentStop();
-
-                                                      // String? path =
-                                                      //     await recorderController
-                                                      //         .stop(false);
-
-                                                      // if (path != null) {
-                                                      //   noteProvider
-                                                      //       .setCommentNoteFile(
-                                                      //           File(path));
-                                                      //   debugPrint(path);
-                                                      //   debugPrint(
-                                                      //       "Recorded file size: ${File(path).lengthSync()}");
-                                                      // }
                                                     } else {
                                                       noteProvider
                                                           .commentRecord(); // Path is optional
@@ -712,19 +843,11 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                     noteProvider.setRecording(
                                                         !noteProvider
                                                             .isRecording);
-                                                    // setState(() {
-                                                    //   isRecording =
-                                                    //       !isRecording;
-                                                    // });
                                                   }
-                                                  // if (noteProvider
-                                                  //     .controller.isRecording) {
-                                                  //   noteProvider.commentStop();
-                                                  // } else {
-                                                  //   noteProvider
-                                                  //       .commentRecord();
-                                                  // }
                                                 },
+
+                                                // showing the icon based on the condition
+
                                                 child: Icon(
                                                   noteProvider.isRecording
                                                       ? Icons.stop
@@ -733,6 +856,9 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                   size: 30,
                                                 ),
                                               )
+
+                                            //  also for the subcomment
+
                                             : noteProvider.isSubCommentReplying
                                                 ? GestureDetector(
                                                     onTap: () async {
@@ -745,50 +871,6 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                         noteProvider
                                                             .subCommentRecord();
                                                       }
-                                                      // try {
-                                                      //   if (noteProvider
-                                                      //       .isRecording) {
-                                                      //     recorderController
-                                                      //         .reset();
-
-                                                      //     String? path =
-                                                      //         await recorderController
-                                                      //             .stop(false);
-
-                                                      //     if (path != null) {
-                                                      //       noteProvider
-                                                      //           .setSubCommentNoteFile(
-                                                      //               File(path));
-                                                      //       debugPrint(path);
-                                                      //       debugPrint(
-                                                      //           "Recorded file size: ${File(path).lengthSync()}");
-                                                      //     }
-                                                      //   } else {
-                                                      //     var id =
-                                                      //         const Uuid().v4();
-                                                      //     Directory appDocDir =
-                                                      //         await getApplicationDocumentsDirectory();
-                                                      //     String appDocPath =
-                                                      //         appDocDir.path;
-                                                      //     String? path =
-                                                      //         '$appDocPath/$id.flac';
-                                                      //     await recorderController
-                                                      //         .record(
-                                                      //             path:
-                                                      //                 path); // Path is optional
-                                                      //   }
-                                                      // } catch (e) {
-                                                      //   debugPrint(
-                                                      //       e.toString());
-                                                      // } finally {
-                                                      //   noteProvider.setRecording(
-                                                      //       !noteProvider
-                                                      //           .isRecording);
-                                                      //   // setState(() {
-                                                      //   //   isRecording =
-                                                      //   //       !isRecording;
-                                                      //   // });
-                                                      // }
                                                     },
                                                     child: Icon(
                                                       noteProvider.isRecording
@@ -798,59 +880,20 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                       size: 30,
                                                     ),
                                                   )
+
+                                                //  same condition for this
+
                                                 : GestureDetector(
                                                     onTap: () async {
                                                       if (await noteProvider
                                                           .recorder
                                                           .isRecording()) {
-                                                        noteProvider.stop();
+                                                        noteProvider
+                                                            .stop(context);
                                                       } else {
-                                                        noteProvider.record();
+                                                        noteProvider
+                                                            .record(context);
                                                       }
-                                                      // try {
-                                                      //   if (noteProvider
-                                                      //       .isRecording) {
-                                                      //     recorderController
-                                                      //         .reset();
-
-                                                      //     String? path =
-                                                      //         await recorderController
-                                                      //             .stop(false);
-
-                                                      //     if (path != null) {
-                                                      //       noteProvider
-                                                      //           .setVoiceNote(
-                                                      //               File(path));
-                                                      //       debugPrint(path);
-                                                      //       debugPrint(
-                                                      //           "Recorded file size: ${File(path).lengthSync()}");
-                                                      //     }
-                                                      //   } else {
-                                                      //     var id =
-                                                      //         const Uuid().v4();
-                                                      //     Directory appDocDir =
-                                                      //         await getApplicationDocumentsDirectory();
-                                                      //     String appDocPath =
-                                                      //         appDocDir.path;
-                                                      //     String? path =
-                                                      //         '$appDocPath/$id.flac';
-                                                      //     await recorderController
-                                                      //         .record(
-                                                      //             path:
-                                                      //                 path); // Path is optional
-                                                      //   }
-                                                      // } catch (e) {
-                                                      //   debugPrint(
-                                                      //       e.toString());
-                                                      // } finally {
-                                                      //   noteProvider.setRecording(
-                                                      //       !noteProvider
-                                                      //           .isRecording);
-                                                      //   // setState(() {
-                                                      //   //   isRecording =
-                                                      //   //       !isRecording;
-                                                      //   // });
-                                                      // }
                                                     },
                                                     child: Icon(
                                                       noteProvider.isRecording

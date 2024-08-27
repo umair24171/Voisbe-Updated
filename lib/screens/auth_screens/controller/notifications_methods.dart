@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
+import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 
 class NotificationMethods {
   // for getting and updating the pushToken in firestore
@@ -14,28 +15,36 @@ class NotificationMethods {
     await messaging.requestPermission();
     await messaging.getToken().then((pushToken) {
       if (pushToken != null) {
-        debugPrint('Push Token: $pushToken');
+        log('Push Token: $pushToken');
         token = pushToken;
       }
     });
     return token;
   }
 
-  static Future<void> sendPushNotification(
-      String pushToken, String msg, String userName) async {
+  static Future<void> sendPushNotification(String? userUid, String pushToken,
+      String msg, String userName, String screenName, String noteId) async {
     try {
+      DocumentSnapshot<Map<String, dynamic>> userData = await FirebaseFirestore
+          .instance
+          .collection('users')
+          .doc(userUid)
+          .get();
+      UserModel user = UserModel.fromMap(userData.data()!);
       final body = {
-        "to": pushToken,
+        "to": user.token,
         "notification": {
           "title": userName,
           "body": msg,
           "android_channel_id": "chats",
         },
-        // "data": {
-        //   "screen": "chat",
-        // },
+        "data": {
+          "screen": screenName,
+          "title": userName,
+          "body": msg,
+          "postId": noteId,
+        }
       };
-
       var res = await post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
           headers: {
             HttpHeaders.contentTypeHeader: 'application/json',

@@ -22,12 +22,16 @@ class OtherContactButtons extends StatelessWidget {
         text = 'Requested';
       } else if (otherUser.followers.contains(currentUSer.uid)) {
         text = 'Following';
+      } else if (otherUser.following.contains(currentUSer.uid)) {
+        text = 'Follow back';
       } else {
         text = 'Follow';
       }
     } else {
       if (otherUser.followers.contains(currentUSer!.uid)) {
         text = 'Following';
+      } else if (otherUser.following.contains(currentUSer.uid)) {
+        text = 'Follow back';
       } else {
         text = 'Follow';
       }
@@ -105,9 +109,9 @@ class CustomContactButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        width: 95,
+        width: 100,
         height: 35,
-        // padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+        // padding: EdgeInsets.symmetric(horizontal: 2),
         decoration: BoxDecoration(
           color: primaryColor,
           borderRadius: BorderRadius.circular(18),
@@ -127,11 +131,11 @@ class CustomContactButton extends StatelessWidget {
                     height: 20,
                     width: 20,
                   ),
-            const SizedBox(
-              width: 5,
+            SizedBox(
+              width: isMsg ? 0 : 5,
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 4),
+              padding: EdgeInsets.only(top: 4, left: isMsg ? 0 : 2),
               child: Text(
                 text,
                 style: TextStyle(

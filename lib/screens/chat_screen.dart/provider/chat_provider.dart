@@ -9,33 +9,59 @@ import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/chat_screen.dart/model/recent_chat_model.dart';
 
 class ChatProvider with ChangeNotifier {
+  //  getting the all the users
+
   final List<UserModel> _users = [];
   List<UserModel> get users => _users;
+
+  //  getting search text
+
   String searchText = '';
   // String get searchText => _searchText;
+
+  //  initially the value of the search would be false
+
   bool _isSearching = false;
   bool get isSearching => _isSearching;
+
+  //  creating the instance of the firestore
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  // String messageRead = '';
+
+  //  creating the empty list to get the recent chat user
+
   List<RecentChatModel> recentChats = [];
+
+  //  creating the list for searched chats
+
   List<RecentChatModel> searchedChats = [];
 
+  //  creating the list for the searched users
+
   List<UserModel> searchedUSers = [];
+
+  //  adding the searched users thorugh the function
 
   addSearchedUsers(UserModel user) {
     searchedUSers.add(user);
     notifyListeners();
   }
 
+//  clearing the seached users
+
   clearSearchedUser() {
     searchedUSers.clear();
     notifyListeners();
   }
 
+  //  add recent chat
+
   addOneRecentChat(RecentChatModel recentChat) {
     recentChats.add(recentChat);
     notifyListeners();
   }
+
+  //  getting recent chats based on time
 
   getRecentChats() async {
     final currentUserUid = FirebaseAuth.instance.currentUser!.uid;
@@ -63,6 +89,8 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
+  //   updating the message read status
+
   updateMessageRead(
     String conversationId,
     String chatId,
@@ -81,15 +109,21 @@ class ChatProvider with ChangeNotifier {
     });
   }
 
+//  changing the value of the search
+
   void changeSearchStatus(bool status) {
     _isSearching = status;
     notifyListeners();
   }
 
+//  setting the value of the search text
+
   setSearchText(String text) {
     searchText = text;
     notifyListeners();
   }
+
+  //  getting all the users to chat with except for the current user
 
   getAllUsersForChat() async {
     try {
@@ -110,6 +144,8 @@ class ChatProvider with ChangeNotifier {
   }
 
   bool isMessageReq = false;
+
+  //  changing the message req status
 
   void changeMessageReqStatus(bool status) {
     isMessageReq = status;

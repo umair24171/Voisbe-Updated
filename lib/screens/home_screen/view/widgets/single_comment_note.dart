@@ -10,6 +10,7 @@ import 'package:flutter_svg/svg.dart';
 // import 'package:flutter_svg/svg.dart';
 // import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:flutter/widgets.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/add_note_screen/provider/note_provider.dart';
@@ -22,9 +23,7 @@ import 'package:social_notes/screens/home_screen/view/widgets/comments_player.da
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
 import 'package:social_notes/screens/user_profile/view/widgets/custom_player.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:audio_waveforms/audio_waveforms.dart' as audi;
-import 'package:uuid/uuid.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class SingleCommentNote extends StatefulWidget {
   const SingleCommentNote(
@@ -37,6 +36,9 @@ class SingleCommentNote extends StatefulWidget {
       required this.player,
       required this.position,
       required this.isPlaying,
+      required this.postUserId,
+      required this.getStreamComments,
+      required this.stopMainPlayer,
       required this.changeIndex,
       required this.subscriberCommentIndex});
   final CommentModel commentModel;
@@ -49,45 +51,114 @@ class SingleCommentNote extends StatefulWidget {
   final int changeIndex;
   final bool isPlaying;
   final Duration position;
+  final VoidCallback stopMainPlayer;
+  final String postUserId;
+  final VoidCallback getStreamComments;
 
   @override
   State<SingleCommentNote> createState() => _SingleCommentNoteState();
 }
 
 class _SingleCommentNoteState extends State<SingleCommentNote> {
-  late final audi.RecorderController recorderController;
-  // Future<String> getOutputPath() async {
-  //   final directory = await getExternalStorageDirectory();
-  //   final outputPath = '${directory?.path}/output_audio.wav';
-  //   return outputPath;
+  // late final audi.RecorderController recorderController;
+  // // Future<String> getOutputPath() async {
+  // //   final directory = await getExternalStorageDirectory();
+  // //   final outputPath = '${directory?.path}/output_audio.wav';
+  // //   return outputPath;
+  // // }
+
+  // void _initialiseControllers() {
+  //   recorderController = audi.RecorderController()
+  //     ..androidEncoder = audi.AndroidEncoder.aac
+  //     ..androidOutputFormat = audi.AndroidOutputFormat.mpeg4
+  //     ..iosEncoder = audi.IosEncoder.kAudioFormatMPEG4AAC
+  //     ..sampleRate = 44100;
   // }
 
-  void _initialiseControllers() {
-    recorderController = audi.RecorderController()
-      ..androidEncoder = audi.AndroidEncoder.aac
-      ..androidOutputFormat = audi.AndroidOutputFormat.mpeg4
-      ..iosEncoder = audi.IosEncoder.kAudioFormatMPEG4AAC
-      ..sampleRate = 44100;
-  }
+  // @override
+  // void initState() {
+  //   _initialiseControllers();
+  //   super.initState();
+  // }
 
-  @override
-  void initState() {
-    _initialiseControllers();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    recorderController.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   recorderController.dispose();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
     var currentUser = Provider.of<UserProvider>(context, listen: false).user;
+    bool canDismiss = widget.commentModel.userId == currentUser!.uid ||
+        widget.postUserId == currentUser.uid;
     // var userProvider = Provider.of<UserProvider>(context, listen: false).user;
     // var subCommentProvider =
     // Provider.of<DisplayNotesProvider>(context, listen: false);
+    return Slidable(
+      direction: Axis.horizontal,
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+              padding: const EdgeInsets.all(0),
+              onPressed: (context) async {
+                if (canDismiss) {
+                  await FirebaseFirestore.instance
+                      .collection('notes')
+                      .doc(widget.commentModel.postId)
+                      .collection('comments')
+                      .doc(widget.commentModel.commentid)
+                      .delete();
+                } else {
+                  var currentUser =
+                      Provider.of<UserProvider>(context, listen: false).user;
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+
+                  if (prefs.getStringList(currentUser!.uid) != null) {
+                    List<String>? commentIds =
+                        prefs.getStringList(currentUser.uid);
+                    commentIds == null
+                        ? prefs.setStringList(
+                            currentUser.uid, [widget.commentModel.commentid])
+                        : commentIds.add(widget.commentModel.commentid);
+                    prefs.setStringList(currentUser.uid, commentIds!);
+                  } else {
+                    prefs.setStringList(
+                        currentUser.uid, [widget.commentModel.commentid]);
+                  }
+                  widget.getStreamComments();
+                }
+              },
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
+              flex: 4,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(0),
+                topLeft: Radius.circular(0),
+              ),
+              autoClose: true,
+              icon: Icons.delete,
+              label: "Delete"),
+        ],
+      ),
+      child: BuildCommentContent(widget: widget),
+    );
+    // : BuildCommentContent(widget: widget);
+  }
+}
+
+class BuildCommentContent extends StatelessWidget {
+  const BuildCommentContent({
+    super.key,
+    required this.widget,
+  });
+
+  final SingleCommentNote widget;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
         Padding(
@@ -313,7 +384,7 @@ class _SingleCommentNoteState extends State<SingleCommentNote> {
                                     color: commentModel1.likes.contains(
                                             FirebaseAuth
                                                 .instance.currentUser!.uid)
-                                        ? Colors.red
+                                        ? primaryColor
                                         : Colors.black,
                                   );
                                 } else {
@@ -342,7 +413,7 @@ class _SingleCommentNoteState extends State<SingleCommentNote> {
                   SubCommentModel subCommentModel = SubCommentModel.fromMap(
                       snapshot.data!.docs[index].data());
                   return Padding(
-                    padding: const EdgeInsets.only(left: 10, bottom: 10),
+                    padding: const EdgeInsets.only(left: 40, bottom: 10),
                     child: Row(
                       // mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,6 +556,8 @@ class _SingleCommentNoteState extends State<SingleCommentNote> {
                                 ],
                               ),
                               CustomProgressPlayer(
+                                  lockPosts: [],
+                                  stopMainPlayer: widget.stopMainPlayer,
                                   isSubCommentPlayer: true,
                                   isComment: true,
                                   commentId: subCommentModel.subCommentId,

@@ -1,29 +1,43 @@
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 
+import 'dart:convert';
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_notification_channel/flutter_notification_channel.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_notification_channel/flutter_notification_channel.dart'
+    as noti;
 import 'package:flutter_notification_channel/notification_importance.dart';
-import 'package:flutter_notification_channel/notification_visibility.dart';
+import 'package:flutter_notification_channel/notification_visibility.dart'
+    as notiVi;
 import 'package:provider/provider.dart';
 import 'package:social_notes/firebase_options.dart';
 import 'package:social_notes/resources/colors.dart';
+import 'package:social_notes/screens/add_note_screen/controllers/add_note_controller.dart';
+import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
 import 'package:social_notes/screens/add_note_screen/provider/note_provider.dart';
-import 'package:social_notes/screens/audio_provider.dart';
+import 'package:social_notes/screens/add_note_screen/provider/pexels_provider.dart';
+import 'package:social_notes/screens/add_note_screen/provider/player_provider.dart';
+import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 // import 'package:social_notes/screens/add_note_screen.dart/view/add_note_screen.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
-import 'package:social_notes/screens/auth_screens/view/auth_screen.dart';
+import 'package:social_notes/screens/bottom_provider.dart';
 // import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dart';
+import 'package:social_notes/screens/chat_screen.dart/view/users_screen.dart';
 
 import 'package:social_notes/screens/custom_bottom_bar.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 import 'package:social_notes/screens/home_screen/view/home_screen.dart';
-import 'package:social_notes/screens/main_audio_testing.dart';
 import 'package:social_notes/screens/notifications_screen/controller/notification_provider.dart';
-// import 'package:social_notes/screens/profile_screen/controller/update_profile_controller.dart';
+import 'package:social_notes/screens/notifications_screen/notifications_screen.dart';
+import 'package:social_notes/screens/notifictaions_methods/notification_methods.dart';
 import 'package:social_notes/screens/profile_screen/profile_screen.dart';
 import 'package:social_notes/screens/profile_screen/provider.dart/update_profile_provider.dart';
 import 'package:social_notes/screens/search_screen/view/provider/search_screen_provider.dart';
@@ -34,18 +48,15 @@ import 'package:social_notes/screens/upload_sounds/provider/sound_provider.dart'
 import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
 import 'package:social_notes/splash_screen.dart';
 import "package:flutter_stripe/flutter_stripe.dart";
-// // import 'package:social_notes/screens/user_profile/view/widgets/custom_player.dart';
-// // import 'package:social_notes/splash_screen.dart';
-// // import 'package:social_notes/splash_screen.dart';
-// // import './screens/auth_screens/providers/auth_provider.dart'
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 flutterNotificationChannel() async {
-  await FlutterNotificationChannel().registerNotificationChannel(
+  await noti.FlutterNotificationChannel().registerNotificationChannel(
     description: 'Channel for Voisbe Chats',
     id: 'chats',
     importance: NotificationImportance.IMPORTANCE_HIGH,
     name: 'Chats',
-    visibility: NotificationVisibility.VISIBILITY_PUBLIC,
+    visibility: notiVi.NotificationVisibility.VISIBILITY_PUBLIC,
     allowBubbles: true,
     enableVibration: true,
     enableSound: true,
@@ -53,11 +64,74 @@ flutterNotificationChannel() async {
   );
 }
 
+void _showNotification(
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin,
+  String title,
+  String body,
+  String? payload,
+) async {
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails(
+    'chats',
+    'Chats',
+    importance: Importance.high,
+    priority: Priority.high,
+    showWhen: false,
+  );
+  const NotificationDetails platformChannelSpecifics =
+      NotificationDetails(android: androidPlatformChannelSpecifics);
+
+  await flutterLocalNotificationsPlugin.show(
+    0,
+    title,
+    body,
+    platformChannelSpecifics,
+    payload: payload,
+  );
+}
+
+// void _handleNotificationClick(String? payload) {
+//   if (payload == null) return;
+
+//   if (payload == 'chat') {
+//     navigatorKey.currentState?.pushNamed('/users');
+//   } else if (payload == 'notification') {
+//     navigatorKey.currentState?.pushNamed('/notifications');
+//   } else {
+//     // Handle other payloads or parse more complex payloads
+//     final data = jsonDecode(payload);
+//     if (data['screen'] == 'chat' && data['userId'] != null) {
+//       navigatorKey.currentState?.pushNamed('/chat', arguments: data['userId']);
+//     }
+//   }
+// }
+
+Future<void> _initializeNotifications() async {
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/launcher_icon');
+
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+  );
+}
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  Stripe.publishableKey = 'pk_live_VQmRjrzGsFLF6U2yE0bXdThg';
+  await Stripe.instance.applySettings();
   flutterNotificationChannel();
+  _initializeNotifications();
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(
       create: (context) => UserProvider(),
@@ -101,6 +175,25 @@ void main() async {
     ChangeNotifierProvider(
       create: (context) => PaymentController(),
     ),
+    ChangeNotifierProvider(
+      create: (context) => PexelsProvider(),
+    ),
+    ChangeNotifierProvider(
+      create: (context) => PlayerProvider(),
+    ),
+    // ChangeNotifierProvider(create: (_) => VideoPlayerManager()),
+    ChangeNotifierProvider(
+      create: (context) => BottomProvider(),
+    ),
+    // ChangeNotifierProvider(
+    //   create: (context) => SearchPlayerProvider(),
+    // ),
+    // ChangeNotifierProvider(
+    //   create: (context) => EditedInfo(),
+    // ),
+    // ChangeNotifierProvider(
+    //   create: (context) => PlayerProvider(),
+    // ),
   ], child: const MyApp()));
 }
 
@@ -112,24 +205,101 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   @override
   void initState() {
     super.initState();
     // SpotifyClass().getToken(context);
     // SpotifyClass().getRefreshToken();
+    // getALlPostsANdUpdate();
+    _removeChatNotifications();
+    CheckNotificationClickDataSourceImpl().checkNotificationClick(context);
+    CheckNotificationClickDataSourceImpl().setupInteractedMessage();
+
+    clearNotifications();
+    checkUserData();
+  }
+
+  Future<void> _removeChatNotifications() async {
+    final pendingNotificationRequests =
+        await flutterLocalNotificationsPlugin.pendingNotificationRequests();
+    await flutterLocalNotificationsPlugin
+        .cancelAll(); // Cancel all pending notifications
+  }
+
+  Future<void> clearNotifications() async {
+    await flutterLocalNotificationsPlugin
+        .cancelAll(); // Cancel all pending notifications
+  }
+
+  checkUserData() async {
+    try {
+      if (FirebaseAuth.instance.currentUser != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .get()
+            .then((value) {
+          if (value.exists) {
+            UserModel user = UserModel.fromMap(value.data()!);
+            if (user.name.isEmpty || user.photoUrl.isEmpty) {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => ProfileScreen(),
+              ));
+            }
+          }
+        });
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
+  getALlPostsANdUpdate() async {
+    await FirebaseFirestore.instance
+        .collection('notes')
+        .get()
+        .then((value) async {
+      List<NoteModel> notes =
+          value.docs.map((e) => NoteModel.fromMap(e.data())).toList();
+      for (var note in notes) {
+        if (note.backgroundType.contains('video')) {
+          final uint8list = await VideoThumbnail.thumbnailData(
+            video: note.backgroundImage,
+            imageFormat: ImageFormat.JPEG,
+            maxHeight: (MediaQuery.of(context).size.height * 1.5)
+                .toInt(), // Further reduced dimensions
+            maxWidth: (MediaQuery.of(context).size.width * 1.5)
+                .toInt(), // Further reduced dimensions
+            quality: 100, // Reduced quality for faster generation
+          );
+          String videoThumbNail = await AddNoteController()
+              .uploadUint('thumbnails', uint8list!, context);
+          await FirebaseFirestore.instance
+              .collection('notes')
+              .doc(note.noteId)
+              .update({'videoThumbnail': videoThumbNail});
+          log('Update ${note.noteId}');
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Voisbe',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple, background: primaryColor),
+            seedColor: Colors.deepPurple, background: whiteColor),
         useMaterial3: true,
       ),
       home:
+          // MyHomePage(),
+          //  const Home(),
           //  AudioTesting(),
           //  CustomProgressPlayer(
           //   height: 80,
@@ -143,13 +313,17 @@ class _MyAppState extends State<MyApp> {
           const SplashScreen(),
       routes: {
         ProfileScreen.routeName: (context) => ProfileScreen(),
-        HomeScreen.routeName: (context) => const HomeScreen(),
+        HomeScreen.routeName: (context) => HomeScreen(),
         SubscribeScreen.routeName: (context) => const SubscribeScreen(),
+        '/chat': (context) => const UsersScreen(),
+        '/notifications': (context) => const NotificationScreen(),
         // AddHashtagsScreen.routeName: (context) => AddHashtagsScreen(),
         // SelectTopicScreen.routeName: (context) => SelectTopicScreen(
         //       title: '',
         //     ),
         BottomBar.routeName: (context) => const BottomBar(),
+        // '/': (context) => const Home(),
+        // '/editor': (context) => const Editor(),
       },
     );
   }

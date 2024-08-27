@@ -6,13 +6,21 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:audioplayers/audioplayers.dart' as audo;
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:flutter/widgets.dart';
 import 'package:simple_waveform_progressbar/simple_waveform_progressbar.dart';
 import 'package:social_notes/resources/colors.dart';
 
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
+import 'package:social_notes/screens/home_screen/view/widgets/main_player.dart';
+import 'package:social_notes/screens/subscribe_screen.dart/view/subscribe_screen.dart';
+import 'package:uuid/uuid.dart';
+import 'package:waveform_extractor/waveform_extractor.dart';
 
 class CustomProgressPlayer extends StatefulWidget {
   CustomProgressPlayer(
@@ -36,7 +44,10 @@ class CustomProgressPlayer extends StatefulWidget {
       this.isReceivingMsg = false,
       this.isListView = false,
       this.isChatUserPlayer = false,
+      this.isFeedDetail = false,
       this.isSubCommentPlayer = false,
+      required this.stopMainPlayer,
+      required this.lockPosts,
       this.waveColor})
       : super(key: key);
 
@@ -61,42 +72,113 @@ class CustomProgressPlayer extends StatefulWidget {
   bool isSubCommentPlayer;
   bool isReceivingMsg;
   bool isListView;
+  final VoidCallback stopMainPlayer;
+  final List<int> lockPosts;
+  bool isFeedDetail;
+  // final List<int> lockPosts;
   // bool isMe
   @override
   State<CustomProgressPlayer> createState() => _CustomProgressPlayerState();
 }
 
 class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
+  late ScrollController _scrollController;
+  String? _cachedFilePath;
+  final waveformExtractor = WaveformExtractor();
+  List<double> waveForm = [];
   var _player = AudioPlayer();
+  var audoPlayer = audo.AudioPlayer();
+
   bool isPlaying = false;
   bool isBuffering = false;
   double _playbackSpeed = 1.0;
   Duration duration = Duration.zero;
   Duration position = Duration.zero;
 
+  Future<void> extractWavedata() async {
+    if (widget.isChatUserPlayer) {
+      String uniqueKEy = const Uuid().v4();
+
+      final result = await waveformExtractor.extractWaveform(
+        widget.noteUrl,
+        // samplePerSecond: dynamicSamples,
+        useCache: true,
+        cacheKey: uniqueKEy,
+      );
+      List<int> waveForms = result.waveformData;
+
+      if (mounted) {
+        setState(() {
+          waveForm =
+              waveForms.map((int e) => e < 1 ? 6.0 : e.toDouble()).toList();
+        });
+      }
+    } else {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String cacheKey = widget.postId!;
+      log('cacheKey is $cacheKey');
+
+      List<String>? cachedData = prefs.getStringList(cacheKey);
+
+      if (cachedData != null && cachedData.isNotEmpty) {
+        waveForm = cachedData.map((e) => double.tryParse(e) ?? 6.0).toList();
+        if (mounted) {
+          setState(() {
+            waveForm = waveForm.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
+          });
+        }
+      } else {
+        final result = await waveformExtractor.extractWaveform(
+          widget.noteUrl,
+          useCache: true,
+          cacheKey: cacheKey,
+        );
+        List<int> waveForms = result.waveformData;
+
+        if (mounted) {
+          setState(() {
+            waveForm =
+                waveForms.map((int e) => e < 1 ? 6.0 : e.toDouble()).toList();
+          });
+        }
+
+        await prefs.setStringList(
+            cacheKey, waveForms.map((e) => e.toString()).toList());
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
+    extractWavedata();
     _player = AudioPlayer();
     //  _audioPlayer.setReleaseMode(ReleaseMode.stop);
 
     _init();
     _player.playerStateStream.listen((event) {
       if (event.processingState == ProcessingState.completed) {
-        setState(() {
-          isPlaying = false;
-        });
+        if (mounted) {
+          setState(() {
+            isPlaying = false;
+          });
+        }
       }
     });
     _player.playingStream.listen((event) {
       if (event == true) {
-        setState(() {
-          isPlaying = true;
-        });
+        if (mounted) {
+          setState(() {
+            isPlaying = true;
+          });
+        }
       } else {
-        setState(() {
-          isPlaying = false;
-        });
+        if (mounted) {
+          setState(() {
+            isPlaying = false;
+          });
+        }
       }
     });
     if (widget.isMainPlayer && widget.stopOtherPlayer != null) {
@@ -147,6 +229,9 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
 
   playAudio() async {
     try {
+      if (widget.isSubCommentPlayer) {
+        widget.stopMainPlayer();
+      }
       setState(() {
         isPlaying = true;
       });
@@ -170,7 +255,16 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
 
   @override
   void dispose() {
+    _player.stop();
     _player.dispose();
+    // Cancel all listeners
+    _player.playerStateStream.drain();
+    _player.playingStream.drain();
+    _player.playbackEventStream.drain();
+    _player.durationStream.drain();
+    _player.positionStream.drain();
+    _player.processingStateStream.drain();
+
     duration = Duration.zero;
     position = Duration.zero;
 
@@ -206,10 +300,10 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    // log('Waveform: $doubleWaveformData');
+    log('Waveform: $waveForm');
     // checkAutoPlay();
     return Padding(
-      padding: EdgeInsets.only(left: 2),
+      padding: const EdgeInsets.only(left: 2),
       child: Center(
         child: Container(
           height: widget.mainHeight,
@@ -222,17 +316,17 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (widget.title != null)
-                widget.title!.isNotEmpty
-                    ? Text(
-                        widget.title!.toUpperCase(),
-                        style: TextStyle(
-                            fontFamily: fontFamily,
-                            fontSize: 8,
-                            fontWeight: FontWeight.w600,
-                            color: primaryColor),
-                      )
-                    : SizedBox(),
+              // if (widget.title != null)
+              //   widget.title!.isNotEmpty
+              //       ? Text(
+              //           widget.title!.toUpperCase(),
+              //           style: TextStyle(
+              //               fontFamily: fontFamily,
+              //               fontSize: 8,
+              //               fontWeight: FontWeight.w600,
+              //               color: primaryColor),
+              //         )
+              //       : const SizedBox(),
               Padding(
                 padding: EdgeInsets.symmetric(
                         vertical:
@@ -248,123 +342,273 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
                     if (widget.isMainPlayer)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: InkWell(
-                          splashColor: Colors.transparent,
-                          onTap: isPlaying ? stopAudio : playAudio,
-                          child: Consumer<FilterProvider>(
-                              builder: (context, filterPro, _) {
-                            return Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: widget.isProfilePlayer
-                                      ? primaryColor
-                                      : filterPro.selectedFilter
-                                              .contains('Close Friends')
-                                          ? greenColor
-                                          : widget.waveColor ?? primaryColor,
-                                  // border: Border.all(
-                                  //   color: widget.waveColor ?? primaryColor,
-                                  //   width: 2,
-                                  // ),
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                // onPressed: playPause,
-                                child: isPlaying
-                                    ? Icon(
-                                        Icons.pause_outlined,
-                                        color: whiteColor,
-                                        size: 20,
-                                      )
-                                    // : _playerState == PlayerState.paused
-                                    //     ?
-                                    //  Icon(
-                                    //     Icons.pause_outlined,
-                                    //     color: whiteColor,
-                                    //     size: 20,
-                                    //   )
-                                    : Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.play_arrow,
-                                            color: whiteColor,
-                                            size: 20,
-                                          ),
-                                        ],
+                        child: widget.lockPosts.contains(0)
+                            ? GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => SubscribeScreen(),
                                       ));
-                          }),
-                        ),
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(18),
+                                  decoration: BoxDecoration(
+                                    border: widget.isProfilePlayer
+                                        ? Border.all(
+                                            color: primaryColor, width: 5)
+                                        : null,
+                                    color: whiteColor,
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  // onPressed: playPause,
+                                  child: SvgPicture.asset(
+                                    'assets/icons/Lock.svg',
+                                    color: primaryColor,
+                                  ),
+                                ),
+                              )
+                            : InkWell(
+                                splashColor: Colors.transparent,
+                                onTap: isPlaying ? stopAudio : playAudio,
+                                child: Consumer<FilterProvider>(
+                                    builder: (context, filterPro, _) {
+                                  return Container(
+                                      padding: const EdgeInsets.all(18),
+                                      decoration: BoxDecoration(
+                                        border: widget.isProfilePlayer
+                                            ? Border.all(
+                                                color: primaryColor, width: 5)
+                                            : null,
+                                        color: widget.isProfilePlayer
+                                            ? whiteColor
+                                            : filterPro.selectedFilter
+                                                    .contains('Close Friends')
+                                                ? greenColor
+                                                : widget.waveColor ??
+                                                    primaryColor,
+                                        // border: Border.all(
+                                        //   color: widget.waveColor ?? primaryColor,
+                                        //   width: 2,
+                                        // ),
+                                        borderRadius: BorderRadius.circular(50),
+                                      ),
+                                      // onPressed: playPause,
+                                      child: isPlaying
+                                          ? Icon(
+                                              Icons.pause_outlined,
+                                              color: widget.isProfilePlayer
+                                                  ? primaryColor
+                                                  : whiteColor,
+                                              size: 20,
+                                            )
+                                          // : _playerState == PlayerState.paused
+                                          //     ?
+                                          //  Icon(
+                                          //     Icons.pause_outlined,
+                                          //     color: whiteColor,
+                                          //     size: 20,
+                                          //   )
+                                          : Stack(
+                                              alignment: Alignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.play_arrow,
+                                                  color: widget.isProfilePlayer
+                                                      ? primaryColor
+                                                      : whiteColor,
+                                                  size: 20,
+                                                ),
+                                              ],
+                                            ));
+                                }),
+                              ),
                       )
                     else
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: InkWell(
-                          splashColor: Colors.transparent,
-                          onTap: isPlaying ? stopAudio : playAudio,
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: whiteColor,
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            // onPressed: playPause,
-                            child: isPlaying
-                                ? Icon(
-                                    Icons.pause,
-                                    color: widget.backgroundColor,
-                                    size: widget.size,
-                                  )
-                                : Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.play_arrow,
-                                        color: widget.backgroundColor,
-                                        size: widget.size,
-                                      ),
-                                    ],
+                        child: widget.lockPosts.contains(0)
+                            ? GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => SubscribeScreen(),
+                                      ));
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: whiteColor,
+                                    borderRadius: BorderRadius.circular(50),
                                   ),
-                          ),
-                        ),
+                                  // onPressed: playPause,
+                                  child:
+                                      SvgPicture.asset('assets/icons/Lock.svg'),
+                                ),
+                              )
+                            : InkWell(
+                                splashColor: Colors.transparent,
+                                onTap: isPlaying ? stopAudio : playAudio,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: whiteColor,
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  // onPressed: playPause,
+                                  child: isPlaying
+                                      ? Icon(
+                                          Icons.pause,
+                                          color: widget.backgroundColor,
+                                          size: widget.size,
+                                        )
+                                      : Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.play_arrow,
+                                              color: widget.backgroundColor,
+                                              size: widget.size,
+                                            ),
+                                          ],
+                                        ),
+                                ),
+                              ),
                       ),
                     SizedBox(
                         height: widget.height,
                         width: widget.width,
                         child: Consumer<FilterProvider>(
                             builder: (context, filterPro, _) {
-                          return WaveformProgressbar(
-                            color: widget.isProfilePlayer
-                                ? primaryColor.withOpacity(0.5)
-                                : filterPro.selectedFilter
-                                        .contains('Close Friends')
-                                    ? whiteColor.withOpacity(0.5)
-                                    : widget.isMainPlayer
-                                        ? primaryColor.withOpacity(0.5)
-                                        : widget.waveColor!.withOpacity(0.5),
-                            // widget.waveColor == null
-                            //     ? primaryColor
-                            //     : widget.waveColor!,
-                            progressColor: widget.isProfilePlayer
-                                ? primaryColor
-                                : filterPro.selectedFilter
-                                        .contains('Close Friends')
-                                    ? whiteColor
-                                    : widget.isMainPlayer
-                                        ? primaryColor
-                                        : widget.waveColor ?? primaryColor,
-                            // widget.waveColor == null
-                            //     ? greenColor
-                            //     : widget.waveColor!,
-                            progress: position.inSeconds / duration.inSeconds,
-                            onTap: (progress) {
-                              Duration seekPosition = Duration(
-                                  seconds:
-                                      (progress * duration.inSeconds).round());
-                              // Duration seekPosition =
-                              //     Duration(seconds: progress.toInt());
-                              _player.seek(seekPosition);
-                            },
-                          );
+                          return SingleChildScrollView(
+                              controller: _scrollController,
+                              scrollDirection: Axis.horizontal,
+                              child: GestureDetector(
+                                onHorizontalDragStart: (details) {
+                                  if (!widget.lockPosts.contains(0)) {
+                                    final position = details.localPosition.dx /
+                                        widget.width *
+                                        duration.inMilliseconds;
+                                    final seekPosition = Duration(
+                                        milliseconds: position.toInt());
+                                    _player.seek(seekPosition);
+                                  }
+                                },
+                                onHorizontalDragEnd: (details) {
+                                  if (!widget.lockPosts.contains(0)) {
+                                    final position = details.localPosition.dx /
+                                        widget.width *
+                                        duration.inMilliseconds;
+                                    final seekPosition = Duration(
+                                        milliseconds: position.toInt());
+                                    _player.seek(seekPosition);
+                                  }
+                                },
+                                onTapUp: (details) {
+                                  if (!widget.lockPosts.contains(0)) {
+                                    final position = details.localPosition.dx /
+                                        widget.width *
+                                        duration.inMilliseconds;
+                                    final seekPosition = Duration(
+                                        milliseconds: position.toInt());
+                                    _player.seek(seekPosition);
+                                  }
+                                  // scrollToPosition(seekPosition);
+                                },
+                                child: CustomPaint(
+                                  size: Size(widget.width, widget.height),
+                                  painter: RectangleActiveWaveformPainter(
+                                    onSeek: (p0) {
+                                      _player.seek(p0);
+                                    },
+                                    activeColor: widget.isProfilePlayer
+                                        ? whiteColor
+                                        : widget.isFeedDetail &&
+                                                filterPro.selectedFilter
+                                                    .contains('Close Friends')
+                                            ? greenColor
+                                            : widget.isProfilePlayer
+                                                ? primaryColor
+                                                : filterPro.selectedFilter
+                                                        .contains(
+                                                            'Close Friends')
+                                                    ? whiteColor
+                                                    : widget.isMainPlayer
+                                                        ? primaryColor
+                                                        : widget.waveColor ??
+                                                            primaryColor,
+                                    inactiveColor: widget.isProfilePlayer
+                                        ? whiteColor.withOpacity(0.5)
+                                        : widget.isFeedDetail &&
+                                                filterPro.selectedFilter
+                                                    .contains('Close Friends')
+                                            ? greenColor.withOpacity(0.5)
+                                            : widget.isProfilePlayer
+                                                ? primaryColor.withOpacity(0.5)
+                                                : filterPro.selectedFilter
+                                                        .contains(
+                                                            'Close Friends')
+                                                    ? whiteColor
+                                                        .withOpacity(0.5)
+                                                    : widget.isMainPlayer
+                                                        ? primaryColor
+                                                            .withOpacity(0.5)
+                                                        : widget.waveColor!
+                                                            .withOpacity(0.5),
+                                    scrollController: _scrollController,
+                                    duration: duration,
+                                    position: position,
+                                    style: PaintingStyle.fill,
+                                    activeSamples: waveForm,
+                                    borderColor: primaryColor.withOpacity(0.5),
+                                    sampleWidth: 2.5,
+                                    borderWidth: BorderSide.strokeAlignCenter,
+                                    color: filterPro.selectedFilter
+                                            .contains('Close Friends')
+                                        ? greenColor.withOpacity(0.5)
+                                        : primaryColor.withOpacity(0.5),
+                                    isCentered: true,
+                                    isRoundedRectangle: true,
+                                    waveformAlignment: WaveformAlignment.center,
+                                  ),
+                                ),
+                              ));
+                          // return WaveformProgressbar(
+                          //   color:
+                          // widget.isProfilePlayer
+                          //       ? primaryColor.withOpacity(0.5)
+                          //       : filterPro.selectedFilter
+                          //               .contains('Close Friends')
+                          //           ? whiteColor.withOpacity(0.5)
+                          //           : widget.isMainPlayer
+                          //               ? primaryColor.withOpacity(0.5)
+                          //               : widget.waveColor!.withOpacity(0.5),
+                          //   // widget.waveColor == null
+                          //   //     ? primaryColor
+                          //   //     : widget.waveColor!,
+                          //   progressColor:
+                          // widget.isProfilePlayer
+                          //       ? primaryColor
+                          //       : filterPro.selectedFilter
+                          //               .contains('Close Friends')
+                          //           ? whiteColor
+                          //           : widget.isMainPlayer
+                          //               ? primaryColor
+                          //               : widget.waveColor ?? primaryColor,
+                          //   // widget.waveColor == null
+                          //   //     ? greenColor
+                          //   //     : widget.waveColor!,
+                          //   progress: position.inSeconds / duration.inSeconds,
+                          //   onTap: (progress) {
+                          //     Duration seekPosition = Duration(
+                          //         seconds:
+                          //             (progress * duration.inSeconds).round());
+                          //     // Duration seekPosition =
+                          //     //     Duration(seconds: progress.toInt());
+                          //     _player.seek(seekPosition);
+                          //   },
+                          // );
                         })),
                     const SizedBox(
                       width: 10,
@@ -380,21 +624,24 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
                                     fontFamily: fontFamily,
                                     fontWeight: widget.isSubCommentPlayer
                                         ? null
-                                        : FontWeight.w600,
+                                        : FontWeight.w700,
                                     fontSize: widget.isSubCommentPlayer
                                         ? 12
                                         : widget.isProfilePlayer
-                                            ? 8
+                                            ? 10
                                             : 10,
-                                    color: widget.isChatUserPlayer
+                                    color: widget.isProfilePlayer
                                         ? whiteColor
-                                        : widget.isProfilePlayer
-                                            ? primaryColor
-                                            : filterPro.selectedFilter
-                                                    .contains('Close Friends')
-                                                ? greenColor
-                                                : widget.waveColor ??
-                                                    primaryColor,
+                                        : widget.isChatUserPlayer
+                                            ? whiteColor
+                                            : widget.isProfilePlayer
+                                                ? primaryColor
+                                                : filterPro.selectedFilter
+                                                        .contains(
+                                                            'Close Friends')
+                                                    ? greenColor
+                                                    : widget.waveColor ??
+                                                        primaryColor,
                                   ),
                                 )
                               : Text(
@@ -402,22 +649,25 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
                                   style: TextStyle(
                                     fontWeight: widget.isSubCommentPlayer
                                         ? null
-                                        : FontWeight.w600,
+                                        : FontWeight.w700,
                                     fontFamily: fontFamily,
                                     fontSize: widget.isSubCommentPlayer
                                         ? 12
                                         : widget.isProfilePlayer
-                                            ? 8
+                                            ? 10
                                             : 10,
-                                    color: widget.isChatUserPlayer
+                                    color: widget.isProfilePlayer
                                         ? whiteColor
-                                        : widget.isProfilePlayer
-                                            ? primaryColor
-                                            : filterPro.selectedFilter
-                                                    .contains('Close Friends')
-                                                ? greenColor
-                                                : widget.waveColor ??
-                                                    primaryColor,
+                                        : widget.isChatUserPlayer
+                                            ? whiteColor
+                                            : widget.isProfilePlayer
+                                                ? primaryColor
+                                                : filterPro.selectedFilter
+                                                        .contains(
+                                                            'Close Friends')
+                                                    ? greenColor
+                                                    : widget.waveColor ??
+                                                        primaryColor,
                                   ),
                                 ),
                           if (widget.waveColor == null)

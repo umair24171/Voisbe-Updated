@@ -25,10 +25,11 @@ class UpdateProfileController {
     String photoUrl,
     DateTime dateOfBirth,
     context,
+    String currentUid,
   ) async {
     try {
       Provider.of<UserProvider>(context, listen: false).setUserLoading(true);
-      _firestore.collection('users').doc(currentUser!.uid).update({
+      _firestore.collection('users').doc(currentUid).update({
         'photoUrl': photoUrl,
         'username': name,
         'name': username,

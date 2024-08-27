@@ -89,12 +89,24 @@ class RecentChats extends StatelessWidget {
                                             : isSeen
                                                 ? const Color(0xffefa69d)
                                                 : primaryColor)),
-                                child: CircleAvatar(
-                                    radius: 33,
-                                    backgroundImage: NetworkImage(
-                                        user.uid == recentChats[index].senderId
-                                            ? recentChats[index].receiverImage!
-                                            : recentChats[index].senderImage!)),
+                                child: StreamBuilder(
+                                    stream: FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(rec)
+                                        .snapshots(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        UserModel changeUSer =
+                                            UserModel.fromMap(
+                                                snapshot.data!.data()!);
+                                        return CircleAvatar(
+                                            radius: 33,
+                                            backgroundImage: NetworkImage(
+                                                changeUSer.photoUrl));
+                                      } else {
+                                        return Text('');
+                                      }
+                                    }),
                               ),
                               const SizedBox(
                                 height: 5,
