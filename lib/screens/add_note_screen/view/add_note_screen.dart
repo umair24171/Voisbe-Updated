@@ -469,8 +469,8 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                   noteProvider.voiceNote != null
                                       ? 'assets/icons/Upload_greyed.svg'
                                       : 'assets/icons/Upload.svg',
-                                  height: 50,
-                                  width: 50,
+                                  height: 52,
+                                  width: 52,
                                 ),
                               ),
                             );

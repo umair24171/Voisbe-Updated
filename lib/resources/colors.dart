@@ -44,13 +44,13 @@ String verifiedPath = 'assets/icons/verified (1).svg';
 
 Widget verifiedIcon() {
   return Padding(
-    padding: const EdgeInsets.only(left: 4),
+    padding: const EdgeInsets.only(left: 5),
     child: SvgPicture.asset(
       verifiedPath,
       fit: BoxFit.cover,
       // color: Colors.blue,
-      height: 16,
-      width: 16,
+      height: 12,
+      width: 12,
     ),
   );
 }

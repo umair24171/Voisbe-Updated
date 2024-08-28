@@ -52,7 +52,7 @@ class SubscribeScreen extends StatelessWidget {
                     child: Container(
                       alignment: Alignment.center,
                       child: SizedBox(
-                        width: double.infinity,
+                        width: 125,
                         child: Stack(
                           children: [
                             //  getting the subsribtion user pic
@@ -100,13 +100,19 @@ class SubscribeScreen extends StatelessWidget {
                           builder: (context, otherUser, _) {
                         //  getting the subsription user name
 
-                        return Text(
-                          'Subscribe to ${otherUser.otherUser!.username}',
-                          style: TextStyle(
-                              color: whiteColor,
-                              fontFamily: fontFamily,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 17),
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Subscribe to ${otherUser.otherUser!.name}',
+                              style: TextStyle(
+                                  color: whiteColor,
+                                  fontFamily: fontFamily,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 17),
+                            ),
+                            if (otherUser.otherUser!.isVerified) verifiedIcon()
+                          ],
                         );
                       }),
                       Consumer<UserProfileProvider>(
@@ -140,7 +146,8 @@ class SubscribeScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(top: 1),
+                                padding:
+                                    const EdgeInsets.only(top: 1, right: 5),
                                 child: Icon(
                                   Icons.check,
                                   color: whiteColor,
@@ -160,14 +167,17 @@ class SubscribeScreen extends StatelessWidget {
                       ),
                       Padding(
                         padding: const EdgeInsets.all(12)
-                            .copyWith(left: size.width * 0.13),
+                            .copyWith(left: size.width * 0.13, right: 5),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.check,
-                              color: whiteColor,
-                              size: 20,
+                            Padding(
+                              padding: const EdgeInsets.only(right: 5),
+                              child: Icon(
+                                Icons.check,
+                                color: whiteColor,
+                                size: 20,
+                              ),
                             ),
                             Expanded(
                               child: Text(
@@ -203,15 +213,18 @@ class SubscribeScreen extends StatelessWidget {
 
                       Padding(
                         padding: const EdgeInsets.all(12)
-                            .copyWith(left: size.width * 0.13),
+                            .copyWith(left: size.width * 0.13, right: 5),
                         child: Row(
                           // mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(
-                              Icons.check,
-                              color: whiteColor,
-                              size: 20,
+                            Padding(
+                              padding: const EdgeInsets.only(right: 5),
+                              child: Icon(
+                                Icons.check,
+                                color: whiteColor,
+                                size: 20,
+                              ),
                             ),
                             Expanded(
                               child: Consumer<UserProfileProvider>(

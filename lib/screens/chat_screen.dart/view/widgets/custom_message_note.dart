@@ -274,6 +274,8 @@ class BuildMessageContainer extends StatelessWidget {
                   )
                 : !isMe || isShare
                     ? Positioned(
+                        left: 7,
+                        top: 2,
                         child: Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
@@ -305,7 +307,7 @@ class BuildMessageContainer extends StatelessWidget {
                         ),
                       )
                     : Positioned(
-                        left: MediaQuery.of(context).size.width * 0.71,
+                        left: MediaQuery.of(context).size.width * 0.73,
                         child: Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,

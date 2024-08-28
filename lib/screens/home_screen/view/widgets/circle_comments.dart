@@ -446,7 +446,7 @@ class _CircleCommentsState extends State<CircleComments> {
                                       builder: (context, filterPro, _) {
                                     return Container(
                                       height: size.width > 400
-                                          ? 98
+                                          ? 96
                                           : size.height * 0.107,
                                       width: size.height * 0.106,
                                       padding: EdgeInsets.all(

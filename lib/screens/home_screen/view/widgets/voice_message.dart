@@ -187,7 +187,7 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                           // width: 70,
                           // height: 71,
                           padding: EdgeInsets.all(size.width > 400
-                              ? size.width * 0.049
+                              ? size.width * 0.052
                               : size.width * 0.045),
                           decoration: BoxDecoration(
                             image: DecorationImage(
