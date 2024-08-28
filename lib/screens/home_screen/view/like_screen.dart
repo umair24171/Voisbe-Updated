@@ -9,8 +9,9 @@ import 'package:social_notes/screens/user_profile/other_user_profile.dart';
 import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
 
 class LikeScreen extends StatelessWidget {
-  const LikeScreen({super.key, required this.likes});
+  const LikeScreen({super.key, required this.likes, required this.postOwner});
   final List likes;
+  final String postOwner;
 
   // @override
   @override
@@ -92,78 +93,82 @@ class LikeScreen extends StatelessWidget {
                       //       fontFamily: khulaRegular,
                       //       fontWeight: FontWeight.w400),
                       // ),
-                      trailing: StreamBuilder(
-                          stream: FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(user.uid)
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              UserModel followUSer =
-                                  UserModel.fromMap(snapshot.data!.data()!);
-                              bool isContains = followUSer.followers
-                                  .contains(userProvider!.uid);
-                              String text = '';
-                              if (followUSer.isPrivate) {
-                                if (followUSer.followReq
-                                    .contains(userProvider.uid)) {
-                                  text = 'Requested';
-                                } else if (followUSer.followers
-                                    .contains(userProvider.uid)) {
-                                  text = 'Following';
-                                } else if (followUSer.following
-                                    .contains(userProvider.uid)) {
-                                  text = 'Follow back';
-                                } else {
-                                  text = 'Follow';
-                                }
-                              } else {
-                                if (followUSer.followers
-                                    .contains(userProvider.uid)) {
-                                  text = 'Following';
-                                } else if (followUSer.following
-                                    .contains(userProvider.uid)) {
-                                  text = 'Follow back';
-                                } else {
-                                  text = 'Follow';
-                                }
-                              }
-                              return ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    fixedSize: const Size(105, 20),
-                                    padding: const EdgeInsets.all(0),
-                                    minimumSize: const Size(105, 35),
-                                    elevation: 0,
-                                    backgroundColor: isContains
-                                        ? Colors.transparent
-                                        : blackColor,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                        side: BorderSide(
+                      trailing: userProvider!.uid.contains(postOwner)
+                          ? null
+                          : StreamBuilder(
+                              stream: FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(user.uid)
+                                  .snapshots(),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  UserModel followUSer =
+                                      UserModel.fromMap(snapshot.data!.data()!);
+                                  bool isContains = followUSer.followers
+                                      .contains(userProvider.uid);
+                                  String text = '';
+                                  if (followUSer.isPrivate) {
+                                    if (followUSer.followReq
+                                        .contains(userProvider.uid)) {
+                                      text = 'Requested';
+                                    } else if (followUSer.followers
+                                        .contains(userProvider.uid)) {
+                                      text = 'Following';
+                                    } else if (followUSer.following
+                                        .contains(userProvider.uid)) {
+                                      text = 'Follow back';
+                                    } else {
+                                      text = 'Follow';
+                                    }
+                                  } else {
+                                    if (followUSer.followers
+                                        .contains(userProvider.uid)) {
+                                      text = 'Following';
+                                    } else if (followUSer.following
+                                        .contains(userProvider.uid)) {
+                                      text = 'Follow back';
+                                    } else {
+                                      text = 'Follow';
+                                    }
+                                  }
+                                  return ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        fixedSize: const Size(105, 20),
+                                        padding: const EdgeInsets.all(0),
+                                        minimumSize: const Size(105, 35),
+                                        elevation: 0,
+                                        backgroundColor: isContains
+                                            ? Colors.transparent
+                                            : blackColor,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            side: BorderSide(
+                                                color: isContains
+                                                    ? blackColor
+                                                    : Colors.transparent,
+                                                width: 1)),
+                                      ),
+                                      onPressed: () {
+                                        Provider.of<UserProfileProvider>(
+                                                context,
+                                                listen: false)
+                                            .followUser(userProvider, user);
+                                      },
+                                      child: Text(
+                                        text,
+                                        style: TextStyle(
                                             color: isContains
                                                 ? blackColor
-                                                : Colors.transparent,
-                                            width: 1)),
-                                  ),
-                                  onPressed: () {
-                                    Provider.of<UserProfileProvider>(context,
-                                            listen: false)
-                                        .followUser(userProvider, user);
-                                  },
-                                  child: Text(
-                                    text,
-                                    style: TextStyle(
-                                        color: isContains
-                                            ? blackColor
-                                            : whiteColor,
-                                        fontSize: 14,
-                                        fontFamily: khulaRegular,
-                                        fontWeight: FontWeight.w700),
-                                  ));
-                            } else {
-                              return SizedBox();
-                            }
-                          }),
+                                                : whiteColor,
+                                            fontSize: 14,
+                                            fontFamily: khulaRegular,
+                                            fontWeight: FontWeight.w700),
+                                      ));
+                                } else {
+                                  return SizedBox();
+                                }
+                              }),
                     );
                   });
             } else {

@@ -855,8 +855,10 @@ class _SingleNotePostState extends State<SingleNotePost> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      LikeScreen(likes: widget.note.likes),
+                                  builder: (context) => LikeScreen(
+                                    likes: widget.note.likes,
+                                    postOwner: widget.note.userUid,
+                                  ),
                                 ));
                           },
                           child: Text(
