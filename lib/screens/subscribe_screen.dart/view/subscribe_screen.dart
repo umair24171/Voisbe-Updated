@@ -124,7 +124,7 @@ class SubscribeScreen extends StatelessWidget {
                           //  getting the user monthly subsription price
 
                           child: Text(
-                            'Monthly payment of USD ${userPro.otherUser!.price.toStringAsFixed(2)} You receive access to the following specials:',
+                            'Monthly payment of USD ${userPro.otherUser!.price.toStringAsFixed(2)}\n You receive access to the following specials:',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 color: whiteColor,
@@ -156,7 +156,7 @@ class SubscribeScreen extends StatelessWidget {
                               ),
                               Expanded(
                                 child: Text(
-                                  'Access to exclusive voice messages only for subscribers.',
+                                  'Access to exclusive voice messages\n only for subscribers.',
                                   overflow: TextOverflow.fade,
                                   style: TextStyle(color: whiteColor),
                                 ),
@@ -232,7 +232,7 @@ class SubscribeScreen extends StatelessWidget {
                                 //  getting the subsription user name
 
                                 return Text(
-                                  'Your replies are shown  at the top of ${otherUser.otherUser!.username}\'s post',
+                                  'Your replies are shown  at the top\n of ${otherUser.otherUser!.username}\'s post',
                                   overflow: TextOverflow.fade,
                                   style: TextStyle(color: whiteColor),
                                 );
@@ -293,7 +293,7 @@ class SubscribeScreen extends StatelessWidget {
                                           null,
                                           title: 'Subscription Successful',
                                           message:
-                                              'You have successfully subscribed to ${otherUser.otherUser!.username}',
+                                              'You have successfully subscribed to ${otherUser.otherUser!.username}.',
                                           isUsernameRes: false);
                                     }).onError((error, stackTrace) {
                                       pro.setUserLoading(false);
@@ -326,7 +326,7 @@ class SubscribeScreen extends StatelessWidget {
                                 Icons.subscriptions_outlined, null, null,
                                 title: 'Successful',
                                 message:
-                                    'You have successfully unsubscribed to ${otherUser.otherUser!.username}',
+                                    'You have successfully unsubscribed to ${otherUser.otherUser!.username}.',
                                 isUsernameRes: false);
                           }).onError((error, stackTrace) {
                             pro.setUserLoading(false);

@@ -47,73 +47,60 @@ class SinglePostNote extends StatefulWidget {
   final List<int> lockPosts;
   final int index;
   final bool isFirstPost;
+
+  //  getting all the data from the constructor
+
   @override
   State<SinglePostNote> createState() => _SinglePostNoteState();
 }
 
 class _SinglePostNoteState extends State<SinglePostNote> {
+  //  creating the instance of the audio playeer
+
   late AudioPlayer _audioPlayer;
   String? _cachedFilePath;
   bool _isPlaying = false;
-  // static final Map<String, Uint8List?> _thumbnailCache = {};
-  // static const int maxCacheSize = 100;
-  // void preloadThumbnails() {
-  //   if (widget.note.backgroundType.contains('video')) {
-  //     _getVideoThumbnail(widget.note.backgroundImage);
-  //   }
-  // }
-
-  // Future<Uint8List?> _getVideoThumbnail(String videoUrl) async {
-  //   if (_thumbnailCache.containsKey(videoUrl)) {
-  //     return _thumbnailCache[videoUrl];
-  //   }
-
-  //   for (int attempt = 0; attempt < 3; attempt++) {
-  //     try {
-  //       final uint8list = await VideoThumbnail.thumbnailData(
-  //         video: videoUrl,
-  //         imageFormat: ImageFormat.JPEG,
-  //         maxHeight: (MediaQuery.of(context).size.height * 0.2).toInt(),
-  //         maxWidth: (MediaQuery.of(context).size.width * 0.3).toInt(),
-  //         quality: 50,
-  //       );
-
-  //       if (uint8list != null) {
-  //         _thumbnailCache[videoUrl] = uint8list;
-  //         return uint8list;
-  //       }
-  //     } catch (e) {
-  //       print("Error in _getVideoThumbnail (attempt ${attempt + 1}): $e");
-  //     }
-  //     await Future.delayed(Duration(seconds: 1)); // Wait before retrying
-  //   }
-
-  //   return null;
-  // }
 
   @override
   void initState() {
     super.initState();
     // preloadThumbnails();
+
+    //  initializing the audio player
+
     _audioPlayer = AudioPlayer();
     _audioPlayer.setReleaseMode(ReleaseMode.stop);
+
+    //  setting the url to play
+
     _audioPlayer.setSourceUrl(widget.note.noteUrl);
     // Check if the file is already cached
+
+    //  saving in the cached
+
     DefaultCacheManager().getFileFromCache(widget.note.noteUrl).then((file) {
       if (file != null && file.file.existsSync()) {
         _cachedFilePath = file.file.path;
       }
     });
+
+    //  setting the duration
+
     _audioPlayer.onDurationChanged.listen((event) {
       setState(() {
         duration = event;
       });
     });
+
+    //  setting the position
+
     _audioPlayer.onPositionChanged.listen((event) {
       setState(() {
         position = event;
       });
     });
+
+    //  changing the player on completion
 
     _audioPlayer.onPlayerComplete.listen((state) {
       setState(() {
@@ -127,11 +114,15 @@ class _SinglePostNoteState extends State<SinglePostNote> {
   //   super.didChangeDependencies();
   // }
 
+// disposing it when no longer needs \
+
   @override
   void dispose() {
     _audioPlayer.dispose();
     super.dispose();
   }
+
+  //  playing and pause the audio with the caching
 
   void playPause() async {
     if (_isPlaying) {
@@ -166,6 +157,9 @@ class _SinglePostNoteState extends State<SinglePostNote> {
 
   Duration duration = Duration.zero;
   Duration position = Duration.zero;
+
+  //  getting duruation of the  voice
+
   getDuration() async {
     duration = (await _audioPlayer.getDuration())!;
     position = (await _audioPlayer.getCurrentPosition())!;
@@ -176,12 +170,16 @@ class _SinglePostNoteState extends State<SinglePostNote> {
     setState(() {});
   }
 
+  //  setting format of duration to play
+
   String getReverseDuration(Duration position, Duration totalDuration) {
     int remainingSeconds = totalDuration.inSeconds - position.inSeconds;
     int minutes = remainingSeconds ~/ 60;
     int seconds = remainingSeconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
+
+//  initially duration of the audio
 
   String getInitialDurationnText(Duration totalDuration) {
     int remainingSeconds = totalDuration.inSeconds;
@@ -192,16 +190,7 @@ class _SinglePostNoteState extends State<SinglePostNote> {
 
   @override
   Widget build(BuildContext context) {
-    // log
     var size = MediaQuery.of(context).size;
-    log('mobile wid ${size.width}');
-    double padding = 0;
-    if (widget.isSecondPost && size.width >= 412) {
-      padding = 40;
-    } else {
-      padding = 0;
-    }
-    // getDuration();
 
     return SizedBox(
       height: size.height * 0.2,
@@ -213,30 +202,27 @@ class _SinglePostNoteState extends State<SinglePostNote> {
               height: size.height * 0.2,
               width:
                   widget.isFirstPost ? size.width * 0.665 : size.width * 0.335,
+
+              //  background of the post
+
               child: widget.note.backgroundImage.isNotEmpty
+
+                  //  if its video show the thumbnail
                   ? widget.note.backgroundType.contains('video')
                       ? CachedNetworkImage(
                           imageUrl: widget.note.videoThumbnail,
                           fit: BoxFit.cover,
                         )
-                      // ThumbnailVideoPlayer(
-                      //     videoUrl: widget.note.backgroundImage,
-                      //     height: size.height * 0.2,
-                      //     width: widget.isFirstPost
-                      //         ? size.width * 0.665
-                      //         : size.width * 0.335)
-                      // CustomVideoThumbnail(
-                      //     videoUrl: widget.note.backgroundImage,
-                      //     height: size.height * 0.2,
-                      //     width:
-                      // widget.isFirstPost
-                      //         ? size.width * 0.665
-                      //         : size.width * 0.335,
-                      //   )
+
+                      //  other wise show the image
+
                       : CachedNetworkImage(
                           imageUrl: widget.note.backgroundImage,
                           fit: BoxFit.cover,
                         )
+
+                  //  showing the profile pic of the user
+
                   : StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('users')
@@ -258,6 +244,9 @@ class _SinglePostNoteState extends State<SinglePostNote> {
                         }
                       }),
             ),
+
+            //  backdrop filter above the photo or video
+
             BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
               child: Container(
@@ -267,21 +256,7 @@ class _SinglePostNoteState extends State<SinglePostNote> {
                 color: Colors.white.withOpacity(0.1), // Transparent color
               ),
             ),
-            // Container(
-            //   height: size.height * 0.2,
-            //   width: widget.isFirstPost ? size.width * 0.67 : size.width * 0.34,
-            //   decoration: BoxDecoration(
-            //     gradient: LinearGradient(
-            //       begin: Alignment.topCenter,
-            //       end: Alignment.bottomCenter,
-            //       // stops: [0.75, 0.25],
-            //       colors: [
-            //         const Color(0xff3d3d3d).withOpacity(0.5),
-            //         whiteColor
-            //       ],
-            //     ),
-            //   ),
-            // ),
+
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -292,6 +267,9 @@ class _SinglePostNoteState extends State<SinglePostNote> {
                     Container(
                       height: 20, // Same height as the pin icon
                       alignment: Alignment.center,
+
+                      //  if posts are pinned show the pinne icon other wise show the title of the post
+
                       child: widget.isPinned && !widget.isFirstPost
                           ? null
                           : Text(
@@ -315,21 +293,9 @@ class _SinglePostNoteState extends State<SinglePostNote> {
                       ),
                   ],
                 ),
-                // if (widget.isPinned && !widget.isFirstPost)
-                //   Icon(
-                //     Icons.push_pin,
-                //     color: whiteColor,
-                //     size: 11,
-                //   )
-                // else
-                //   Text(
-                //     widget.note.title.toUpperCase(),
-                //     style: TextStyle(
-                //         fontFamily: fontFamily,
-                //         fontSize: 10,
-                //         color: whiteColor,
-                //         fontWeight: FontWeight.w700),
-                //   ),
+
+                //  if the post index is 0 show this player
+
                 if (widget.isFirstPost)
                   CustomProgressPlayer(
                       lockPosts: widget.lockPosts,
@@ -342,12 +308,15 @@ class _SinglePostNoteState extends State<SinglePostNote> {
                       mainHeight: 82,
                       height: 50,
                       isProfilePlayer: true,
-                      width: widget.lockPosts.contains(0) ? 67 : 70,
+                      width: widget.lockPosts.contains(0) ? 67 : 67,
                       isMainPlayer: true,
                       title: widget.note.title,
                       waveColor: primaryColor,
                       noteUrl: widget.note.noteUrl)
                 else
+
+                  //  otherwise show this percent bar player
+
                   Align(
                     alignment: Alignment.center,
                     child: CircularPercentIndicator(
@@ -355,6 +324,9 @@ class _SinglePostNoteState extends State<SinglePostNote> {
                       lineWidth: 8.0,
                       percent: position.inSeconds / duration.inSeconds,
                       center: widget.lockPosts.contains(widget.index)
+
+                          //  if any of the post is lock post show icon lock and naviagte to subscribe screen
+
                           ? InkWell(
                               onTap: () {
                                 Navigator.push(
@@ -375,6 +347,9 @@ class _SinglePostNoteState extends State<SinglePostNote> {
                                     color: primaryColor,
                                   )),
                             )
+
+                          //  otherwise show the play pause button
+
                           : InkWell(
                               splashColor: Colors.transparent,
                               onTap: playPause,
@@ -393,70 +368,16 @@ class _SinglePostNoteState extends State<SinglePostNote> {
                               ),
                             ),
                       circularStrokeCap: CircularStrokeCap.round,
-                      backgroundColor:
-                          _isPlaying ? const Color(0xFFB8C7CB) : primaryColor,
-                      progressColor: primaryColor,
+                      backgroundColor: _isPlaying ? whiteColor : whiteColor,
+                      progressColor: _isPlaying ? primaryColor : whiteColor,
                       animation: _isPlaying,
+
+                      // fillColor: whiteColor,
                       animationDuration: duration.inSeconds,
                     ),
                   ),
 
-                // CircularPercentIndicator(
-                //   radius: 44,
-                //   // 44.0,
-                //   lineWidth: 5.0,
-                //   percent: position.inSeconds / duration.inSeconds,
-                //   center: Container(
-                //     width: 40,
-                //     height: 40,
-                //     decoration: BoxDecoration(
-                //       color: whiteColor,
-                //       borderRadius: BorderRadius.circular(140),
-                //     ),
-                //     child:
-                // widget.lockPosts.contains(widget.index)
-                //         ? InkWell(
-                //             onTap: () {
-                //               Navigator.push(
-                //                   context,
-                //                   MaterialPageRoute(
-                //                     builder: (context) => SubscribeScreen(),
-                //                   ));
-                //             },
-                //             child: Container(
-                //                 // height: 10,
-                //                 // width: 10,
-                //                 padding: const EdgeInsets.all(8),
-                //                 decoration: BoxDecoration(
-                //                     color: primaryColor,
-                //                     borderRadius: BorderRadius.circular(20)),
-                //                 child:
-                //                     SvgPicture.asset('assets/icons/Lock.svg')),
-                //           )
-                //         : InkWell(
-                //             splashColor: Colors.transparent,
-                //             onTap: playPause,
-                //             child: Container(
-                //               // height: 10,
-                //               // width: 10,
-                //               padding: const EdgeInsets.all(8),
-                //               decoration: BoxDecoration(
-                //                   color: primaryColor,
-                //                   borderRadius: BorderRadius.circular(20)),
-                //               child: Icon(
-                //                 _isPlaying ? Icons.pause : Icons.play_arrow,
-                //                 color: whiteColor,
-                //                 size: 20,
-                //               ),
-                //             ),
-                //           ),
-                //   ),
-                //   circularStrokeCap: CircularStrokeCap.round,
-                //   backgroundColor: _isPlaying ? whiteColor : primaryColor,
-                //   progressColor: primaryColor,
-                //   animation: _isPlaying,
-                //   animationDuration: duration.inSeconds,
-                // ),
+                //  showing the duration and position when the post is playing
 
                 if (widget.index != 0)
                   position.inSeconds == 0

@@ -323,6 +323,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
                         return ListTile(
+                          // contentPadding: EdgeInsets.all(0),
+                          horizontalTitleGap: 8,
                           leading: CircleAvatar(
                             backgroundImage: NetworkImage(
                                 searchPro.searchedUSers[index].photoUrl),
@@ -331,7 +333,9 @@ class _SearchScreenState extends State<SearchScreen> {
                             children: [
                               Text(
                                 searchPro.searchedUSers[index].name,
-                                style: TextStyle(fontFamily: fontFamily),
+                                style: TextStyle(
+                                    fontFamily: fontFamily,
+                                    fontWeight: FontWeight.w600),
                               ),
                               if (searchPro.searchedUSers[index].isVerified)
                                 verifiedIcon()

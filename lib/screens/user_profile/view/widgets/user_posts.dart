@@ -37,6 +37,9 @@ class _UserPostsState extends State<UserPosts> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+
+    //  getting user posts through provider
+
     var userPosts = Provider.of<UserProfileProvider>(
       context,
     ).userPosts;
@@ -46,6 +49,8 @@ class _UserPostsState extends State<UserPosts> {
     if (userPosts.isNotEmpty) {
       newPost = userPosts[0];
     }
+
+    //  filtering the posts to seperate pinned and non pinned posts and first post
 
     for (int i = 0; i < userPosts.length; i++) {
       if (userPosts[i].isPinned) {
@@ -67,30 +72,12 @@ class _UserPostsState extends State<UserPosts> {
       if (pinnedPosts.length > 1) ...pinnedPosts.skip(1),
     ];
 
-    // pinnedPosts.clear();
-    // nonPinnedPosts.clear();
-    // NoteModel? newPost;
-    // if (userPosts.isNotEmpty) {
-    //   newPost = userPosts[0];
-    // }
-
-    // for (int i = 0; i < userPosts.length; i++) {
-    //   if (userPosts[i].isPinned) {
-    //     pinnedPosts.add(userPosts[i]);
-    //   } else {
-    //     nonPinnedPosts.add(userPosts[i]);
-    //   }
-    // }
-    // pinnedPosts.removeWhere((element) => element.noteId == newPost!.noteId);
-    // nonPinnedPosts.removeWhere((element) => element.noteId == newPost!.noteId);
-    // userPosts = [
-    //   if (userPosts.isNotEmpty) newPost!,
-    //   ...pinnedPosts,
-    //   ...nonPinnedPosts
-    // ];
-
     return Container(
-      color: userPosts.isNotEmpty ? whiteColor : null,
+      color: userPosts.isEmpty
+          ? null
+          : userPosts.length == 1
+              ? null
+              : whiteColor,
       child: Column(
         children: [
           if (userPosts.isEmpty)
@@ -99,6 +86,8 @@ class _UserPostsState extends State<UserPosts> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  //  if posts are empty show this icon
+
                   SvgPicture.asset(
                     'assets/icons/No posts.svg',
                     height: 94,
@@ -123,6 +112,8 @@ class _UserPostsState extends State<UserPosts> {
             SizedBox(
               height: size.height * 0.2,
               child: ListView.builder(
+                //  building the user posts 1st 2
+
                 shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
                 itemCount: userPosts.length >= 2 ? 2 : userPosts.length,
@@ -133,6 +124,8 @@ class _UserPostsState extends State<UserPosts> {
                     key: key,
                     child: GestureDetector(
                       onLongPress: () {
+                        //  on long press navigate to home screen or post details screen
+
                         Provider.of<BottomProvider>(context, listen: false)
                             .setCurrentIndex(1);
                         Navigator.of(context).push(
@@ -143,6 +136,8 @@ class _UserPostsState extends State<UserPosts> {
                         );
                       },
                       onTap: () {
+                        //  on tap to pinned the post except for the first post
+
                         if (index != 0) {
                           if (userPosts[index].userUid ==
                               FirebaseAuth.instance.currentUser!.uid) {
@@ -162,6 +157,9 @@ class _UserPostsState extends State<UserPosts> {
                               ));
                         }
                       },
+
+                      //  design of the post
+
                       child: SinglePostNote(
                         isFirstPost: index == 0,
                         lockPosts: [],
@@ -178,6 +176,9 @@ class _UserPostsState extends State<UserPosts> {
               ),
             ),
           if (userPosts.isNotEmpty)
+
+            //  building the other posts in grid except for the 1st 2
+
             GridView.builder(
               itemCount: userPosts.length >= 2 ? userPosts.length - 2 : 0,
               physics: const NeverScrollableScrollPhysics(),

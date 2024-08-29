@@ -1084,6 +1084,7 @@ class _CustomNotificationIconState extends State<CustomNotificationIcon> {
             Icon(
               Icons.favorite_border_outlined,
               color: blackColor,
+              size: 27,
             ),
             StreamBuilder(
                 stream: FirebaseFirestore.instance

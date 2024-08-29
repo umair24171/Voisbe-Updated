@@ -57,7 +57,7 @@ class PrivacyPolicy extends StatelessWidget {
                     'Information Collection and Use',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -81,7 +81,7 @@ class PrivacyPolicy extends StatelessWidget {
                     'Log Data',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -105,7 +105,7 @@ class PrivacyPolicy extends StatelessWidget {
                     'Information You Provide to Us',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -129,7 +129,7 @@ class PrivacyPolicy extends StatelessWidget {
                     'Automatic Information Collection and Tracking',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -153,7 +153,7 @@ class PrivacyPolicy extends StatelessWidget {
                     'Service Providers',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -177,7 +177,7 @@ class PrivacyPolicy extends StatelessWidget {
                     'Access to Microphone and Photos',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -208,7 +208,7 @@ class PrivacyPolicy extends StatelessWidget {
                     'Data Security',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -232,7 +232,7 @@ class PrivacyPolicy extends StatelessWidget {
                     'Cookies',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -256,7 +256,7 @@ class PrivacyPolicy extends StatelessWidget {
                     'Children’s Privacy',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -280,7 +280,7 @@ class PrivacyPolicy extends StatelessWidget {
                     'Contact Information',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -304,7 +304,7 @@ class PrivacyPolicy extends StatelessWidget {
                     'Changes to Our Privacy Policy',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),

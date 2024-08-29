@@ -10,8 +10,6 @@ import 'package:social_notes/resources/navigation.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/auth_screens/view/auth_screen.dart';
-import 'package:social_notes/screens/auth_screens/view/widgets/verify_email.dart';
-import 'package:social_notes/screens/chat_screen.dart/model/chat_model.dart';
 import 'package:social_notes/screens/chat_screen.dart/model/recent_chat_model.dart';
 import 'package:social_notes/screens/profile_screen/profile_screen.dart';
 import 'package:social_notes/screens/settings_screen/view/account_privacy_screen.dart';
@@ -73,6 +71,11 @@ class SettingsScreen extends StatelessWidget {
               color: const Color(0xffEAEAEA),
               height: 1,
             ),
+
+            //  first screen in settings
+
+            //  navigate user to edit profile screen
+
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
@@ -88,6 +91,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Edit Profile',
               ),
             ),
+
+            //  navigate user to  subscription screen
+
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
@@ -103,6 +109,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Edit Subscriptions',
               ),
             ),
+
+            //  navigate user to Payment details screen
+
             if (userPro!.isVerified)
               InkWell(
                 onTap: () {
@@ -116,6 +125,9 @@ class SettingsScreen extends StatelessWidget {
                   title: 'Payment Details',
                 ),
               ),
+
+            //  navigate user to bookmark screen
+
             InkWell(
               onTap: () {
                 Navigator.push(
@@ -128,6 +140,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Bookmarks',
               ),
             ),
+
+            //  navigate user to drafts screen
+
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
@@ -141,6 +156,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Drafts',
               ),
             ),
+
+            //  navigate user to account privacy screen
+
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
@@ -154,6 +172,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Account Privacy',
               ),
             ),
+
+//  navigate user to change notifications screen
+//
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
@@ -180,6 +201,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Tagged Posts',
               ),
             ),
+
+            //  navigate to enable 2fa screen
+
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
@@ -193,6 +217,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Two-Factor Authentication',
               ),
             ),
+
+            //  navigate user to close friend screen
+
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
@@ -206,6 +233,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Close Friends',
               ),
             ),
+
+            //  navigate user to blocked users screen
+
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
@@ -219,22 +249,12 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Blocked Users',
               ),
             ),
+
+            // navigate user to help screen
+
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
-                // showDialog(
-                //   context: context,
-                //   builder: (context) => AlertDialog(
-                //     backgroundColor: whiteColor,
-                //     contentPadding: EdgeInsets.all(0),
-                //     // insetPadding: EdgeInsets.all(0),
-                //     elevation: 0,
-                //     content: OtpField(
-                //       uid: '',
-                //       email: 'umairbilalbzu@gmail.com',
-                //     ),
-                //   ),
-                // );
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => HelpScreen()));
               },
@@ -243,6 +263,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Help',
               ),
             ),
+
+            //  navigate user to privacy policy screen
+
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
@@ -256,6 +279,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Privacy Policy',
               ),
             ),
+
+            //  navigate to terms and conditions screen
+
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
@@ -269,6 +295,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Terms & Conditions',
               ),
             ),
+
+            //  logout button to send user to login screen again
+
             InkWell(
               onTap: () async {
                 await FirebaseAuth.instance.signOut().then((value) =>
@@ -283,9 +312,14 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Logout',
               ),
             ),
+
+            //  delete account button
+
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
+                //  delete account needs to login the user again
+
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -294,76 +328,7 @@ class SettingsScreen extends StatelessWidget {
                       content: DeleteLoginPopup(
                           emailCOnt: emailCOnt,
                           passCOnt: passCOnt,
-                          userPro: userPro)
-                      // Column(
-                      //   mainAxisSize: MainAxisSize.min,
-                      //   mainAxisAlignment: MainAxisAlignment.center,
-                      //   children: [
-                      //     Padding(
-                      //       padding: const EdgeInsets.symmetric(vertical: 20)
-                      //           .copyWith(left: 5),
-                      //       child: Text(
-                      //         'Are you sure you want to delete?',
-                      //         style: TextStyle(
-                      //             fontFamily: fontFamily,
-                      //             fontSize: 18,
-                      //             fontWeight: FontWeight.w600),
-                      //       ),
-                      //     ),
-                      //     Row(
-                      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      //       children: [
-                      //         ElevatedButton(
-                      //             style: ButtonStyle(
-                      //               backgroundColor: const WidgetStatePropertyAll(
-                      //                   Colors.transparent),
-                      //               elevation: const WidgetStatePropertyAll(0),
-                      //               shape: WidgetStatePropertyAll(
-                      //                 RoundedRectangleBorder(
-                      //                   borderRadius: BorderRadius.circular(18),
-                      //                   side: BorderSide(
-                      //                       color: blackColor, width: 1),
-                      //                 ),
-                      //               ),
-                      //             ),
-                      //             onPressed: () {
-                      //               navPop(context);
-                      //             },
-                      //             child: Text(
-                      //               'Cancel',
-                      //               style: TextStyle(
-                      //                   fontFamily: fontFamily,
-                      //                   fontSize: 16,
-                      //                   fontWeight: FontWeight.w600),
-                      //             )),
-                      //         ElevatedButton(
-                      //             style: ButtonStyle(
-                      //                 backgroundColor:
-                      //                     WidgetStatePropertyAll(blackColor),
-                      //                 elevation: const WidgetStatePropertyAll(0)),
-                      //             onPressed: () async {
-                      //               showDialog(
-                      //                 context: context,
-                      //                 builder: (context) => AlertDialog(
-                      //                   elevation: 0,
-                      //                   backgroundColor: whiteColor,
-                      //                   content: ,
-                      //                 ),
-                      //               );
-                      //             },
-                      //             child: Text(
-                      //               'Confirm',
-                      //               style: TextStyle(
-                      //                   color: whiteColor,
-                      //                   fontSize: 16,
-                      //                   fontWeight: FontWeight.w400),
-                      //             ))
-                      //       ],
-                      //     )
-                      //   ],
-                      // ),
-
-                      ),
+                          userPro: userPro)),
                 );
               },
               child: const CustomListTile(
@@ -377,6 +342,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
+
+//  login popup to login the user
 
 class DeleteLoginPopup extends StatelessWidget {
   const DeleteLoginPopup({
@@ -435,23 +402,6 @@ class DeleteLoginPopup extends StatelessWidget {
           isAccountNum: false,
           isSwiftCOde: false,
         ),
-        // TextFormField(
-        //   decoration: InputDecoration(
-        //     hintText: 'Password*',
-        //     hintStyle: TextStyle(fontFamily: khulaRegular),
-        //     constraints: BoxConstraints(
-        //         maxHeight: mdHeight * .06, maxWidth: mdWidth * 0.7),
-        //     border: OutlineInputBorder(
-        //       borderSide: BorderSide(width: mdWidth * .005, color: Colors.grey),
-        //     ),
-        //     enabledBorder: OutlineInputBorder(
-        //       borderSide: BorderSide(width: mdWidth * .005, color: Colors.grey),
-        //     ),
-        //     focusedBorder: OutlineInputBorder(
-        //       borderSide: BorderSide(width: mdWidth * .005, color: Colors.grey),
-        //     ),
-        //   ),
-        // ),
         PayFieldWidget(
           controller: passCOnt,
           hint: 'Password*',
@@ -480,6 +430,9 @@ class DeleteLoginPopup extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(color: blackColor, width: 1)),
                   ),
+
+                  //  cancel the login
+
                   onPressed: () {
                     navPop(context);
                   },
@@ -494,6 +447,9 @@ class DeleteLoginPopup extends StatelessWidget {
               const SizedBox(
                 width: 15,
               ),
+
+              //  on confirmation
+
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     fixedSize: const Size(90, 20),
@@ -508,12 +464,19 @@ class DeleteLoginPopup extends StatelessWidget {
                     ),
                   ),
                   onPressed: () async {
+                    //  login the user
+
                     await FirebaseAuth.instance
                         .signInWithEmailAndPassword(
                             email: emailCOnt.text, password: passCOnt.text)
                         .then((userCred) async {
                       if (userCred.user != null) {
+                        //  deleting the user
+
                         await FirebaseAuth.instance.currentUser!.delete();
+
+                        // deleting user data
+
                         await FirebaseFirestore.instance
                             .collection('users')
                             .doc(userPro!.uid)
@@ -530,6 +493,8 @@ class DeleteLoginPopup extends StatelessWidget {
                               .delete();
                         }
 
+                        //  removing account from the prefs
+
                         SharedPreferences sharedPreferences =
                             await SharedPreferences.getInstance();
                         List<String>? users =
@@ -539,12 +504,20 @@ class DeleteLoginPopup extends StatelessWidget {
                         }
                         FirebaseAuth auth = FirebaseAuth.instance;
 
+                        //  signout the user
+
                         auth.signOut();
+
+                        //  pushing to authentication screen again
+
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                               builder: (context) => AuthScreen(),
                             ));
+
+                        //  deleting all the chats of the user
+
                         await FirebaseFirestore.instance
                             .collection('chats')
                             .orderBy('time', descending: true)

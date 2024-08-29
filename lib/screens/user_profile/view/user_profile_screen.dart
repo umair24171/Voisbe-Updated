@@ -44,6 +44,8 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
+  //  building text span to navigate to the mentioned user profile in bio
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<TextSpan> _buildTextSpans(BuildContext context, String bio) {
     final List<TextSpan> spans = [];
@@ -81,6 +83,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return spans;
   }
 
+  //  navigate to profile from bio
+
   void _navigateToUserProfile(BuildContext context, String? username) async {
     if (username != null && username.startsWith('@')) {
       final cleanUsername = username.substring(1); // Remove the '@' symbol
@@ -112,11 +116,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  //  refreshing the posts
+
   Future<void> _refreshPosts() async {
     // Call the method to fetch updated posts
     await Provider.of<UserProfileProvider>(context, listen: false)
         .getUserPosts(FirebaseAuth.instance.currentUser!.uid);
   }
+
+  //  format to display the length of posts or followers or following
 
   String formatCount(int count) {
     if (count >= 1000000) {
@@ -133,8 +141,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
 
+    //  getting current user posts
+
     Provider.of<UserProfileProvider>(context, listen: false)
         .getUserPosts(FirebaseAuth.instance.currentUser!.uid);
+
+    //  getting current user data
+
     var userProvider = Provider.of<UserProvider>(context, listen: false);
     userProvider.getUserData();
     return userProvider.user == null
@@ -152,6 +165,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               title: Row(children: [
                 Row(
                   children: [
+                    //  showing the current user name
+
                     Text(
                       userProvider.user!.name,
                       style: TextStyle(
@@ -159,6 +174,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           fontSize: 19,
                           fontWeight: FontWeight.w600),
                     ),
+
+                    //  checking if the user is verified
+
                     if (userProvider.user!.isVerified)
                       Padding(
                         padding: const EdgeInsets.only(left: 4),
@@ -179,6 +197,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
                 InkWell(
                   onTap: () async {
+                    //  showing the user changing account sheet
+
                     showModalBottomSheet(
                         useSafeArea: true,
                         enableDrag: true,
@@ -196,17 +216,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               padding: const EdgeInsets.all(12),
                               child: Column(
                                 children: [
-                                  // Align(
-                                  //   alignment: Alignment.centerRight,
-                                  //   child: IconButton(
-                                  //       onPressed: () {
-                                  //         Navigator.pop(context);
-                                  //       },
-                                  //       icon: Icon(
-                                  //         Icons.cancel,
-                                  //         color: whiteColor,
-                                  //       )),
-                                  // ),
+                                  //  building user accounts stored in prefs
+
                                   Consumer<UserProfileProvider>(
                                       builder: (context, provider, _) {
                                     return Expanded(
@@ -337,6 +348,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 )
               ]),
               actions: [
+                //  move to settings screen
+
                 IconButton(
                   onPressed: () async {
                     Navigator.push(context, MaterialPageRoute(
@@ -355,6 +368,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
             body: Stack(
               children: [
+                // background of the screen
                 Container(
                   height: size.height,
                   decoration: BoxDecoration(
@@ -364,12 +378,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ),
                   ),
                 ),
+
+                //  above that there is a drop filter
+
                 BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                   child: Container(
                     color: Colors.white.withOpacity(0.1), // Transparent color
                   ),
                 ),
+
+                //  refresh the posts
+
                 RefreshIndicator(
                   backgroundColor: whiteColor,
                   color: primaryColor,
@@ -378,20 +398,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     child: Stack(
                       children: [
-                        // Container(
-                        //   height: MediaQuery.of(context).size.height,
-                        //   decoration: BoxDecoration(
-                        //     gradient: LinearGradient(
-                        //       begin: Alignment.topCenter,
-                        //       end: Alignment.bottomCenter,
-                        //       colors: [
-                        //         Colors.black.withOpacity(0.5),
-                        //         Colors.white
-                        //       ],
-                        //       stops: [0.5, 0.5],
-                        //     ),
-                        //   ),
-                        // ),
+                        //  background gradient pic of the screen
+
                         Container(
                           child: Image.asset(
                             'assets/icons/profilepage_backgroundgradient 1.png',
@@ -455,8 +463,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   const SizedBox(
-                                    height: 5,
+                                    height: 10,
                                   ),
+
+                                  //  getting the username
+
                                   Text(
                                     userProvider.user!.username,
                                     style: TextStyle(
@@ -466,8 +477,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                         fontSize: 17),
                                   ),
                                   const SizedBox(
-                                    height: 10,
+                                    height: 15,
                                   ),
+
+                                  //  getting the user bio
+
                                   Padding(
                                     padding: EdgeInsets.symmetric(
                                             horizontal: size.width * 0.1,
@@ -487,8 +501,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               ),
                             ),
                             const SizedBox(
-                              height: 5,
+                              height: 10,
                             ),
+
+                            //  showing the user link
+
                             if (userProvider.user!.link.isNotEmpty)
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -536,6 +553,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
+                                    //  displaying total posts of the user
+
                                     Consumer<UserProfileProvider>(
                                         builder: (context, userPro, _) {
                                       return CustomFollowing(
@@ -547,6 +566,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                     const SizedBox(
                                       width: 30,
                                     ),
+
+                                    //  displaying the total followers of the current user
+
                                     InkWell(
                                       splashColor: Colors.transparent,
                                       onTap: () {
@@ -568,6 +590,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                     const SizedBox(
                                       width: 30,
                                     ),
+
+                                    //  displaying the total followings
+
                                     InkWell(
                                       splashColor: Colors.transparent,
                                       onTap: () {
@@ -594,6 +619,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             const SizedBox(
                               height: 20,
                             ),
+
+                            //  displaying user posts
+
                             UserPosts(),
                             // SizedBox(height: size.height),
                           ],

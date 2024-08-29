@@ -303,7 +303,7 @@ class _OtpFieldState extends State<OtpField> {
                     showWhiteOverlayPopup(
                         context, null, 'assets/icons/Info (1).svg', null,
                         title: 'Error Occurred',
-                        message: 'Otp is incorrect',
+                        message: 'Otp is incorrect.',
                         isUsernameRes: false);
                   }
                 },

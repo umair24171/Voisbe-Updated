@@ -298,7 +298,7 @@ class AuthController {
               userPro.setUserLoading(false);
               showWhiteOverlayPopup(context, Icons.check_box, null, null,
                   title: 'Login Successful',
-                  message: 'You have successfully logged in',
+                  message: 'You have successfully logged in.',
                   isUsernameRes: false);
 
               Navigator.pushAndRemoveUntil(
@@ -392,7 +392,7 @@ class AuthController {
           showWhiteOverlayPopup(
               context, null, 'assets/icons/Info (1).svg', null,
               title: 'Error Occurred',
-              message: 'Account deleted',
+              message: 'Account deleted.',
               isUsernameRes: false);
         }
       }

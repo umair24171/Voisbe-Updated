@@ -359,6 +359,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
 
                       // show the player to play the recorded voice when the recording is finished
                       // also it show up when the voice is picked up from the gallery
+
                       Consumer<NoteProvider>(
                           builder: (context, noteProvider, _) {
                         return Column(
@@ -393,6 +394,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           // recording button with the real time waves generation
+
                           Padding(
                             padding: const EdgeInsets.only(right: 15),
                             child: Consumer<NoteProvider>(
@@ -479,6 +481,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                       ),
 
                       // this will show up when the user select video from the gallery to upload thumbnail
+
                       Consumer<NoteProvider>(builder: (context, notePro, _) {
                         return notePro.isGalleryVideo
                             ? InkWell(
@@ -690,7 +693,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                                           null,
                                                           title: 'Successful',
                                                           message:
-                                                              'Added to draft',
+                                                              'Added to draft.',
                                                           isUsernameRes: false);
                                                       noteProvider
                                                           .removeVoiceNote();
@@ -727,6 +730,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                 style: TextStyle(
                                     color: whiteColor,
                                     fontFamily: fontFamily,
+                                    fontWeight: FontWeight.w600,
                                     fontSize: 10),
                               ),
                               icon: Image.asset(
@@ -756,6 +760,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                 'Tag people',
                                 style: TextStyle(
                                     color: whiteColor,
+                                    fontWeight: FontWeight.w600,
                                     fontFamily: fontFamily,
                                     fontSize: 10),
                               ),
@@ -799,11 +804,11 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                           ),
                                         ));
                                   } else {
-                                    showWhiteOverlayPopup(context, null, null,
-                                        'assets/icons/Info (1).svg',
+                                    showWhiteOverlayPopup(context, null,
+                                        'assets/icons/Info (1).svg', null,
                                         title: 'Error',
                                         message:
-                                            'Please record a voice note first',
+                                            'Please record a voice note first.',
                                         isUsernameRes: false);
                                   }
                                 },
@@ -811,6 +816,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                   'Next',
                                   style: TextStyle(
                                       color: blackColor,
+                                      fontWeight: FontWeight.w600,
                                       fontFamily: fontFamily,
                                       fontSize: 10),
                                 ),

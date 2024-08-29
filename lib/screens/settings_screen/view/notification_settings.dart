@@ -7,22 +7,8 @@ import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/resources/navigation.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 
-class NotificationSettings extends StatefulWidget {
+class NotificationSettings extends StatelessWidget {
   const NotificationSettings({super.key});
-
-  @override
-  State<NotificationSettings> createState() => _NotificationSettingsState();
-}
-
-class _NotificationSettingsState extends State<NotificationSettings> {
-  late bool isLike = false;
-  bool isReply = false;
-  bool isFOllows = false;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +65,10 @@ class _NotificationSettingsState extends State<NotificationSettings> {
                     ),
                   ],
                 ),
+
+                //  switch  to get the like notification value and updating on triggering
+
+
                 Consumer<UserProvider>(builder: (context, userPro, _) {
                   return Switch(
                     value: userPro.user!.isLike,
@@ -137,6 +127,9 @@ class _NotificationSettingsState extends State<NotificationSettings> {
                     ),
                   ],
                 ),
+
+                  //  switch  to get the isreply notification value and updating on triggering to database
+
                 Consumer<UserProvider>(builder: (context, userPro, _) {
                   return Switch(
                     // activeThumbImage: NetworkImage(''),
@@ -196,6 +189,9 @@ class _NotificationSettingsState extends State<NotificationSettings> {
                     ),
                   ],
                 ),
+
+                  //  switch  to get the isFollows notification value and updating on triggering
+
                 Consumer<UserProvider>(builder: (context, userPro, _) {
                   return Switch(
                     thumbColor: WidgetStatePropertyAll(whiteColor),

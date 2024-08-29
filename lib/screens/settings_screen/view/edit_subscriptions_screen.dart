@@ -20,6 +20,9 @@ class _EditSubscriptionsScreenState extends State<EditSubscriptionsScreen> {
   @override
   void initState() {
     var subPro = Provider.of<SettingsProvider>(context, listen: false);
+
+    // getting user subscriptions and saving into provider
+
     subPro.getUserSubscriptions(
         Provider.of<UserProvider>(context, listen: false).user!.uid);
     super.initState();
@@ -51,11 +54,17 @@ class _EditSubscriptionsScreenState extends State<EditSubscriptionsScreen> {
                 fontWeight: FontWeight.w700),
           ),
         ),
+
+        //  building the user subsriptions saved in provider using consumer
+
         body: Consumer<SettingsProvider>(builder: (context, settingPro, _) {
           return ListView.builder(
             itemCount: settingPro.userSubscriptions.length,
             itemBuilder: (context, index) {
               UserModel user = settingPro.userSubscriptions[index];
+
+              //  returning the single template of the user subscription
+
               return SubsccriptionListTile(
                   price: user.price,
                   isVerified: user.isVerified,

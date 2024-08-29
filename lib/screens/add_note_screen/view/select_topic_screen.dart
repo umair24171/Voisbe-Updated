@@ -42,10 +42,10 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
   String _selectedOption = '';
 
   List<String> topics = [
-    'Need support',
-    'Relationship & love',
-    'Confession & secret',
-    'Inspiration & motivation',
+    'Need Support',
+    'Relationship & Love',
+    'Confession & Secret',
+    'Inspiration & Motivation',
     'Food & Cooking',
     'Personal Story',
     'Business',
@@ -213,6 +213,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                           label: Text(
                             'Back',
                             style: TextStyle(
+                                fontWeight: FontWeight.w600,
                                 color: whiteColor,
                                 fontFamily: fontFamily,
                                 fontSize: 12),
@@ -273,10 +274,10 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                                   } else {
                                     //  if the user has not selected the topic
 
-                                    showWhiteOverlayPopup(
-                                        context, null, 'assets/icons/Info (1).svg',null,
+                                    showWhiteOverlayPopup(context, null,
+                                        'assets/icons/Info (1).svg', null,
                                         title: 'Error',
-                                        message: 'Please select a topic',
+                                        message: 'Please select a topic.',
                                         isUsernameRes: false);
                                   }
                                 },
@@ -284,6 +285,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                                   'Next',
                                   style: TextStyle(
                                       color: blackColor,
+                                      fontWeight: FontWeight.w600,
                                       fontFamily: fontFamily,
                                       fontSize: 12),
                                 ),

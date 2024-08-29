@@ -55,6 +55,9 @@ class _TwoFaScreenState extends State<TwoFaScreen> {
                     fontSize: 16,
                     fontWeight: FontWeight.w600),
               ),
+
+              //  getting the value of the 2fa from the users data from firebase and updating it
+
               StreamBuilder(
                   stream: FirebaseFirestore.instance
                       .collection('users')

@@ -352,11 +352,11 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
                                       ));
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.all(18),
+                                  padding: const EdgeInsets.all(20),
                                   decoration: BoxDecoration(
                                     border: widget.isProfilePlayer
                                         ? Border.all(
-                                            color: primaryColor, width: 5)
+                                            color: whiteColor, width: 5)
                                         : null,
                                     color: whiteColor,
                                     borderRadius: BorderRadius.circular(50),
@@ -374,11 +374,11 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
                                 child: Consumer<FilterProvider>(
                                     builder: (context, filterPro, _) {
                                   return Container(
-                                      padding: const EdgeInsets.all(18),
+                                      padding: const EdgeInsets.all(20),
                                       decoration: BoxDecoration(
                                         border: widget.isProfilePlayer
                                             ? Border.all(
-                                                color: primaryColor, width: 5)
+                                                color: whiteColor, width: 5)
                                             : null,
                                         color: widget.isProfilePlayer
                                             ? whiteColor

@@ -22,7 +22,7 @@ showWhiteOverlayPopup(context, IconData? icon, String? svgPath, String? image,
           children: [
             if (svgPath != null)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
+                padding: const EdgeInsets.only(top: 5, bottom: 10),
                 child: SvgPicture.asset(svgPath),
               ),
             if (icon != null)
@@ -79,7 +79,7 @@ showWhiteOverlayPopup(context, IconData? icon, String? svgPath, String? image,
                         fontSize: 16,
                         fontFamily: fontFamily)),
               ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 0),
           ],
         ),
       );

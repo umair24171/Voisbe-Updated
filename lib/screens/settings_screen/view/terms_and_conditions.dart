@@ -57,7 +57,7 @@ class TermsAndConditions extends StatelessWidget {
                     '1. Introduction: ',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -81,7 +81,7 @@ class TermsAndConditions extends StatelessWidget {
                     '2. User Commitments: ',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -112,7 +112,7 @@ class TermsAndConditions extends StatelessWidget {
                     '3. Prohibited Activities: ',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -142,7 +142,7 @@ class TermsAndConditions extends StatelessWidget {
                     '4. Data Privacy and Security: ',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -166,7 +166,7 @@ class TermsAndConditions extends StatelessWidget {
                     '5. Reserved Usernames Policy:',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -201,7 +201,7 @@ class TermsAndConditions extends StatelessWidget {
                     '6. Subscription Services: ',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -226,7 +226,7 @@ class TermsAndConditions extends StatelessWidget {
                     '7. Customer Support and Reporting: ',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -250,7 +250,7 @@ class TermsAndConditions extends StatelessWidget {
                     '8. Rights and Limitations: ',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -274,7 +274,7 @@ class TermsAndConditions extends StatelessWidget {
                     '9. Disputes: ',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -298,7 +298,7 @@ class TermsAndConditions extends StatelessWidget {
                     '10. Termination: ',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -322,7 +322,7 @@ class TermsAndConditions extends StatelessWidget {
                     '11. Modifications to Terms:',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -347,7 +347,7 @@ class TermsAndConditions extends StatelessWidget {
                     '12. Governing Law: ',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),
@@ -375,7 +375,7 @@ class TermsAndConditions extends StatelessWidget {
                     'Updating These Terms',
                     style: TextStyle(
                         color: blackColor,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         fontFamily: khulaRegular),
                   ),

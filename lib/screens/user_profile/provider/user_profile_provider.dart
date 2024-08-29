@@ -18,15 +18,21 @@ class UserProfileProvider with ChangeNotifier {
   List<UserModel> following = [];
   List<UserModel> closeFriends = [];
 
+//  enabling notification for other user
+
   addNotification(String userId) {
     otherUser!.notificationsEnable.add(userId);
     notifyListeners();
   }
 
+  //  removing the enabled notification
+
   removeNotification(String userId) {
     otherUser!.notificationsEnable.remove(userId);
     notifyListeners();
   }
+
+  //  getting the close friend list for the current user
 
   getCloseFriends(List closeFriend) async {
     try {
@@ -45,6 +51,8 @@ class UserProfileProvider with ChangeNotifier {
     }
   }
 
+  //  getting all the followers of the user
+
   Future<void> getFollowers(String userId) async {
     followers.clear();
     final QuerySnapshot<Map<String, dynamic>> userPostsSnapshot =
@@ -58,6 +66,8 @@ class UserProfileProvider with ChangeNotifier {
         .toList();
     notifyListeners();
   }
+
+  //  getting all the following of the user
 
   Future<void> getFollowing(String userId) async {
     following.clear();
@@ -73,6 +83,8 @@ class UserProfileProvider with ChangeNotifier {
         .toList();
     notifyListeners();
   }
+
+  // getting current user acoounts
 
   geUserAccounts() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -99,6 +111,8 @@ class UserProfileProvider with ChangeNotifier {
     }
   }
 
+  //  getting user posts
+
   Future<void> getUserPosts(String userId) async {
     final QuerySnapshot<Map<String, dynamic>> userPostsSnapshot =
         await _firestore
@@ -113,11 +127,15 @@ class UserProfileProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  //  deleting user post
+
   deletePost(String postId) async {
     await _firestore.collection('notes').doc(postId).delete();
     userPosts.removeWhere((element) => element.noteId == postId);
     notifyListeners();
   }
+
+  //  follow user function
 
   followUser(
     UserModel currentUser,
@@ -199,21 +217,8 @@ class UserProfileProvider with ChangeNotifier {
       }
       // otherUser!.followers.remove(currentUser.uid);
     }
-
-    // if (currentUser.following.contains(followUser.uid)) {
-    //   await _firestore.collection('users').doc(currentUser.uid).update({
-    //     'following': FieldValue.arrayRemove([followUser.uid])
-    //   });
-    // } else {
-    //   await _firestore.collection('users').doc(currentUser.uid).update({
-    //     'following': FieldValue.arrayUnion([followUser.uid])
-    //   });
-    // }
-
-    // notifyListeners();
   }
-
-  // followUserLocally() {}
+// getting other user posts
 
   Future<void> getOtherUserPosts(String userId) async {
     final QuerySnapshot<Map<String, dynamic>> userPostsSnapshot =
@@ -228,6 +233,8 @@ class UserProfileProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  //  getting other user profile
+
   otherUserProfile(String userUid) async {
     final DocumentSnapshot<Map<String, dynamic>> userPostsSnapshot =
         await _firestore.collection('users').doc(userUid).get();
@@ -235,38 +242,8 @@ class UserProfileProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // pinPost(String noteId, bool isPinned) async {
-  //   int maxPinnedPosts = 3; // Limit to 3 pinned posts
-  //   List<NoteModel> pinnedPosts = [];
+//   pinning the post logic
 
-  //   // Check if the current post should be pinned or unpinned
-  //   for (var note in userPosts) {
-  //     if (note.noteId == noteId) {
-  //       note.isPinned = isPinned;
-  //     }
-  //     if (note.isPinned) {
-  //       pinnedPosts.add(note);
-  //     }
-  //   }
-
-  //   // Restrict pinned posts to the maximum allowed
-  //   if (pinnedPosts.length > maxPinnedPosts) {
-  //     var noteToUnpin = pinnedPosts.removeLast();
-  //     noteToUnpin.isPinned = false;
-  //     await _firestore
-  //         .collection('notes')
-  //         .doc(noteToUnpin.noteId)
-  //         .update({'isPinned': false});
-  //   }
-
-  //   notifyListeners();
-
-  //   // Update the pin status in Firestore
-  //   await _firestore
-  //       .collection('notes')
-  //       .doc(noteId)
-  //       .update({'isPinned': isPinned});
-  // }
   pinPost(String noteId, bool isPinned) async {
     int pinnedCount = userPosts.where((note) => note.isPinned).length;
 

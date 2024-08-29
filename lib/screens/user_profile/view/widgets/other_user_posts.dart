@@ -38,13 +38,19 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
 
   @override
   void initState() {
+    //  getting all posts of the user
+
     getUserDataSubscription();
 
     super.initState();
   }
 
   getUserDataSubscription() {
+    // getting current user
+
     var user = Provider.of<UserProvider>(context, listen: false).user;
+
+    //  getting user posts time based
 
     _subscription = FirebaseFirestore.instance
         .collection('notes')
@@ -54,6 +60,9 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
         .listen((snapshot) async {
       if (snapshot.docs.isNotEmpty) {
         log('snapshots are ${snapshot.docs.first.data()}');
+
+        //  converting all post to model
+
         List<NoteModel> otherUserPosts =
             snapshot.docs.map((e) => NoteModel.fromMap(e.data())).toList();
 
@@ -135,400 +144,6 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
     });
   }
 
-//   getUserDataSubscription() {
-//     var user = Provider.of<UserProvider>(context, listen: false).user;
-
-//     _subscription = FirebaseFirestore.instance
-//         .collection('notes')
-//         .where('userUid', isEqualTo: widget.id)
-//         .orderBy('publishedDate', descending: true)
-//         .snapshots()
-//         .listen((snapshot) async {
-//       if (snapshot.docs.isNotEmpty) {
-//         log('snapshots are ${snapshot.docs.first.data()}');
-//         List<NoteModel> otherUserPosts =
-//             snapshot.docs.map((e) => NoteModel.fromMap(e.data())).toList();
-
-//         // Fetch the user data for the post owner
-//          DocumentSnapshot userSnapshot1 = await FirebaseFirestore.instance
-//             .collection('users')
-//             .doc(user!.uid)
-//             .get();
-// UserModel currentUser =
-//             UserModel.fromMap(userSnapshot1.data() as Map<String, dynamic>);
-//         DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
-//             .collection('users')
-//             .doc(widget.id)
-//             .get();
-//         UserModel postOwner =
-//             UserModel.fromMap(userSnapshot.data() as Map<String, dynamic>);
-
-//         bool isSubscriptionEnabled = postOwner.isSubscriptionEnable;
-//         bool isCurrentUserSubscriber =
-//             currentUser!.subscribedSoundPacks.contains(widget.id);
-
-//         NoteModel newPost = otherUserPosts[0];
-//         pinnedPosts.clear();
-//         nonPinnedPosts.clear();
-//         List<int> indexOfLockPosts = [];
-
-//         for (int i = 0; i < otherUserPosts.length; i++) {
-//           if (otherUserPosts[i].isPinned) {
-//             pinnedPosts.add(otherUserPosts[i]);
-//           } else {
-//             nonPinnedPosts.add(otherUserPosts[i]);
-//           }
-//         }
-
-//         pinnedPosts.removeWhere((element) => element.noteId == newPost.noteId);
-//         nonPinnedPosts
-//             .removeWhere((element) => element.noteId == newPost.noteId);
-
-//         otherUserPosts = [newPost, ...pinnedPosts, ...nonPinnedPosts];
-
-//         for (int i = 0; i < otherUserPosts.length; i++) {
-//           if (otherUserPosts[i].isPostForSubscribers) {
-//             if (isSubscriptionEnabled) {
-//               if (!isCurrentUserSubscriber) {
-//                 indexOfLockPosts.add(i);
-//               }
-//             }
-//             // If subscription is turned off, we don't add to indexOfLockPosts
-//           }
-//         }
-
-//         setState(() {
-//           userPosts = otherUserPosts;
-//           lockPosts = indexOfLockPosts;
-//         });
-//       }
-//     });
-//   }
-
-  // getUserDataSubscription() {
-  //   var currentUser = Provider.of<UserProvider>(context, listen: false).user;
-  //   _subscription = FirebaseFirestore.instance
-  //       .collection('notes')
-  //       .where('userUid', isEqualTo: widget.id)
-  //       .orderBy('publishedDate', descending: true)
-  //       .snapshots()
-  //       .listen((snapshot) async {
-  //     if (snapshot.docs.isNotEmpty) {
-  //       log('snapshots are ${snapshot.docs.first.data()}');
-  //       List<NoteModel> otherUserPosts =
-  //           snapshot.docs.map((e) => NoteModel.fromMap(e.data())).toList();
-
-  //       // Fetch the user data for the post owner
-  //       DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
-  //           .collection('users')
-  //           .doc(widget.id)
-  //           .get();
-  //       UserModel postOwner =
-  //           UserModel.fromMap(userSnapshot.data() as Map<String, dynamic>);
-
-  //       bool isSubscriptionEnabled = postOwner.isSubscriptionEnable;
-  //       bool isCurrentUserSubscriber =
-  //           currentUser!.subscribedSoundPacks.contains(widget.id);
-
-  //       NoteModel newPost = otherUserPosts[0];
-  //       pinnedPosts.clear();
-  //       nonPinnedPosts.clear();
-  //       List<int> indexOfLockPosts = [];
-
-  //       for (int i = 0; i < otherUserPosts.length; i++) {
-  //         if (otherUserPosts[i].isPinned) {
-  //           pinnedPosts.add(otherUserPosts[i]);
-  //         } else {
-  //           nonPinnedPosts.add(otherUserPosts[i]);
-  //         }
-  //       }
-
-  //       pinnedPosts.removeWhere((element) => element.noteId == newPost.noteId);
-  //       nonPinnedPosts
-  //           .removeWhere((element) => element.noteId == newPost.noteId);
-
-  //       otherUserPosts = [newPost, ...pinnedPosts, ...nonPinnedPosts];
-
-  //       for (int i = 0; i < otherUserPosts.length; i++) {
-  //         if (otherUserPosts[i].isPostForSubscribers &&
-  //             isSubscriptionEnabled &&
-  //             !isCurrentUserSubscriber) {
-  //           indexOfLockPosts.add(i);
-  //         }
-  //       }
-
-  //       log('Is subscription enabled: $isSubscriptionEnabled');
-  //       log('Is current user subscriber: $isCurrentUserSubscriber');
-  //       log('Number of locked posts: ${indexOfLockPosts.length}');
-
-  //       setState(() {
-  //         userPosts = otherUserPosts;
-  //         lockPosts = indexOfLockPosts;
-  //       });
-  //     }
-  //   });
-  // }
-
-  // getUserDataSubscription() {
-  //   var currentUser = Provider.of<UserProvider>(context, listen: false).user;
-  //   _subscription = FirebaseFirestore.instance
-  //       .collection('notes')
-  //       .where('userUid', isEqualTo: widget.id)
-  //       .orderBy('publishedDate', descending: true)
-  //       .snapshots()
-  //       .listen((snapshot) async {
-  //     if (snapshot.docs.isNotEmpty) {
-  //       log('snapshots are ${snapshot.docs.first.data()}');
-  //       List<NoteModel> otherUserPosts =
-  //           snapshot.docs.map((e) => NoteModel.fromMap(e.data())).toList();
-
-  //       // Fetch the user data for the post owner
-  //       DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
-  //           .collection('users')
-  //           .doc(widget.id)
-  //           .get();
-  //       UserModel postOwner =
-  //           UserModel.fromMap(userSnapshot.data() as Map<String, dynamic>);
-
-  //       List<NoteModel> secondList = List.from(otherUserPosts);
-
-  //       NoteModel newPost = otherUserPosts[0];
-  //       pinnedPosts.clear();
-  //       nonPinnedPosts.clear();
-  //       for (int i = 0; i < otherUserPosts.length; i++) {
-  //         if (otherUserPosts[i].isPinned) {
-  //           pinnedPosts.add(otherUserPosts[i]);
-  //         } else {
-  //           nonPinnedPosts.add(otherUserPosts[i]);
-  //         }
-  //       }
-  //       List<int> indexOfLockPosts = [];
-  //       pinnedPosts.removeWhere((element) => element.noteId == newPost.noteId);
-  //       nonPinnedPosts
-  //           .removeWhere((element) => element.noteId == newPost.noteId);
-
-  //       otherUserPosts = [newPost, ...pinnedPosts, ...nonPinnedPosts];
-  //       indexOfLockPosts.clear();
-
-  //       bool isSubscribed =
-  //           currentUser!.subscribedSoundPacks.contains(widget.id);
-  //       bool hasSubscriptionTurnedOff = !postOwner.isSubscriptionEnable;
-
-  //       for (int i = 0; i < otherUserPosts.length; i++) {
-  //         if (otherUserPosts[i].isPostForSubscribers &&
-  //             (!isSubscribed || hasSubscriptionTurnedOff)) {
-  //           indexOfLockPosts.add(i);
-  //         }
-  //       }
-
-  //       // Remove locked posts if conditions are met
-  //       if (hasSubscriptionTurnedOff && !isSubscribed) {
-  //         otherUserPosts.removeWhere((post) => post.isPostForSubscribers);
-  //         indexOfLockPosts.clear();
-  //       }
-
-  //       setState(() {
-  //         userPosts = otherUserPosts;
-  //         lockPosts = indexOfLockPosts;
-  //       });
-  //     }
-  //   });
-  // }
-
-  // getUserDataSubscription() {
-  //   var currentUser = Provider.of<UserProvider>(context, listen: false).user;
-  //   _subscription = FirebaseFirestore.instance
-  //       .collection('notes')
-  //       .where('userUid', isEqualTo: widget.id)
-  //       .orderBy('publishedDate', descending: true)
-  //       .snapshots()
-  //       .listen((snapshot) async {
-  //     if (snapshot.docs.isNotEmpty) {
-  //       log('snapshots are ${snapshot.docs.first.data()}');
-  //       List<NoteModel> otherUserPosts =
-  //           snapshot.docs.map((e) => NoteModel.fromMap(e.data())).toList();
-
-  //       // Fetch the user data for the post owner
-  //       DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
-  //           .collection('users')
-  //           .doc(widget.id)
-  //           .get();
-  //       UserModel postOwner =
-  //           UserModel.fromMap(userSnapshot.data() as Map<String, dynamic>);
-
-  //       bool isSubscriptionEnabled = postOwner.isSubscriptionEnable;
-  //       bool isCurrentUserSubscriber =
-  //           currentUser!.subscribedSoundPacks.contains(widget.id);
-
-  //       NoteModel newPost = otherUserPosts[0];
-  //       pinnedPosts.clear();
-  //       nonPinnedPosts.clear();
-  //       List<int> indexOfLockPosts = [];
-
-  //       for (int i = 0; i < otherUserPosts.length; i++) {
-  //         if (otherUserPosts[i].isPinned) {
-  //           pinnedPosts.add(otherUserPosts[i]);
-  //         } else {
-  //           nonPinnedPosts.add(otherUserPosts[i]);
-  //         }
-  //       }
-
-  //       pinnedPosts.removeWhere((element) => element.noteId == newPost.noteId);
-  //       nonPinnedPosts
-  //           .removeWhere((element) => element.noteId == newPost.noteId);
-
-  //       otherUserPosts = [newPost, ...pinnedPosts, ...nonPinnedPosts];
-
-  //       for (int i = 0; i < otherUserPosts.length; i++) {
-  //         if (otherUserPosts[i].isPostForSubscribers &&
-  //             isSubscriptionEnabled &&
-  //             !isCurrentUserSubscriber) {
-  //           indexOfLockPosts.add(i);
-  //         }
-  //       }
-
-  //       log('Is subscription enabled: $isSubscriptionEnabled');
-  //       log('Is current user subscriber: $isCurrentUserSubscriber');
-  //       log('Number of locked posts: ${indexOfLockPosts.length}');
-
-  //       setState(() {
-  //         userPosts = otherUserPosts;
-  //         lockPosts = indexOfLockPosts;
-  //       });
-  //     }
-  //   });
-  // }
-
-//   getUserDataSubscription() {
-//     var currentUser = Provider.of<UserProvider>(context, listen: false).user;
-//     _subscription = FirebaseFirestore.instance
-//         .collection('notes')
-//         .where('userUid', isEqualTo: widget.id)
-//         .orderBy('publishedDate', descending: true)
-//         .snapshots()
-//         .listen((snapshot) async {
-//       if (snapshot.docs.isNotEmpty) {
-//         log('snapshots are ${snapshot.docs.first.data()}');
-//         List<NoteModel> otherUserPosts =
-//             snapshot.docs.map((e) => NoteModel.fromMap(e.data())).toList();
-
-//         // Fetch the user data for the post owner
-//         DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
-//             .collection('users')
-//             .doc(widget.id)
-//             .get();
-//         UserModel postOwner =
-//             UserModel.fromMap(userSnapshot.data() as Map<String, dynamic>);
-
-//         List<NoteModel> secondList = List.from(otherUserPosts);
-
-//         NoteModel newPost = otherUserPosts[0];
-//         pinnedPosts.clear();
-//         nonPinnedPosts.clear();
-//         for (int i = 0; i < otherUserPosts.length; i++) {
-//           if (otherUserPosts[i].isPinned) {
-//             pinnedPosts.add(otherUserPosts[i]);
-//           } else {
-//             nonPinnedPosts.add(otherUserPosts[i]);
-//           }
-//         }
-//         List<int> indexOfLockPosts = [];
-//         pinnedPosts.removeWhere((element) => element.noteId == newPost.noteId);
-//         nonPinnedPosts
-//             .removeWhere((element) => element.noteId == newPost.noteId);
-
-//         otherUserPosts = [newPost, ...pinnedPosts, ...nonPinnedPosts];
-//         indexOfLockPosts.clear();
-
-//         bool isSubscribed =
-//             currentUser!.subscribedSoundPacks.contains(widget.id);
-//         bool hasSubscriptionTurnedOff = !postOwner.isSubscriptionEnable;
-
-//         for (int i = 0; i < otherUserPosts.length; i++) {
-//           if (otherUserPosts[i].isPostForSubscribers &&
-//               (!isSubscribed && !hasSubscriptionTurnedOff)) {
-//             indexOfLockPosts.add(i);
-//           }
-//         }
-
-// // Remove locked posts if subscription is turned off
-//         if (hasSubscriptionTurnedOff) {
-//           otherUserPosts.removeWhere((post) => post.isPostForSubscribers);
-//           indexOfLockPosts.clear();
-//         }
-
-//         // bool isSubscribed =
-//         //     currentUser!.subscribedSoundPacks.contains(widget.id);
-//         // bool hasSubscriptionTurnedOff = !postOwner.isSubscriptionEnable;
-
-//         // for (int i = 0; i < otherUserPosts.length; i++) {
-//         //   if (otherUserPosts[i].isPostForSubscribers &&
-//         //       (!isSubscribed || hasSubscriptionTurnedOff)) {
-//         //     indexOfLockPosts.add(i);
-//         //   }
-//         // }
-
-//         // // Remove locked posts if conditions are met
-//         // if (hasSubscriptionTurnedOff && !isSubscribed) {
-//         //   otherUserPosts.removeWhere((post) => post.isPostForSubscribers);
-//         //   indexOfLockPosts.clear();
-//         // }
-
-//         setState(() {
-//           userPosts = otherUserPosts;
-//           lockPosts = indexOfLockPosts;
-//         });
-//       }
-//     });
-//   }
-
-  // getUserDataSubscription() {
-  //   var currentUser = Provider.of<UserProvider>(context, listen: false).user;
-  //   _subscription = FirebaseFirestore.instance
-  //       .collection('notes')
-  //       .where('userUid', isEqualTo: widget.id)
-  //       .orderBy('publishedDate', descending: true)
-  //       .snapshots()
-  //       .listen((snapshot) {
-  //     if (snapshot.docs.isNotEmpty) {
-  //       log('snapshots are ${snapshot.docs.first.data()}');
-  //       List<NoteModel> otherUserPosts =
-  //           snapshot.docs.map((e) => NoteModel.fromMap(e.data())).toList();
-
-  //       List<NoteModel> secondList = List.from(otherUserPosts);
-
-  //       NoteModel newPost = otherUserPosts[0];
-  //       pinnedPosts.clear();
-  //       nonPinnedPosts.clear();
-  //       for (int i = 0; i < otherUserPosts.length; i++) {
-  //         if (otherUserPosts[i].isPinned) {
-  //           pinnedPosts.add(otherUserPosts[i]);
-  //         } else {
-  //           nonPinnedPosts.add(otherUserPosts[i]);
-  //         }
-  //       }
-  //       List<int> indexOfLockPosts = [];
-  //       pinnedPosts.removeWhere((element) => element.noteId == newPost.noteId);
-  //       nonPinnedPosts
-  //           .removeWhere((element) => element.noteId == newPost.noteId);
-
-  //       otherUserPosts = [newPost, ...pinnedPosts, ...nonPinnedPosts];
-  //       indexOfLockPosts.clear();
-  //       for (int i = 0; i < otherUserPosts.length; i++) {
-  //         if (otherUserPosts[i].isPostForSubscribers &&
-  //             !currentUser!.subscribedSoundPacks
-  //                 .contains(otherUserPosts[i].userUid)) {
-  //           indexOfLockPosts.add(i);
-  //         }
-  //       }
-  //       setState(() {
-  //         userPosts = otherUserPosts;
-  //         lockPosts = indexOfLockPosts;
-  //       });
-  //     }
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     log('otherUserPosts $userPosts');
@@ -536,10 +151,17 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
     var size = MediaQuery.of(context).size;
 
     return Container(
-      color: userPosts.isEmpty ? null : whiteColor,
+      color: userPosts.isEmpty
+          ? null
+          : userPosts.length == 1
+              ? null
+              : whiteColor,
       child: Column(
         children: [
           userPosts.isEmpty
+
+              //  if the posts are empty show this icon
+
               ? SizedBox(
                   height: 125,
                   child: Column(
@@ -564,6 +186,9 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
                     ],
                   ),
                 )
+
+              //  build the user posts
+
               : SizedBox(
                   height: size.height * 0.2,
                   // width: double.infinity,
@@ -579,17 +204,24 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
                       shrinkWrap: true,
 
                       scrollDirection: Axis.horizontal,
+
+                      //  only show 2 posts in 1st  row
+
                       itemCount: userPosts.length >= 2 ? 2 : userPosts.length,
                       itemBuilder: (context, index) {
                         NoteModel not = userPosts[index];
 
                         return GestureDetector(
                           onTap: () {
+                            //  if the post is for subscriber navigate to subsribe screen
+
                             if (lockPosts.contains(index)) {
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => const SubscribeScreen(
                                       // note: noteModel,
                                       )));
+
+                              //  otherwise home screen to show the specific screen
                             } else {
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => HomeScreen(
@@ -608,6 +240,8 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
                                       )));
                             }
                           },
+                          //  returning the post design and passing the required data
+
                           child: SinglePostNote(
                             isFirstPost: index == 0,
                             lockPosts: lockPosts,
@@ -627,7 +261,12 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
             onRefresh: () {
               return getUserDataSubscription();
             },
+
+            //  building posts in grid having 3 posts in a row
+
             child: GridView.builder(
+              //  removing the 1st 2 posts
+
               itemCount: userPosts.length >= 2 ? userPosts.length - 2 : 0,
               physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,

@@ -1,6 +1,7 @@
 // import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 // import 'package:social_notes/resources/show_snack.dart';
@@ -48,25 +49,35 @@ class AuthScreen extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                    child:
+                        // Image.asset(
+                        //   'assets/icons/logo 1.png',
+                        // height: 52,
+                        // width: 27,
+                        //   color: whiteColor,
+                        // )
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
                           Padding(
                             padding: const EdgeInsets.only(top: 5),
-                            child: Image.asset(
-                              'assets/images/app-logo.png',
-                              height: 52,
+                            child: SvgPicture.asset(
+                              'assets/icons/SVG.svg',
+                              height: 39,
                               width: 27,
                               fit: BoxFit.cover,
                             ),
                           ),
-                          Text(
-                            'VOISBE',
-                            style: TextStyle(
-                              fontFamily: fontFamily2,
-                              color: whiteColor,
-                              // fontStyle: FontStyle.italic,
-                              fontSize: 40,
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              'VOISBE',
+                              style: TextStyle(
+                                fontFamily: fontFamily2,
+                                color: whiteColor,
+                                // fontStyle: FontStyle.italic,
+                                fontSize: 45,
+                              ),
                             ),
                           )
                         ]),

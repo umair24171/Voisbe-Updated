@@ -287,8 +287,8 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                               } else {
                                 // error to show if the hashtag already exist
 
-                                showWhiteOverlayPopup(context, null, null,
-                                    'assets/icons/Info (1).svg',
+                                showWhiteOverlayPopup(context, null,'assets/icons/Info (1).svg', null,
+                                    
                                     title: 'Error',
                                     message: 'Hastag already added.',
                                     isUsernameRes: false);
@@ -296,8 +296,8 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                             } else {
                               //  error to show if the hashtags exceeds the limit of 10
 
-                              showWhiteOverlayPopup(context, null, null,
-                                  'assets/icons/Info (1).svg',
+                              showWhiteOverlayPopup(context, null,'assets/icons/Info (1).svg', null,
+                                  
                                   title: 'Error',
                                   message: 'You can only select 10 hashtags.',
                                   isUsernameRes: false);
@@ -435,7 +435,7 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                                         null,
                                         title: 'Error',
                                         message:
-                                            'You can only select 10 hashtags',
+                                            'You can only select 10 hashtags.',
                                         isUsernameRes: false,
                                       );
                                     }
@@ -617,7 +617,7 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                                         null,
                                         title: 'Error',
                                         message:
-                                            'You can only select 10 hashtags',
+                                            'You can only select 10 hashtags.',
                                         isUsernameRes: false,
                                       );
                                     }
@@ -684,6 +684,7 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                         style: TextStyle(
                             color: whiteColor,
                             fontFamily: fontFamily,
+                            fontWeight: FontWeight.w600,
                             fontSize: 12),
                       ),
                       icon: Image.asset(
@@ -713,7 +714,9 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                               Text(
                                 forSubscribers ? 'Subscribers' : 'Public',
                                 style: TextStyle(
-                                    fontFamily: fontFamily, color: blackColor),
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: fontFamily,
+                                    color: blackColor),
                               ),
 
                               // switch to enable or disable the toggle only show up if the user has enabled the subscription
@@ -858,6 +861,7 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                                 : Text(
                                     'Share',
                                     style: TextStyle(
+                                        fontWeight: FontWeight.w600,
                                         color: blackColor,
                                         fontFamily: fontFamily,
                                         fontSize: 12),

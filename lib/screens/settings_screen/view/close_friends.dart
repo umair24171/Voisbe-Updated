@@ -176,11 +176,7 @@ class CloseFriendListTile extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 4),
                 child: verifiedIcon(),
               )
-            // Image.network(
-            //   'https://media.istockphoto.com/id/1396933001/vector/vector-blue-verified-badge.jpg?s=612x612&w=0&k=20&c=aBJ2JAzbOfQpv2OCSr0k8kYe0XHutOGBAJuVjvWvPrQ=',
-            //   height: 20,
-            //   width: 20,
-            // )
+           
           ],
         ),
         trailing: Consumer<UserProvider>(builder: (context, userPro, _) {
@@ -211,8 +207,7 @@ class CloseFriendListTile extends StatelessWidget {
             },
             child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 3),
-                // height: 33,
-                // width: 33,
+              
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   color: userPro.user!.closeFriends.contains(user.uid)

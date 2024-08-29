@@ -15,11 +15,18 @@ class HelpScreen extends StatefulWidget {
 }
 
 class _HelpScreenState extends State<HelpScreen> {
+
+  //  getting all the data entered by the user through controllers
+
   final TextEditingController usernameCont = TextEditingController();
 
   final TextEditingController emailCont = TextEditingController();
 
   final TextEditingController messageCont = TextEditingController();
+
+
+  // value to check if the email is being send  or sent
+
 
   bool isSent = false;
   String? emailError;
@@ -74,12 +81,18 @@ class _HelpScreenState extends State<HelpScreen> {
               ),
             ),
           ),
+
+          //  custom field to get the username of the user
+
           CustomHelpField(
             onChanged: (value) {},
             controller: usernameCont,
             size: size,
             hintText: 'Username*',
           ),
+
+          //  custom field to get the email of the user
+
           CustomHelpField(
             onChanged: (value) {
               if (value.isNotEmpty) {
@@ -98,6 +111,9 @@ class _HelpScreenState extends State<HelpScreen> {
             size: size,
             hintText: 'Email Address*',
           ),
+
+          //  if valid email is not entered show the error
+
           if (emailError != null)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 18),
@@ -113,6 +129,9 @@ class _HelpScreenState extends State<HelpScreen> {
                 ),
               ),
             ),
+
+            //  the message field 
+
           CustomHelpField(
             onChanged: (value) {},
             controller: messageCont,
@@ -126,6 +145,9 @@ class _HelpScreenState extends State<HelpScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: ElevatedButton(
                   onPressed: () {
+
+                    //  send email funtion
+
                     if (usernameCont.text.isNotEmpty &&
                         emailCont.text.isNotEmpty &&
                         messageCont.text.isNotEmpty &&
@@ -139,10 +161,13 @@ class _HelpScreenState extends State<HelpScreen> {
                         });
                       });
                     } else {
+
+                      //  show error if there is any mistake by the user
+
                       showWhiteOverlayPopup(
                           context, null, 'assets/icons/Info (1).svg', null,
                           title: 'Error',
-                          message: 'Please fill out all the fields',
+                          message: 'Please fill out all the fields.',
                           isUsernameRes: false);
                     }
                   },
@@ -158,6 +183,9 @@ class _HelpScreenState extends State<HelpScreen> {
                   )),
             ),
           ),
+
+          //  only show if the message has been sent 
+
           if (isSent)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -175,6 +203,10 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 }
+
+
+//  custom design of the field
+
 
 class CustomHelpField extends StatelessWidget {
   CustomHelpField(

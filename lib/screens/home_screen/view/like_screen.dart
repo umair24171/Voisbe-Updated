@@ -93,7 +93,7 @@ class LikeScreen extends StatelessWidget {
                       //       fontFamily: khulaRegular,
                       //       fontWeight: FontWeight.w400),
                       // ),
-                      trailing: userProvider!.uid.contains(postOwner)
+                      trailing: user.uid.contains(userProvider!.uid)
                           ? null
                           : StreamBuilder(
                               stream: FirebaseFirestore.instance
@@ -105,7 +105,7 @@ class LikeScreen extends StatelessWidget {
                                   UserModel followUSer =
                                       UserModel.fromMap(snapshot.data!.data()!);
                                   bool isContains = followUSer.followers
-                                      .contains(userProvider.uid);
+                                      .contains(userProvider!.uid);
                                   String text = '';
                                   if (followUSer.isPrivate) {
                                     if (followUSer.followReq

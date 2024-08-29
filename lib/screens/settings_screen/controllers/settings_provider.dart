@@ -97,7 +97,7 @@ class SettingsProvider with ChangeNotifier {
       notifyListeners();
       showWhiteOverlayPopup(context, Icons.subscriptions_outlined, null, null,
           title: 'Successful',
-          message: 'You have successfully unsubscribed',
+          message: 'You have successfully unsubscribed.',
           isUsernameRes: false);
       await _firestore.collection('users').doc(userId).update({
         'subscribedUsers': FieldValue.arrayRemove([currentUserId])
@@ -123,7 +123,7 @@ class SettingsProvider with ChangeNotifier {
           .set(paymentInfo.toMap());
       showWhiteOverlayPopup(context, Icons.check_box, null, null,
           title: 'Successful',
-          message: 'You Card details has been updated',
+          message: 'You Card details has been updated.',
           isUsernameRes: false);
     } catch (e) {
       log(e.toString());
@@ -137,7 +137,7 @@ class SettingsProvider with ChangeNotifier {
       await _firestore.collection('paymentInfos').doc(userId).delete();
       showWhiteOverlayPopup(context, Icons.check_box, null, null,
           title: 'Successful',
-          message: 'You Card details has been removed',
+          message: 'You Card details has been removed.',
           isUsernameRes: false);
     } catch (e) {
       log(e.toString());

@@ -24,6 +24,9 @@ class SubsccriptionListTile extends StatelessWidget {
   final String currentUserId;
   final bool isVerified;
   final double price;
+
+  // getting the required data to show the subscription
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -34,6 +37,9 @@ class SubsccriptionListTile extends StatelessWidget {
                 builder: (context) => OtherUserProfile(userId: userId),
               ));
         },
+
+        //  getting the user image
+
         leading: CircleAvatar(
           radius: 20,
           backgroundImage: NetworkImage(
@@ -45,6 +51,9 @@ class SubsccriptionListTile extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 4),
+
+              //  title or username of the user
+
               child: Text(
                 username,
                 style: TextStyle(
@@ -62,6 +71,9 @@ class SubsccriptionListTile extends StatelessWidget {
             // )
           ],
         ),
+
+        //  getting the subscription price of the user
+
         subtitle: Text(
           '${price.toStringAsFixed(2)} USD per month',
           style: TextStyle(
@@ -70,6 +82,9 @@ class SubsccriptionListTile extends StatelessWidget {
               fontFamily: khulaRegular,
               fontWeight: FontWeight.w400),
         ),
+
+        //  removing subscription button
+
         trailing: InkWell(
           onTap: () {
             Provider.of<SettingsProvider>(context, listen: false)
@@ -86,6 +101,9 @@ class SubsccriptionListTile extends StatelessWidget {
                 color: const Color(0xff868686),
               ),
             ),
+
+            //  text to show the subscription status of the user
+
             child:
                 Consumer<SettingsProvider>(builder: (context, settingPro, _) {
               return Text(subscritpionStatus,

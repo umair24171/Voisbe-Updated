@@ -22,7 +22,9 @@ class PaymentDetailsScreen extends StatefulWidget {
 
 class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
   late StreamSubscription<DocumentSnapshot> stream;
-  // final String khularegular = '';
+
+//  controllers to get the value entered
+
   TextEditingController nameController = TextEditingController();
 
   TextEditingController ibanController = TextEditingController();
@@ -32,6 +34,9 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
   TextEditingController bankNameController = TextEditingController();
 
   TextEditingController addressController = TextEditingController();
+
+  //  get the payment info if already entered by the user and saved in database
+
   getPaymentInfo() async {
     var user = Provider.of<UserProvider>(context, listen: false).user;
     stream = FirebaseFirestore.instance
@@ -96,34 +101,8 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Text(
-          //   'Enter your payout details',
-          //   style: TextStyle(
-          //       color: Colors.blue,
-          //       fontFamily: khularegular,
-          //       fontSize: mdWidth * .03),
-          // ),
-
           Column(
             children: [
-              // Icon(
-              //   Icons.error_outline,
-              //   size: mdWidth * .09,
-              //   color: Colors.black,
-              // ),
-              // SizedBox(
-              //   height: mdHeight * .01,
-              // ),
-              // Text(
-              //   'Enter your payout details',
-              //   style: TextStyle(
-              //       color: Colors.black,
-              //       fontSize: mdWidth * .05,
-              //       fontFamily: khulaRegular),
-              // ),
-              // SizedBox(
-              //   height: mdHeight * .02,
-              // ),
               Padding(
                 padding: const EdgeInsets.only(left: 15),
                 child: Row(
@@ -149,28 +128,43 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
                   ],
                 ),
               ),
+
+              //  user full name field
+
               PayFieldWidget(
                   maxLine: 1,
                   hint: 'Full Name*',
                   keyboardType: TextInputType.text,
                   controller: nameController),
+
+              //  user account or iban number
+
               PayFieldWidget(
                   isAccountNum: true,
                   maxLine: 1,
                   hint: 'IBAN or Account Number*',
                   keyboardType: TextInputType.text,
                   controller: ibanController),
+
+              //  users swift code
+
               PayFieldWidget(
                   isSwiftCOde: true,
                   maxLine: 1,
                   hint: 'SWIFT Code*',
                   keyboardType: TextInputType.text,
                   controller: swiftCodeController),
+
+              //  users bank name field
+
               PayFieldWidget(
                   hint: 'Bank Name*',
                   maxLine: 1,
                   keyboardType: TextInputType.text,
                   controller: bankNameController),
+
+              //  users bank address
+
               PayFieldWidget(
                   hint: 'Bank Address*',
                   maxLine: 6,
@@ -187,6 +181,9 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
                           backgroundColor: WidgetStatePropertyAll(blackColor),
                           elevation: const WidgetStatePropertyAll(0),
                         ),
+
+                        //  function to remove the paymnent info
+
                         onPressed: () {
                           Provider.of<SettingsProvider>(context, listen: false)
                               .removePaymentInfo(currentUser!.uid, context);
@@ -209,6 +206,9 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
                         ),
                       ),
                     ),
+
+                    //  fucntion to add the payment info after getting the required data
+
                     ElevatedButton(
                       style: ButtonStyle(
                         backgroundColor: WidgetStatePropertyAll(blackColor),
@@ -232,10 +232,12 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
                           Provider.of<SettingsProvider>(context, listen: false)
                               .addPaymentInfo(paymentInfo, context);
                         } else {
+                          //  showing the error popup
+
                           showWhiteOverlayPopup(
                               context, null, 'assets/icons/Info (1).svg', null,
                               title: "Error",
-                              message: "Fields cannot be empty",
+                              message: "Fields cannot be empty.",
                               isUsernameRes: false);
                         }
                       },
@@ -261,6 +263,8 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
     );
   }
 }
+
+//  field layout or widget
 
 class PayFieldWidget extends StatelessWidget {
   PayFieldWidget(
@@ -323,7 +327,6 @@ class PayFieldWidget extends StatelessWidget {
   }
 }
 
-
 // class CardNumberInputFormatter extends TextInputFormatter {
 //   @override
 //   TextEditingValue formatEditUpdate(
@@ -383,31 +386,31 @@ class PayFieldWidget extends StatelessWidget {
 //   TextEditingController cardDateCont = TextEditingController();
 //   TextEditingController securityCodeCont = TextEditingController();
 
-  // getPaymentInfo() async {
-  //   var user = Provider.of<UserProvider>(context, listen: false).user;
-  //   stream = FirebaseFirestore.instance
-  //       .collection('paymentInfos')
-  //       .doc(user!.uid)
-  //       .snapshots()
-  //       .listen((snapshot) {
-  //     PaymentInfoModel paymentInfoModel =
-  //         PaymentInfoModel.fromMap(snapshot.data()!);
+// getPaymentInfo() async {
+//   var user = Provider.of<UserProvider>(context, listen: false).user;
+//   stream = FirebaseFirestore.instance
+//       .collection('paymentInfos')
+//       .doc(user!.uid)
+//       .snapshots()
+//       .listen((snapshot) {
+//     PaymentInfoModel paymentInfoModel =
+//         PaymentInfoModel.fromMap(snapshot.data()!);
 
-  //     setState(() {
-  //       cardNumberCont =
-  //           TextEditingController(text: paymentInfoModel.cardNumber);
-  //       cardDateCont = TextEditingController(text: paymentInfoModel.cardDate);
-  //       securityCodeCont =
-  //           TextEditingController(text: paymentInfoModel.securityCode);
-  //     });
-  //   });
-  // }
+//     setState(() {
+//       cardNumberCont =
+//           TextEditingController(text: paymentInfoModel.cardNumber);
+//       cardDateCont = TextEditingController(text: paymentInfoModel.cardDate);
+//       securityCodeCont =
+//           TextEditingController(text: paymentInfoModel.securityCode);
+//     });
+//   });
+// }
 
-  // @override
-  // void initState() {
-  //   getPaymentInfo();
-  //   super.initState();
-  // }
+// @override
+// void initState() {
+//   getPaymentInfo();
+//   super.initState();
+// }
 
 //   @override
 //   Widget build(BuildContext context) {
@@ -445,11 +448,11 @@ class PayFieldWidget extends StatelessWidget {
 //             child: Row(
 //               crossAxisAlignment: CrossAxisAlignment.end,
 //               children: [
-                // SvgPicture.asset(
-                //   'assets/icons/Credit card (1).svg',
-                //   height: 30,
-                //   width: 30,
-                // ),
+// SvgPicture.asset(
+//   'assets/icons/Credit card (1).svg',
+//   height: 30,
+//   width: 30,
+// ),
 //                 const SizedBox(
 //                   width: 10,
 //                 ),
@@ -574,81 +577,81 @@ class PayFieldWidget extends StatelessWidget {
 //           const SizedBox(
 //             height: 15,
 //           ),
-          // Row(
-          //   children: [
-          //     Padding(
-          //       padding: const EdgeInsets.symmetric(horizontal: 14),
-          //       child: ElevatedButton(
-          //         style: ButtonStyle(
-          //           backgroundColor: WidgetStatePropertyAll(blackColor),
-          //           elevation: const WidgetStatePropertyAll(0),
-          //         ),
-          //         onPressed: () {
-          //           if (cardNumberCont.text.isNotEmpty &&
-          //               cardDateCont.text.isNotEmpty &&
-          //               securityCodeCont.text.isNotEmpty) {
-          //             String paymentId = const Uuid().v4();
-          //             PaymentInfoModel paymentInfo = PaymentInfoModel(
-          //                 paymentId: paymentId,
-          //                 userId: currentUser!.uid,
-          //                 cardNumber: cardNumberCont.text,
-          //                 cardDate: cardDateCont.text,
-          //                 securityCode: securityCodeCont.text);
-          //             Provider.of<SettingsProvider>(context, listen: false)
-          //                 .addPaymentInfo(paymentInfo, context);
-          //           } else {
-          //             showWhiteOverlayPopup(context, Icons.error, null,
-          //                 title: "Error",
-          //                 message: "Fields cannot be empty",
-          //                 isUsernameRes: false);
-          //           }
-          //         },
-          //         child: Padding(
-          //           padding: const EdgeInsets.only(top: 4),
-          //           child: Text(
-          //             'Update',
-          //             style: TextStyle(
-          //                 color: whiteColor,
-          //                 fontWeight: FontWeight.w600,
-          //                 fontSize: 17,
-          //                 fontFamily: khulaRegular),
-          //           ),
-          //         ),
-          //       ),
-          //     ),
-          //     ElevatedButton(
-          //       style: ButtonStyle(
-          //         backgroundColor: WidgetStatePropertyAll(blackColor),
-          //         elevation: const WidgetStatePropertyAll(0),
-          //       ),
-          //       onPressed: () {
-          //         String paymentId = const Uuid().v4();
-          //         PaymentInfoModel paymentInfo = PaymentInfoModel(
-          //             paymentId: paymentId,
-          //             userId: currentUser!.uid,
-          //             cardNumber: '',
-          //             cardDate: '',
-          //             securityCode: '');
-          //         Provider.of<SettingsProvider>(context, listen: false)
-          //             .addPaymentInfo(paymentInfo, context);
-          //         cardNumberCont.clear();
-          //         cardDateCont.clear();
-          //         securityCodeCont.clear();
-          //       },
-          //       child: Padding(
-          //         padding: const EdgeInsets.only(top: 4),
-          //         child: Text(
-          //           'Delete',
-          //           style: TextStyle(
-          //               color: whiteColor,
-          //               fontWeight: FontWeight.w600,
-          //               fontSize: 17,
-          //               fontFamily: khulaRegular),
-          //         ),
-          //       ),
-          //     )
-          //   ],
-          // )
+// Row(
+//   children: [
+//     Padding(
+//       padding: const EdgeInsets.symmetric(horizontal: 14),
+//       child: ElevatedButton(
+//         style: ButtonStyle(
+//           backgroundColor: WidgetStatePropertyAll(blackColor),
+//           elevation: const WidgetStatePropertyAll(0),
+//         ),
+//         onPressed: () {
+//           if (cardNumberCont.text.isNotEmpty &&
+//               cardDateCont.text.isNotEmpty &&
+//               securityCodeCont.text.isNotEmpty) {
+//             String paymentId = const Uuid().v4();
+//             PaymentInfoModel paymentInfo = PaymentInfoModel(
+//                 paymentId: paymentId,
+//                 userId: currentUser!.uid,
+//                 cardNumber: cardNumberCont.text,
+//                 cardDate: cardDateCont.text,
+//                 securityCode: securityCodeCont.text);
+//             Provider.of<SettingsProvider>(context, listen: false)
+//                 .addPaymentInfo(paymentInfo, context);
+//           } else {
+//             showWhiteOverlayPopup(context, Icons.error, null,
+//                 title: "Error",
+//                 message: "Fields cannot be empty",
+//                 isUsernameRes: false);
+//           }
+//         },
+//         child: Padding(
+//           padding: const EdgeInsets.only(top: 4),
+//           child: Text(
+//             'Update',
+//             style: TextStyle(
+//                 color: whiteColor,
+//                 fontWeight: FontWeight.w600,
+//                 fontSize: 17,
+//                 fontFamily: khulaRegular),
+//           ),
+//         ),
+//       ),
+//     ),
+//     ElevatedButton(
+//       style: ButtonStyle(
+//         backgroundColor: WidgetStatePropertyAll(blackColor),
+//         elevation: const WidgetStatePropertyAll(0),
+//       ),
+//       onPressed: () {
+//         String paymentId = const Uuid().v4();
+//         PaymentInfoModel paymentInfo = PaymentInfoModel(
+//             paymentId: paymentId,
+//             userId: currentUser!.uid,
+//             cardNumber: '',
+//             cardDate: '',
+//             securityCode: '');
+//         Provider.of<SettingsProvider>(context, listen: false)
+//             .addPaymentInfo(paymentInfo, context);
+//         cardNumberCont.clear();
+//         cardDateCont.clear();
+//         securityCodeCont.clear();
+//       },
+//       child: Padding(
+//         padding: const EdgeInsets.only(top: 4),
+//         child: Text(
+//           'Delete',
+//           style: TextStyle(
+//               color: whiteColor,
+//               fontWeight: FontWeight.w600,
+//               fontSize: 17,
+//               fontFamily: khulaRegular),
+//         ),
+//       ),
+//     )
+//   ],
+// )
 //         ],
 //       ),
 //     );

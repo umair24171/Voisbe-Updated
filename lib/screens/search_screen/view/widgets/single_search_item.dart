@@ -260,21 +260,34 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
-                        width: size.width * 0.45,
-                        decoration: BoxDecoration(
-                            color: Color(widget.noteModel.topicColor.value),
-                            borderRadius: BorderRadius.circular(18)),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 6, horizontal: 8),
-                        child: Text(
-                          widget.noteModel.topic,
-                          overflow: TextOverflow.ellipsis,
-                          // textAlign: a,
-                          style: TextStyle(
-                              fontFamily: fontFamily,
-                              fontSize: 11,
-                              color: whiteColor),
-                        )),
+                      width: size.width * 0.45,
+                      decoration: BoxDecoration(
+                          color: Color(widget.noteModel.topicColor.value),
+                          borderRadius: BorderRadius.circular(18)),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 6, horizontal: 8),
+                      child: GradientText(
+                        widget.noteModel.topic,
+                        style: const TextStyle(fontSize: 11),
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.white,
+                            Colors.white.withAlpha(0),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      // Text(
+                      //   widget.noteModel.topic,
+                      //   overflow: TextOverflow.ellipsis,
+                      //   // textAlign: a,
+                      //   style: TextStyle(
+                      //       fontFamily: fontFamily,
+                      //       fontSize: 11,
+                      //       color: whiteColor),
+                      // )
+                    ),
                   ),
                   Positioned(
                       left: size.width * 0.29,
@@ -360,5 +373,28 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
         },
       );
     }
+  }
+}
+
+class GradientText extends StatelessWidget {
+  const GradientText(
+    this.text, {
+    required this.gradient,
+    this.style,
+  });
+
+  final String text;
+  final TextStyle? style;
+  final Gradient gradient;
+
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      blendMode: BlendMode.srcIn,
+      shaderCallback: (bounds) => gradient.createShader(
+        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+      ),
+      child: Text(text, style: style),
+    );
   }
 }

@@ -150,125 +150,32 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
-    // double percent = position != null && duration != null
-    //     ? position!.inSeconds / duration!.inSeconds
-    //     : 0.0;
+    final size = MediaQuery.of(context).size;
+    final circleSize =
+        size.width * 0.23; // Adjust this value to change the overall size
 
     return GestureDetector(
       onTap: widget.onPlayPause,
       onDoubleTap: _toggleLike,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 0),
-        child: Column(
-          children: [
-            //  percent bar of the voice reply
-
-            CircularPercentIndicator(
-              // radius: 40.0,
-              radius: size.width * 0.112,
-              lineWidth: 5.0,
-              percent: widget.isPlaying && widget.changeIndex == widget.index
-                  ? widget.position.inSeconds / duration.inSeconds
-                  : 0.0,
-
-//  displaying the user profile real time
-
-              center: StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(widget.commentModel.userId)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      var data = snapshot.data!.data();
-                      UserModel userModel = UserModel.fromMap(data!);
-                      return Container(
-                          // width: 70,
-                          // height: 71,
-                          padding: EdgeInsets.all(size.width > 400
-                              ? size.width * 0.052
-                              : size.width * 0.045),
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: NetworkImage(userModel.photoUrl),
-                              fit: BoxFit.cover,
-                            ),
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-
-                          //  showing the like icon
-
-                          child: _isLiked
-                              ? Consumer<FilterProvider>(
-                                  builder: (context, filterPro, _) {
-                                  return Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                        color: whiteColor,
-                                        borderRadius:
-                                            BorderRadius.circular(20)),
-                                    child: Icon(
-                                      Icons.favorite,
-                                      color: filterPro.selectedFilter
-                                              .contains('Close Friends')
-                                          ? greenColor
-                                          : Colors.red,
-                                      size: 20,
-                                    ),
-                                  );
-                                })
-
-                              //  showing the playpause icon
-
-                              : InkWell(
-                                  splashColor: Colors.transparent,
-                                  onTap: widget.onPlayPause,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                        color: widget.index ==
-                                                widget.engageCommentIndex
-                                            ? const Color.fromARGB(
-                                                255, 111, 160, 175)
-                                            : widget.subscriberCommentIndex
-                                                    .contains(widget.index)
-                                                ? const Color(0xffa562cb)
-                                                : widget.closeFriendIndexs
-                                                        .contains(widget.index)
-                                                    ? const Color(0xff50a87e)
-                                                    : primaryColor,
-                                        borderRadius:
-                                            BorderRadius.circular(20)),
-                                    child: Icon(
-                                      widget.isPlaying &&
-                                              widget.changeIndex == widget.index
-                                          ? Icons.pause
-                                          : Icons.play_arrow,
-                                      color: widget.index ==
-                                              widget.engageCommentIndex
-                                          ? whiteColor
-                                          : widget.subscriberCommentIndex
-                                                  .contains(widget.index)
-                                              ? whiteColor
-                                              : widget.closeFriendIndexs
-                                                      .contains(widget.index)
-                                                  ? whiteColor
-                                                  : whiteColor,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ));
-                    } else {
-                      return const Text('');
-                    }
-                  }),
-              circularStrokeCap: CircularStrokeCap.round,
-
-              //  managing the color of the circle replies
-
-              backgroundColor:
-                  widget.isPlaying && widget.changeIndex == widget.index
+      child: Column(
+        children: [
+          SizedBox(
+            width: circleSize,
+            height: circleSize,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Progress Indicator
+                CircularPercentIndicator(
+                  radius: circleSize / 2,
+                  lineWidth: 6.0, // Reduced line width for better visibility
+                  percent:
+                      widget.isPlaying && widget.changeIndex == widget.index
+                          ? widget.position.inSeconds / duration.inSeconds
+                          : 0.0,
+                  circularStrokeCap: CircularStrokeCap.round,
+                  backgroundColor: widget.isPlaying &&
+                          widget.changeIndex == widget.index
                       ? const Color(0xFFB8C7CB)
                       : widget.index == widget.engageCommentIndex
                           ? const Color(0xff6cbfd9)
@@ -277,72 +184,136 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                               : widget.closeFriendIndexs.contains(widget.index)
                                   ? const Color(0xff50a87e)
                                   : primaryColor,
-
-              //  managing the progress color of the circle replies
-
-              progressColor: widget.index == widget.engageCommentIndex
-                  ? const Color(0xff6cbfd9)
-                  : widget.subscriberCommentIndex.contains(widget.index)
-                      ? const Color(0xffa562cb)
-                      : widget.closeFriendIndexs.contains(widget.index)
-                          ? const Color(0xff50a87e)
-                          : primaryColor,
-
-              animation: widget.isPlaying && widget.changeIndex == widget.index,
-              animationDuration: duration.inSeconds,
+                  progressColor: widget.index == widget.engageCommentIndex
+                      ? const Color(0xff6cbfd9)
+                      : widget.subscriberCommentIndex.contains(widget.index)
+                          ? const Color(0xffa562cb)
+                          : widget.closeFriendIndexs.contains(widget.index)
+                              ? const Color(0xff50a87e)
+                              : primaryColor,
+                  center: _buildProfilePicture(circleSize),
+                ),
+                // Play/Pause or Like Icon
+                _buildOverlayIcon(circleSize * 0.5),
+              ],
             ),
-
-            //  displaying the username real time
-
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          OtherUserProfile(userId: widget.commentModel.userId),
-                    ));
-              },
-              child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                  stream: FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(widget.commentModel.userId)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      var data = snapshot.data!.data();
-                      UserModel userModel = UserModel.fromMap(data!);
-                      return userModel.name.isEmpty
-                          ? Text('')
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  userModel.isVerified
-                                      ? (userModel.name.length > 7
-                                          ? '${userModel.name.substring(0, 5)}...'
-                                          : userModel.name)
-                                      : (userModel.name.length > 7
-                                          ? '${userModel.name.substring(0, 7)}...'
-                                          : userModel.name),
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.white,
-                                  ),
+          ),
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        OtherUserProfile(userId: widget.commentModel.userId),
+                  ));
+            },
+            child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(widget.commentModel.userId)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    var data = snapshot.data!.data();
+                    UserModel userModel = UserModel.fromMap(data!);
+                    return userModel.name.isEmpty
+                        ? Text('')
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                userModel.isVerified
+                                    ? (userModel.name.length > 7
+                                        ? '${userModel.name.substring(0, 5)}...'
+                                        : userModel.name)
+                                    : (userModel.name.length > 7
+                                        ? '${userModel.name.substring(0, 7)}...'
+                                        : userModel.name),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white,
                                 ),
-                                if (userModel.isVerified) verifiedIcon()
-                              ],
-                            );
-                    } else {
-                      return const Text('');
-                    }
-                  }),
-            ),
-          ],
-        ),
+                              ),
+                              if (userModel.isVerified) verifiedIcon()
+                            ],
+                          );
+                  } else {
+                    return const Text('');
+                  }
+                }),
+          ),
+        ],
       ),
     );
+  }
+
+  Widget _buildProfilePicture(double size) {
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.commentModel.userId)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data != null) {
+          final userData = snapshot.data!.data();
+          if (userData != null) {
+            final userModel = UserModel.fromMap(userData);
+            return Container(
+              width: size * 0.9, // Slightly smaller than the progress indicator
+              height: size * 0.9,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  image: NetworkImage(userModel.photoUrl),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            );
+          }
+        }
+        return SizedBox(width: size * 0.9, height: size * 0.9);
+      },
+    );
+  }
+
+  Widget _buildOverlayIcon(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: _isLiked
+            ? whiteColor
+            : widget.index == widget.engageCommentIndex
+                ? const Color.fromARGB(255, 111, 160, 175)
+                : widget.subscriberCommentIndex.contains(widget.index)
+                    ? const Color(0xffa562cb)
+                    : widget.closeFriendIndexs.contains(widget.index)
+                        ? const Color(0xff50a87e)
+                        : primaryColor,
+        shape: BoxShape.circle,
+      ),
+      child: Consumer<FilterProvider>(builder: (context, filterPro, _) {
+        return Icon(
+          _isLiked
+              ? Icons.favorite
+              : (widget.isPlaying && widget.changeIndex == widget.index
+                  ? Icons.pause
+                  : Icons.play_arrow),
+          color: _isLiked
+              ? filterPro.selectedFilter.contains('Close Friends')
+                  ? greenColor
+                  : primaryColor
+              : whiteColor,
+          size: size * 0.6,
+        );
+      }),
+    );
+  }
+
+  Color _getProgressColor() {
+    // Implement your logic for progress color here
+    return Colors.blue; // Default color
   }
 }

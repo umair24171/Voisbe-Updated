@@ -445,10 +445,8 @@ class _CircleCommentsState extends State<CircleComments> {
                                   Consumer<FilterProvider>(
                                       builder: (context, filterPro, _) {
                                     return Container(
-                                      height: size.width > 400
-                                          ? 96
-                                          : size.height * 0.107,
-                                      width: size.height * 0.106,
+                                      height: size.width * 0.23,
+                                      width: size.width * 0.23,
                                       padding: EdgeInsets.all(
                                           noteProvider.isLoading ? 4 : 0),
                                       decoration: BoxDecoration(
@@ -598,7 +596,7 @@ class _CircleCommentsState extends State<CircleComments> {
                           ),
                         );
                       }),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 0),
 
                       //  filterd list to display next 4 replies in second row with the colors
 

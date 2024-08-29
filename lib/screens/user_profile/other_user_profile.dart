@@ -40,11 +40,15 @@ class OtherUserProfile extends StatefulWidget {
   final String userId;
   final String? previousId;
 
+  //  getting the id of the user to show his/her profile
+
   @override
   State<OtherUserProfile> createState() => _OtherUserProfileState();
 }
 
 class _OtherUserProfileState extends State<OtherUserProfile> {
+  //  textspans to naviagte to the profile screen if mentioned someone in the bio
+
   List<TextSpan> _buildTextSpans(BuildContext context, String bio) {
     final List<TextSpan> spans = [];
     final RegExp regExp = RegExp(r'@(\w+)');
@@ -81,6 +85,8 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
     return spans;
   }
 
+  //  navigating to profile from the bio mentioned username
+
   void _navigateToUserProfile(BuildContext context, String? username) async {
     if (username != null && username.startsWith('@')) {
       final cleanUsername = username.substring(1); // Remove the '@' symbol
@@ -114,11 +120,17 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
   @override
   void initState() {
     super.initState();
+
+    //  getting the user data with the id
+
     Provider.of<UserProfileProvider>(context, listen: false)
         .otherUserProfile(widget.userId);
   }
 
   getData() async {}
+
+  //  getting the format in k and millions
+
   String formatCount(int count) {
     if (count >= 1000000) {
       double millions = count / 1000000;
@@ -134,8 +146,8 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
 
-    // var userProvider =
-    //     Provider.of<UserProfileProvider>(context, listen: false).otherUser;
+    //  getting the current user
+
     var currentUSer = Provider.of<UserProvider>(context, listen: false).user;
 
     // userProvider.otherUser;
@@ -147,6 +159,8 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
         automaticallyImplyLeading: false,
         backgroundColor: whiteColor,
         title: Row(children: [
+          //  showing the username
+
           Consumer<UserProfileProvider>(builder: (context, userProvider, _) {
             return Row(
               children: [
@@ -158,34 +172,13 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                       fontWeight: FontWeight.w600),
                 ),
                 if (userProvider.otherUser!.isVerified) verifiedIcon()
-                // Image.network(
-                //   'https://media.istockphoto.com/id/1396933001/vector/vector-blue-verified-badge.jpg?s=612x612&w=0&k=20&c=aBJ2JAzbOfQpv2OCSr0k8kYe0XHutOGBAJuVjvWvPrQ=',
-                //   height: 20,
-                //   width: 20,
-                // ),
               ],
             );
           }),
-          // Icon(
-          //   Icons.keyboard_arrow_down_outlined,
-          //   color: blackColor,
-          // )
         ]),
         actions: [
-          // IconButton(
-          //   onPressed: () {
-          //     Navigator.push(context, MaterialPageRoute(
-          //       builder: (context) {
-          //         return const NotificationScreen();
-          //       },
-          //     ));
-          //   },
-          //   icon: Icon(
-          //     Icons.favorite_border_outlined,
-          //     color: blackColor,
-          //     size: 30,
-          //   ),
-          // ),
+          //  navigate to settings screen icon
+
           IconButton(
             onPressed: () async {
               Navigator.push(context, MaterialPageRoute(
@@ -204,6 +197,8 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
       ),
       body: PopScope(
         onPopInvoked: (value) {
+          //  udpating the user on back
+
           if (widget.previousId != null) {
             Provider.of<UserProfileProvider>(context, listen: false)
                 .otherUserProfile(widget.previousId!);
@@ -212,6 +207,8 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
         child: Stack(
           children: [
             Consumer<UserProfileProvider>(builder: (context, userProvider, _) {
+              //  background of the screen the profile photo of the user
+
               return Container(
                 height: size.height,
                 decoration: BoxDecoration(
@@ -223,12 +220,18 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                 ),
               );
             }),
+
+            //  blur filter above that
+
             BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
               child: Container(
                 color: Colors.white.withOpacity(0.1), // Transparent color
               ),
             ),
+
+            //  refresh function
+
             RefreshIndicator(
               backgroundColor: whiteColor,
               color: primaryColor,
@@ -250,6 +253,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                     //     ),
                     //   ),
                     // ),
+
+                    //  background gradient pic
+
                     Container(
                       child: Image.asset(
                         'assets/icons/profilepage_backgroundgradient 1.png',
@@ -270,11 +276,13 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                     horizontal: 10, vertical: 6),
                                 decoration: BoxDecoration(
                                     color: whiteColor,
-                                    borderRadius: BorderRadius.circular(18)),
+                                    borderRadius: BorderRadius.circular(20)),
                                 child: Consumer<UserProfileProvider>(
                                     builder: (context, userProvider, _) {
                                   return Row(
                                     children: [
+                                      //  image of the user
+
                                       CircleAvatar(
                                         radius: 14,
                                         backgroundImage:
@@ -285,6 +293,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                       const SizedBox(
                                         width: 8,
                                       ),
+
+                                      //  username of the user
+
                                       Text(
                                         userProvider.otherUser!.name,
                                         style: TextStyle(
@@ -294,11 +305,6 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                       ),
                                       if (userProvider.otherUser!.isVerified)
                                         verifiedIcon()
-                                      // Image.network(
-                                      //   'https://media.istockphoto.com/id/1396933001/vector/vector-blue-verified-badge.jpg?s=612x612&w=0&k=20&c=aBJ2JAzbOfQpv2OCSr0k8kYe0XHutOGBAJuVjvWvPrQ=',
-                                      //   height: 20,
-                                      //   width: 20,
-                                      // ),
                                     ],
                                   );
                                 }),
@@ -313,6 +319,8 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                       )
                                     : const SizedBox();
                               }),
+
+                              //  notifications enable or disable function
 
                               Consumer<UserProfileProvider>(
                                   builder: (context, userProvider, _) {
@@ -359,26 +367,6 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                 message:
                                                     'You will now receive the notifications about the ${userProvider.otherUser!.username} posts.');
                                           }
-                                          // Provider.of<UserProvider>(context,
-                                          //         listen: false)
-                                          //     .setIsNotificationEnabled();
-                                          // if (Provider.of<UserProvider>(context,
-                                          //         listen: false)
-                                          //     .isNotificationEnabled) {
-                                          // showWhiteOverlayPopup(context,
-                                          //     Icons.check_box_outlined, null,
-                                          //     title: 'Successful',
-                                          //     isUsernameRes: false,
-                                          //     message:
-                                          //         'You will now receive the notifications about the ${userProvider.otherUser!.username} posts');
-                                          // } else {
-                                          // showWhiteOverlayPopup(context,
-                                          //     Icons.check_box_outlined, null,
-                                          //     title: 'Successful',
-                                          //     isUsernameRes: false,
-                                          //     message:
-                                          //         'You will not receive the notifications about the ${userProvider.otherUser!.username} posts');
-                                          // }
                                         },
                                         child: Container(
                                             padding: const EdgeInsets.all(6),
@@ -398,20 +386,15 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                     'assets/icons/Bell active.svg',
                                                     height: 30,
                                                     width: 30,
-                                                  )
-                                            // Icon(
-                                            //   Icons.notifications_none_outlined,
-                                            //   color: primaryColor,
-                                            //   size: 30,
-                                            // ),
-                                            ),
+                                                  )),
                                       )
                                     : const SizedBox();
                               }),
                               const SizedBox(
                                 width: 5,
                               ),
-                              // if (userProvider.isSubscriptionEnable)
+
+//  showing button to subscribe the user if the users susbscription is enable
 
                               Consumer<UserProfileProvider>(
                                   builder: (context, userProvider, _) {
@@ -473,6 +456,8 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                 width: 2,
                               ),
 
+                              //  show specific options
+
                               Consumer<UserProfileProvider>(
                                   builder: (context, userProvider, _) {
                                 return userProvider.otherUser!.uid !=
@@ -490,6 +475,8 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                       MainAxisSize.min,
                                                   // crossAxisAlignment: CrossAxisAlignment.center,
                                                   children: [
+                                                    //  block user popup
+
                                                     InkWell(
                                                       onTap: () {
                                                         navPop(context);
@@ -630,6 +617,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                       color: Colors.black
                                                           .withOpacity(0.1),
                                                     ),
+
+                                                    //  adding user as a close friend if you folllow him/her
+
                                                     if (userProvider
                                                         .otherUser!.followers
                                                         .contains(
@@ -737,6 +727,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                         color: Colors.black
                                                             .withOpacity(0.1),
                                                       ),
+
+                                                    // mute un mute the users account
+
                                                     if (userProvider
                                                         .otherUser!.followers
                                                         .contains(
@@ -880,12 +873,12 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                         color: Colors.black
                                                             .withOpacity(0.1),
                                                       ),
+
+                                                    //  showing the report sheet to report the user
+
                                                     InkWell(
                                                       onTap: () async {
                                                         showModalBottomSheet(
-                                                          // showDragHandle: true,
-                                                          // isScrollControlled: true,
-                                                          // useSafeArea: true,
                                                           context: context,
                                                           backgroundColor:
                                                               whiteColor,
@@ -938,6 +931,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                       color: Colors.black
                                                           .withOpacity(0.1),
                                                     ),
+
+                                                    // sharing the profile of the user
+
                                                     InkWell(
                                                       onTap: () async {
                                                         DeepLinkPostService
@@ -1018,6 +1014,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                             },
                                           );
                                         },
+
+                                        //  icon to show all the users
+
                                         child: Icon(
                                           Icons.more_horiz,
                                           color: whiteColor,
@@ -1037,8 +1036,11 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 const SizedBox(
-                                  height: 5,
+                                  height: 10,
                                 ),
+
+                                //  showing the name of the user
+
                                 Text(
                                   userProvider.otherUser!.username,
                                   style: TextStyle(
@@ -1048,8 +1050,11 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                       fontSize: 17),
                                 ),
                                 const SizedBox(
-                                  height: 5,
+                                  height: 15,
                                 ),
+
+                                //  showing the bio of the user
+
                                 Padding(
                                   padding: EdgeInsets.symmetric(
                                           horizontal: size.width * 0.1,
@@ -1071,8 +1076,11 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                           }),
                         ),
                         const SizedBox(
-                          height: 5,
+                          height: 10,
                         ),
+
+                        //  showing the link of the user
+
                         Consumer<UserProfileProvider>(
                             builder: (context, userProvider, _) {
                           return userProvider.otherUser!.link.isEmpty
@@ -1106,46 +1114,6 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                         ),
                                       ),
                                     ),
-                                    // const SizedBox(
-                                    //   width: 10,
-                                    // ),
-                                    // GestureDetector(
-                                    //   onTap: () {
-                                    //     Navigator.push(context,
-                                    //         MaterialPageRoute(builder: (context) {
-                                    //       return const SubscribeScreen();
-                                    //     }));
-                                    //   },
-                                    //   child: Container(
-                                    //     padding: const EdgeInsets.symmetric(
-                                    //         horizontal: 7, vertical: 5),
-                                    //     decoration: BoxDecoration(
-                                    //         color: primaryColor,
-                                    //         borderRadius: BorderRadius.circular(15)),
-                                    //     child: Row(
-                                    //       mainAxisAlignment:
-                                    //           MainAxisAlignment.spaceBetween,
-                                    //       children: [
-                                    //         Image.asset(
-                                    //           'assets/images/sounds_button.png',
-                                    //           height: 15,
-                                    //           width: 15,
-                                    //         ),
-                                    //         Padding(
-                                    //           padding: const EdgeInsets.symmetric(
-                                    //               horizontal: 7),
-                                    //           child: Text(
-                                    //             'Audio',
-                                    //             style: TextStyle(
-                                    //                 color: whiteColor,
-                                    //                 fontFamily: fontFamily,
-                                    //                 fontWeight: FontWeight.w600),
-                                    //           ),
-                                    //         ),
-                                    //       ],
-                                    //     ),
-                                    //   ),
-                                    // )
                                   ],
                                 );
                         }),
@@ -1154,8 +1122,6 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                   horizontal: size.width * 0.06)
                               .copyWith(top: 15, bottom: 5),
                           child: Container(
-                            // alignment: Alignment.center,
-                            // height: 100,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 35, vertical: 15),
                             decoration: BoxDecoration(
@@ -1166,12 +1132,17 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                               return Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
+                                  // total length of the posts
+
                                   CustomPostsLength(
                                     id: widget.userId,
                                   ),
                                   const SizedBox(
                                     width: 30,
                                   ),
+
+                                  //  showing total followers
+
                                   StreamBuilder(
                                       stream: FirebaseFirestore.instance
                                           .collection('users')
@@ -1219,6 +1190,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                               const SizedBox(
                                                 width: 30,
                                               ),
+
+                                              //  showing total followings
+
                                               InkWell(
                                                 splashColor: Colors.transparent,
                                                 onTap: () {
@@ -1269,6 +1243,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                             }),
                           ),
                         ),
+
+                        //  contact buttons and follow buttons
+
                         Consumer<UserProfileProvider>(
                             builder: (context, userProvider, _) {
                           return userProvider.otherUser!.uid != currentUSer!.uid
@@ -1278,11 +1255,15 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                         const SizedBox(
                           height: 20,
                         ),
+
                         Consumer<UserProfileProvider>(
                             builder: (context, userPro, _) {
                           return userPro.otherUser!.isPrivate &&
                                   !userPro.otherUser!.followers
                                       .contains(currentUSer!.uid)
+
+                              //  showing lock icon if the user profile is private and current user is not a follower
+
                               ? Padding(
                                   padding: const EdgeInsets.only(top: 20),
                                   child: Column(
@@ -1309,6 +1290,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                     ],
                                   ),
                                 )
+
+                              //  shwowing all user posts
+
                               : OtherUserPosts(id: widget.userId);
                         }),
                       ],

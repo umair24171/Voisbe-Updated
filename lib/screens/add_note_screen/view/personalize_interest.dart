@@ -46,10 +46,10 @@ class _PersonalizeInterestState extends State<PersonalizeInterest> {
   // }
 
   List<String> topics = [
-    'Need support',
-    'Relationship & love',
-    'Confession & secret',
-    'Inspiration & motivation',
+    'Need Support',
+    'Relationship & Love',
+    'Confession & Secret',
+    'Inspiration & Motivation',
     'Food & Cooking',
     'Personal Story',
     'Business',
