@@ -11,6 +11,7 @@ class UserProvider with ChangeNotifier {
   bool userLoading = false;
   bool isLogin = false;
   File? imageFile;
+  File? userImage;
   bool isSubscription = false;
   UserModel? user;
   bool isNotificationEnabled = false;
@@ -74,6 +75,11 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  removeUserImage() {
+    userImage = null;
+    notifyListeners();
+  }
+
   setUserLoading(bool value) {
     userLoading = value;
     notifyListeners();
@@ -104,6 +110,15 @@ class UserProvider with ChangeNotifier {
     ImagePicker().pickImage(source: ImageSource.gallery).then((value) {
       if (value != null) {
         imageFile = File(value.path);
+        notifyListeners();
+      }
+    });
+  }
+
+  pickUserImage() {
+    ImagePicker().pickImage(source: ImageSource.gallery).then((value) {
+      if (value != null) {
+        userImage = File(value.path);
         notifyListeners();
       }
     });

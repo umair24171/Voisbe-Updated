@@ -62,9 +62,16 @@ class _BottomBarState extends State<BottomBar> {
   }
 
   void navigationTapped(int page) {
-    Provider.of<DisplayNotesProvider>(context, listen: false)
-        .setHomeActive(_page == 0);
     pageController.jumpToPage(page);
+    stopMainPlayer();
+  }
+
+  stopMainPlayer() {
+    Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setIsPlaying(false);
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setChangeIndex(-1);
   }
 
   @override

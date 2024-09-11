@@ -89,14 +89,7 @@ class TermsAndConditions extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Text(
-                    '''In order to maintain a safe, secure, and inclusive environment within the VOISBE community, we require users to make the following commitments:
-            •Users must be at least 13 years old.
-            • Users must not engage in any activities prohibited by applicable laws or engage in 
-            any illegal or unauthorized purposes while using the App.
-            • Users must not have had their VOISBE account previously disabled for violations of 
-            law or our policies.
-            • Users must not be convicted sex offenders.
-            ''',
+                    '''In order to maintain a safe, secure, and inclusive environment within the VOISBE community, we require users to make the following commitments:\n• Users must be at least 13 years old.\n• Users must not engage in any activities prohibited by applicable laws or engage in any illegal or unauthorized purposes while using the App.\n• Users must not have had their VOISBE account previously disabled for violations of law or our policies.\n• Users must not be convicted sex offenders.''',
                     style: TextStyle(
                         fontFamily: khulaRegular,
                         fontWeight: FontWeight.w400,
@@ -120,13 +113,7 @@ class TermsAndConditions extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Text(
-                    '''To ensure the safety and integrity of the VOISBE community, users are prohibited from engaging in the following activities:
-            •Impersonating others or providing inaccurate information.
-            • Engaging in unlawful, misleading, or fraudulent activities.
-            • Violating VOISBE's Terms and Community Guidelines, including the prohibition of 
-            hate speech, harassment, and intellectual property infringement.
-            • Interfering with or impairing the intended operation of the App.
-            ''',
+                    '''To ensure the safety and integrity of the VOISBE community, users are prohibited from engaging in the following activities:\n• Impersonating others or providing inaccurate information.\n• Engaging in unlawful, misleading, or fraudulent activities.\n• Violating VOISBE's Terms and Community Guidelines, including the prohibition of hate speech, harassment, and intellectual property infringement.\n• Interfering with or impairing the intended operation of the App.''',
                     style: TextStyle(
                         fontFamily: khulaRegular,
                         fontWeight: FontWeight.w400,
@@ -174,18 +161,7 @@ class TermsAndConditions extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Text(
-                    '''We value the integrity of our platform and aim to maintain a positive and respectful community experience for all users. As part of our commitment to this goal, we have implemented a Reserved Usernames Policy to prevent unauthorized use of usernames associated with well-known individuals, celebrities, public figures, and other protected entities.
-            
-            Reserved usernames are those that have been identified by our team as belonging to individuals or entities with significant public recognition. These may include, but are not limited to, names of celebrities, prominent public figures, trademarks, and other protected names.
-            
-            As a user of our platform, you agree not to register or use any username that has been reserved by our system. Attempting to register such usernames will result in an error during the registration process, indicating that the username is unavailable.
-            Our Reserved Usernames Policy helps prevent impersonation, misuse, or misrepresentation of individuals or entities with significant public presence. By adhering to this policy, we aim to foster a safe and trustworthy environment for all users.
-            Please note that our list of reserved usernames may be updated periodically to reflect changes in public figures or trademarks. We reserve the right to modify, expand, or update the list of reserved usernames at our discretion.
-            
-            By using our platform, you agree to abide by our Reserved Usernames Policy and understand that failure to comply may result in the rejection of username registrations or other appropriate actions as determined by our team.
-            
-            Thank you for helping us maintain the integrity of our community and respecting the rights of individuals and entities within it.
-            ''',
+                    '''We value the integrity of our platform and aim to maintain a positive and respectful community experience for all users. As part of our commitment to this goal, we have implemented a Reserved Usernames Policy to prevent unauthorized use of usernames associated with well-known individuals, celebrities, public figures, and other protected entities.\n\nReserved usernames are those that have been identified by our team as belonging to individuals or entities with significant public recognition. These may include, but are not limited to, names of celebrities, prominent public figures, trademarks, and other protected names.\n\nAs a user of our platform, you agree not to register or use any username that has been reserved by our system. Attempting to register such usernames will result in an error during the registration process, indicating that the username is unavailable.\n\nOur Reserved Usernames Policy helps prevent impersonation, misuse, or misrepresentation of individuals or entities with significant public presence. By adhering to this policy, we aim to foster a safe and trustworthy environment for all users.\n\nPlease note that our list of reserved usernames may be updated periodically to reflect changes in public figures or trademarks. We reserve the right to modify, expand, or update the list of reserved usernames at our discretion.\n\nBy using our platform, you agree to abide by our Reserved Usernames Policy and understand that failure to comply may result in the rejection of username registrations or other appropriate actions as determined by our team.\n\nThank you for helping us maintain the integrity of our community and respecting the rights of individuals and entities within it.''',
                     style: TextStyle(
                         fontFamily: khulaRegular,
                         fontWeight: FontWeight.w400,
@@ -355,11 +331,7 @@ class TermsAndConditions extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Text(
-                    '''These Terms and Conditions are governed by the laws of Malta, without regard to its conflict of law principles.
-            
-            By using the VOISBE App, you acknowledge that you have read, understood, and agreed to these Terms and Conditions, as well as our Privacy Policy.
-            
-            ''',
+                    '''These Terms and Conditions are governed by the laws of Malta, without regard to its conflict of law principles.\n\nBy using the VOISBE App, you acknowledge that you have read, understood, and agreed to these Terms and Conditions, as well as our Privacy Policy.''',
                     style: TextStyle(
                         fontFamily: khulaRegular,
                         fontWeight: FontWeight.w400,
@@ -383,11 +355,7 @@ class TermsAndConditions extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Text(
-                    '''We may change our Service and policies, and we may need to make changes to these Terms so that they accurately reflect our Service and policies. Unless otherwise required by law, we will notify you (for example, through our Service) at least 30 days before we make changes to these Terms and give you an opportunity to review them before they go into effect. Then, if you continue to use the Service, you will be bound by the updated Terms. If you do not want to agree to these or any updated Terms, you can delete your account.
-            
-            Effective Date: 2024-02-01
-            
-            ''',
+                    '''We may change our Service and policies, and we may need to make changes to these Terms so that they accurately reflect our Service and policies. Unless otherwise required by law, we will notify you (for example, through our Service) at least 30 days before we make changes to these Terms and give you an opportunity to review them before they go into effect. Then, if you continue to use the Service, you will be bound by the updated Terms. If you do not want to agree to these or any updated Terms, you can delete your account.\n\nEffective Date: 2024-02-01''',
                     style: TextStyle(
                         fontFamily: khulaRegular,
                         fontWeight: FontWeight.w400,

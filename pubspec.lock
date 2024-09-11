@@ -409,6 +409,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.17.0"
+  firebase_crashlytics:
+    dependency: "direct main"
+    description:
+      name: firebase_crashlytics
+      sha256: "9897c01efaa950d2f6da8317d12452749a74dc45f33b46390a14cfe28067f271"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.5.7"
+  firebase_crashlytics_platform_interface:
+    dependency: transitive
+    description:
+      name: firebase_crashlytics_platform_interface
+      sha256: "16a71e08fbf6e00382816e1b13397898c29a54fa0ad969c2c2a3b82a704877f0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.6.35"
   firebase_dynamic_links:
     dependency: "direct main"
     description:
@@ -1152,6 +1168,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.27.7"
+  saver_gallery:
+    dependency: "direct main"
+    description:
+      name: saver_gallery
+      sha256: "5f4123ec1cd5ed9fcd93198ab30ffe0c7746afcbf6846445432de93240fa7b4e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.6"
   share_plus:
     dependency: "direct main"
     description:
@@ -1517,14 +1541,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
-  video_editor:
-    dependency: "direct main"
-    description:
-      name: video_editor
-      sha256: "263be52e052118389f372f055f59c2fda5c7beecfdb706b899d2e05be8740c22"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
   video_player:
     dependency: "direct main"
     description:

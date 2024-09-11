@@ -185,14 +185,7 @@ class PrivacyPolicy extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Text(
-                    '''VOISBE requires access to your device's microphone and photos for specific features:
-             • Microphone Access: VOISBE uses your device's  microphone to enable you to 
-             record voice messages within the app.
-             • Photo Access: Additionally, VOISBE requests access to your device's photos to 
-             allow you to upload a profile picture.
-            
-             We assure you that access to your microphone and photos is solely used for the intended purposes described above and is not shared with any third parties without your explicit consent.
-            ''',
+                    '''VOISBE requires access to your device's microphone and photos for specific features:\n• Microphone Access: VOISBE uses your device's microphone to enable you to record voice messages within the app.\n• Photo Access: Additionally, VOISBE requests access to your device's photos to allow you to upload a profile picture. \n \nWe assure you that access to your microphone and photos is solely used for the intended purposes described above and is not shared with any third parties without your explicit consent.''',
                     style: TextStyle(
                         fontFamily: khulaRegular,
                         fontWeight: FontWeight.w400,
@@ -312,9 +305,7 @@ class PrivacyPolicy extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Text(
-                    '''We may update our privacy policy from time to time. If we make material changes to how we treat our users' personal information, we will notify you through a notice on the App home screen.
-            This policy is effective as of 2024-02-01
-            ''',
+                    '''We may update our privacy policy from time to time. If we make material changes to how we treat our users' personal information, we will notify you through a notice on the App home screen. \nThis policy is effective as of 2024-02-01''',
                     style: TextStyle(
                         fontFamily: khulaRegular,
                         fontWeight: FontWeight.w400,

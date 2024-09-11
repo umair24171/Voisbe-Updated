@@ -28,12 +28,10 @@ class _CustomGalleryState extends State<CustomGallery> {
   @override
   void initState() {
     super.initState();
-
-    //  function to get the custom gallery
-
-    _fetchNewMedia();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchNewMedia();
+    });
   }
-
   //  function to load data from gallery after reaching to certain position
 
   _handleScrollEvent(ScrollNotification scroll) {
@@ -71,7 +69,11 @@ class _CustomGalleryState extends State<CustomGallery> {
       for (var asset in media) {
         temp.add(
           FutureBuilder<Uint8List?>(
-            future: asset.thumbnailDataWithSize(const ThumbnailSize(420, 800)),
+            // getting the data with the desired  quality
+
+            // future: asset.thumbnailDataWithSize(const ThumbnailSize(420, 800)),
+            future:
+                asset.thumbnailDataWithSize(const ThumbnailSize(1008, 1920)),
             builder:
                 (BuildContext context, AsyncSnapshot<Uint8List?> snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
@@ -167,7 +169,7 @@ class _CustomGalleryState extends State<CustomGallery> {
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
+    // var size = MediaQuery.of(context).size;
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification scroll) {
         return _handleScrollEvent(scroll);
@@ -179,7 +181,7 @@ class _CustomGalleryState extends State<CustomGallery> {
             // mainAxisSpacing: 3,
             // crossAxisSpacing: 3,
             crossAxisCount: 3,
-            mainAxisExtent: size.height * 0.18),
+            mainAxisExtent: MediaQuery.of(context).size.height * 0.18),
         itemBuilder: (BuildContext context, int index) {
           //  showing the gallery grid
 

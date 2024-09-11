@@ -22,9 +22,11 @@ class CustomListTile extends StatefulWidget {
     this.userNameError,
     this.linkError,
     this.contactError,
+    this.passError,
     this.priceError,
     this.isBio = false,
     this.isUserName = false,
+    this.isPassword = false,
     this.isPrice = false,
     this.validator,
   }) : super(key: key);
@@ -39,6 +41,8 @@ class CustomListTile extends StatefulWidget {
   bool isVerifiedForPrice;
   final TextEditingController? bioController;
 
+  bool isPassword;
+
   bool isSound;
   final String username;
   String? Function(String?)? validator;
@@ -49,6 +53,7 @@ class CustomListTile extends StatefulWidget {
   String? contactError;
   String? priceError;
   bool isUserName;
+  String? passError;
 
   @override
   _CustomListTileState createState() => _CustomListTileState();
@@ -58,6 +63,7 @@ class _CustomListTileState extends State<CustomListTile> {
   late TextEditingController _textEditingController;
   final FocusNode _focusNode = FocusNode();
   late bool _isEditing;
+  bool _obscureText = true;
 
   @override
   void initState() {
@@ -241,6 +247,15 @@ class _CustomListTileState extends State<CustomListTile> {
                                     fontSize: 12,
                                     fontFamily: fontFamily),
                               ),
+                            if (widget.passError != null)
+                              Text(
+                                widget.passError!,
+                                style: TextStyle(
+                                    height: 0,
+                                    color: greenColor,
+                                    fontSize: 12,
+                                    fontFamily: fontFamily),
+                              ),
                             Stack(
                               children: [
                                 Padding(
@@ -258,6 +273,10 @@ class _CustomListTileState extends State<CustomListTile> {
                                         ? TextInputType.number
                                         : TextInputType.text,
                                     focusNode: _focusNode,
+                                    obscureText:
+                                        widget.isPassword && _obscureText
+                                            ? true
+                                            : false,
                                     readOnly: _isEditing
                                         ? false
                                         : !_isEditing
@@ -299,172 +318,207 @@ class _CustomListTileState extends State<CustomListTile> {
                                       suffixIconConstraints:
                                           const BoxConstraints(
                                               minHeight: 18, minWidth: 18),
-                                      suffixIcon: Container(
-                                        // height: 20,
-                                        // width: 20,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 9, vertical: 9),
-                                        decoration: BoxDecoration(
-                                          color: widget.isVerifiedForPrice
-                                              ? primaryColor
-                                              : const Color(0xffcdcdcd),
-                                          borderRadius:
-                                              BorderRadius.circular(18),
-                                        ),
-                                        child:
-                                            //  widget.isSound
-                                            //     ? GestureDetector(
-                                            //         onTap: () {
-                                            //           // showBottomSheet(
-                                            //           //   context: context,
-                                            //           //   builder: (context) => UploadSound(
-                                            //           //     username: widget.username,
-                                            //           //   ),
-                                            //           // );
-                                            //         },
-                                            //         child: Image.asset(
-                                            //           'assets/images/uploadsound.png',
-                                            //           height: 15,
-                                            //           width: 15,
-                                            //         ),
-                                            //       )
-                                            //     :
-                                            InkWell(
-                                          onTap: () {
-                                            if (widget.isPrice
-                                                // &&
-                                                //     !widget.isVerifiedForPrice
-                                                ) {
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) =>
-                                                    AlertDialog(
-                                                  backgroundColor: whiteColor,
-                                                  elevation: 0,
-                                                  contentPadding:
-                                                      EdgeInsets.all(0),
-                                                  content: Container(
-                                                    decoration: BoxDecoration(
-                                                        color: whiteColor,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(15)),
-                                                    child: Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        InkWell(
-                                                          onTap: () {
-                                                            provider.setPrice(
-                                                                '4.0');
-                                                            navPop(context);
-                                                          },
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: Text(
-                                                              '\$4.0',
-                                                              style: TextStyle(
-                                                                  fontFamily:
-                                                                      fontFamily),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        InkWell(
-                                                          onTap: () {
-                                                            provider.setPrice(
-                                                                '10.0');
-                                                            navPop(context);
-                                                          },
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: Text(
-                                                              '\$10.0',
-                                                              style: TextStyle(
-                                                                  fontFamily:
-                                                                      fontFamily),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        InkWell(
-                                                          onTap: () {
-                                                            provider.setPrice(
-                                                                '20.0');
-                                                            navPop(context);
-                                                          },
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: Text(
-                                                              '\$20.0',
-                                                              style: TextStyle(
-                                                                  fontFamily:
-                                                                      fontFamily),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        InkWell(
-                                                          onTap: () {
-                                                            provider.setPrice(
-                                                                '50.0');
-                                                            navPop(context);
-                                                          },
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: Text(
-                                                              '\$50.0',
-                                                              style: TextStyle(
-                                                                  fontFamily:
-                                                                      fontFamily),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        InkWell(
-                                                          onTap: () {
-                                                            provider.setPrice(
-                                                                '100.0');
-                                                            navPop(context);
-                                                          },
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: Text(
-                                                              '\$100.0',
-                                                              style: TextStyle(
-                                                                  fontFamily:
-                                                                      fontFamily),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
+                                      // suffix: !widget.isPassword
+                                      //     ? null
+                                      //     : GestureDetector(
+                                      //         onTap: () {
+                                      //           setState(() {
+                                      //             _obscureText = !_obscureText;
+                                      //           });
+                                      //         },
+                                      //         child: Icon(
+                                      //           _obscureText
+                                      //               ? Icons.visibility
+                                      //               : Icons.visibility_off,
+                                      //           color: whiteColor,
+                                      //           size: 20,
+                                      //         ),
+                                      //       ),
+                                      suffixIcon: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (widget.isPassword)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  right: 7),
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  setState(() {
+                                                    _obscureText =
+                                                        !_obscureText;
+                                                  });
+                                                },
+                                                child: Icon(
+                                                  _obscureText
+                                                      ? Icons.visibility
+                                                      : Icons.visibility_off,
+                                                  color: whiteColor,
+                                                  size: 20,
                                                 ),
-                                              );
-                                            } else {
-                                              _isEditing = !_isEditing;
-                                              setState(() {});
-                                              if (_isEditing) {
-                                                FocusScope.of(context)
-                                                    .requestFocus(_focusNode);
-                                              }
-                                            }
-                                          },
-                                          child: Icon(
-                                            _isEditing
-                                                ? Icons.check
-                                                : Icons.edit_outlined,
-                                            color: Colors.white,
-                                            size: 15,
+                                              ),
+                                            ),
+                                          Container(
+                                            // height: 20,
+                                            // width: 20,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 9, vertical: 9),
+                                            decoration: BoxDecoration(
+                                              color: widget.isVerifiedForPrice
+                                                  ? primaryColor
+                                                  : const Color(0xffcdcdcd),
+                                              borderRadius:
+                                                  BorderRadius.circular(18),
+                                            ),
+                                            child: InkWell(
+                                              onTap: () {
+                                                if (widget.isPrice) {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) =>
+                                                        AlertDialog(
+                                                      backgroundColor:
+                                                          whiteColor,
+                                                      elevation: 0,
+                                                      contentPadding:
+                                                          EdgeInsets.all(0),
+                                                      content: Container(
+                                                        decoration: BoxDecoration(
+                                                            color: whiteColor,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        15)),
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            InkWell(
+                                                              onTap: () {
+                                                                provider
+                                                                    .setPrice(
+                                                                        '4.0');
+                                                                navPop(context);
+                                                              },
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        8.0),
+                                                                child: Text(
+                                                                  '\$4.0',
+                                                                  style: TextStyle(
+                                                                      fontFamily:
+                                                                          fontFamily),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            InkWell(
+                                                              onTap: () {
+                                                                provider
+                                                                    .setPrice(
+                                                                        '10.0');
+                                                                navPop(context);
+                                                              },
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        8.0),
+                                                                child: Text(
+                                                                  '\$10.0',
+                                                                  style: TextStyle(
+                                                                      fontFamily:
+                                                                          fontFamily),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            InkWell(
+                                                              onTap: () {
+                                                                provider
+                                                                    .setPrice(
+                                                                        '20.0');
+                                                                navPop(context);
+                                                              },
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        8.0),
+                                                                child: Text(
+                                                                  '\$20.0',
+                                                                  style: TextStyle(
+                                                                      fontFamily:
+                                                                          fontFamily),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            InkWell(
+                                                              onTap: () {
+                                                                provider
+                                                                    .setPrice(
+                                                                        '50.0');
+                                                                navPop(context);
+                                                              },
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        8.0),
+                                                                child: Text(
+                                                                  '\$50.0',
+                                                                  style: TextStyle(
+                                                                      fontFamily:
+                                                                          fontFamily),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            InkWell(
+                                                              onTap: () {
+                                                                provider
+                                                                    .setPrice(
+                                                                        '100.0');
+                                                                navPop(context);
+                                                              },
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        8.0),
+                                                                child: Text(
+                                                                  '\$100.0',
+                                                                  style: TextStyle(
+                                                                      fontFamily:
+                                                                          fontFamily),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                } else {
+                                                  _isEditing = !_isEditing;
+                                                  setState(() {});
+                                                  if (_isEditing) {
+                                                    FocusScope.of(context)
+                                                        .requestFocus(
+                                                            _focusNode);
+                                                  }
+                                                }
+                                              },
+                                              child: Icon(
+                                                _isEditing
+                                                    ? Icons.check
+                                                    : Icons.edit_outlined,
+                                                color: Colors.white,
+                                                size: 15,
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                        ],
                                       ),
                                       constraints: BoxConstraints(
                                         minHeight: 34,

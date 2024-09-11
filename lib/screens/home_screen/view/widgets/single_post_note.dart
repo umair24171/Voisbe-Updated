@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -20,6 +21,7 @@ import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/home_screen/controller/play_count_service.dart';
 import 'package:social_notes/screens/home_screen/controller/share_services.dart';
+import 'package:social_notes/screens/home_screen/controller/video_download_methods.dart';
 import 'package:social_notes/screens/home_screen/model/book_mark_model.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
 // import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dart';
@@ -355,7 +357,9 @@ class _SingleNotePostState extends State<SingleNotePost> {
                               .snapshots(),
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
-                              if (snapshot.data!.data()!['likes'].contains(
+                              NoteModel likeNote =
+                                  NoteModel.fromMap(snapshot.data!.data()!);
+                              if (likeNote.likes.contains(
                                   FirebaseAuth.instance.currentUser!.uid)) {
                                 return SvgPicture.asset(
                                   'assets/icons/Like Active.svg',
@@ -508,6 +512,139 @@ class _SingleNotePostState extends State<SingleNotePost> {
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                //  download post option
+
+                                Consumer<DisplayNotesProvider>(
+                                    builder: (context, displayPro, _) {
+                                  return InkWell(
+                                    onTap: displayPro.isLoading
+                                        ? null
+                                        : () async {
+                                            var pro = Provider.of<
+                                                    DisplayNotesProvider>(
+                                                context,
+                                                listen: false);
+                                            pro.setIsloading(true);
+                                            DocumentSnapshot<
+                                                    Map<String, dynamic>>
+                                                snapshot =
+                                                await FirebaseFirestore.instance
+                                                    .collection('users')
+                                                    .doc(widget.note.userUid)
+                                                    .get();
+                                            UserModel verifiedUSer =
+                                                UserModel.fromMap(
+                                                    snapshot.data()!);
+                                            await VideoDownloadMethods()
+                                                .downloadPostWithLogo(
+                                                    hasBackgroundPhoto: widget
+                                                            .note.backgroundType
+                                                            .contains('photo')
+                                                        ? true
+                                                        : false,
+                                                    hasBackgroundVideo: widget
+                                                            .note.backgroundType
+                                                            .contains('video')
+                                                        ? true
+                                                        : false,
+                                                    backgroundPhotoUrl: widget.note.backgroundType.contains('photo') &&
+                                                            widget
+                                                                .note
+                                                                .backgroundImage
+                                                                .isNotEmpty
+                                                        ? widget.note
+                                                            .backgroundImage
+                                                        : null,
+                                                    backgroundVideoUrl: widget
+                                                                .note
+                                                                .backgroundType
+                                                                .contains('video') &&
+                                                            widget.note.backgroundImage.isNotEmpty
+                                                        ? widget.note.backgroundImage
+                                                        : null,
+                                                    logo2AssetPath: 'assets/icons/logo 3.png',
+                                                    username: widget.note.username,
+                                                    videoUrl: widget.note.backgroundImage,
+                                                    audioUrl: widget.note.noteUrl,
+                                                    logoVideoPath:
+                                                        // 'assets/icons/transparent-gif.mp4',
+                                                        'assets/icons/gifvideo.mp4',
+                                                    isVerified: verifiedUSer.isVerified,
+                                                    outputFileName: 'voisbe/videos');
+                                            pro.setIsloading(false);
+                                            navPop(context);
+                                            showWhiteOverlayPopup(
+                                                context,
+                                                Icons.check_box,
+                                                null,
+                                                null,
+                                                title: 'Successful',
+                                                message:
+                                                    'Post downloaded successfully.',
+                                                isUsernameRes: false);
+                                          },
+                                    child: displayPro.isLoading
+                                        ? Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 8,
+                                                left: 10,
+                                                right: 10,
+                                                top: 10),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  'Post is downloading',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                      fontFamily: khulaRegular,
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.w600),
+                                                ),
+                                                SpinKitThreeBounce(
+                                                  size: 13,
+                                                  color: blackColor,
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 8,
+                                                left: 10,
+                                                right: 10,
+                                                top: 10),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  'Download post',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                      fontFamily: khulaRegular,
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.w600),
+                                                ),
+                                                const Icon(Icons
+                                                    .arrow_forward_ios_outlined)
+                                              ],
+                                            ),
+                                          ),
+                                  );
+                                }),
+
+                                Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 1,
+                                  color: const Color(0xffEAEAEA),
+                                ),
+
                                 //  option to remove itself from the tag
 
                                 if (widget.note.tagPeople

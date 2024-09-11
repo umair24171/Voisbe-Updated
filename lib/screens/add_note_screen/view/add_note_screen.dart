@@ -1,11 +1,8 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'dart:ui';
 
 import 'package:audio_waveforms/audio_waveforms.dart' as audi;
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -15,28 +12,22 @@ import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/resources/navigation.dart';
 import 'package:social_notes/resources/white_overlay_popup.dart';
-import 'package:social_notes/screens/add_note_screen/controllers/add_note_controller.dart';
-import 'package:social_notes/screens/add_note_screen/model/gallery_loader.dart';
 // import 'package:social_notes/resources/navigation.dart';
 import 'package:social_notes/screens/add_note_screen/provider/note_provider.dart';
 import 'package:social_notes/screens/add_note_screen/provider/pexels_provider.dart';
 import 'package:social_notes/screens/add_note_screen/view/add_background_screen.dart';
 import 'package:social_notes/screens/add_note_screen/view/select_topic_screen.dart';
 import 'package:social_notes/screens/add_note_screen/view/widgets/add_note_player.dart';
-import 'package:social_notes/screens/add_note_screen/view/widgets/custom_video_player.dart';
 import 'package:social_notes/screens/add_note_screen/view/widgets/recording_player.dart';
 import 'package:social_notes/screens/add_note_screen/view/widgets/tag_users_modal_sheet.dart';
-import 'package:social_notes/screens/auth_screens/controller/auth_controller.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
-import 'package:social_notes/screens/upload_sounds/provider/sound_provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:http/http.dart' as http;
 // import 'package:social_notes/screens/upload_sounds/view/upload_sound.dart';
 
 import 'package:path_provider/path_provider.dart';
 
 class AddNoteScreen extends StatefulWidget {
-  AddNoteScreen({super.key});
+  const AddNoteScreen({super.key});
 
   @override
   State<AddNoteScreen> createState() => _AddNoteScreenState();
@@ -284,7 +275,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                           controller: titleController,
                           textCapitalization: TextCapitalization.words,
                           decoration: InputDecoration(
-                              hintText: 'Add a title',
+                              hintText: 'Add a title (max 10 letters)',
                               hintStyle: TextStyle(
                                   fontFamily: fontFamily,
                                   fontSize: 13,
@@ -304,12 +295,12 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(
-                                      'Max 10 letters',
-                                      style: TextStyle(
-                                          fontFamily: fontFamily,
-                                          color: Colors.grey),
-                                    ),
+                                    // Text(
+                                    //   'Max 10 letters',
+                                    //   style: TextStyle(
+                                    //       fontFamily: fontFamily,
+                                    //       color: Colors.grey),
+                                    // ),
 
                                     //  button to navigate to the screen to pic image or video or from gallery
                                     Padding(

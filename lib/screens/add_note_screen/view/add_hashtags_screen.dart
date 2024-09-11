@@ -18,6 +18,7 @@ import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
 import 'package:social_notes/screens/add_note_screen/provider/note_provider.dart';
 import 'package:social_notes/screens/add_note_screen/provider/player_provider.dart';
 import 'package:social_notes/screens/add_note_screen/view/list_hashtag_widget.dart';
+import 'package:social_notes/screens/add_note_screen/view/widgets/recommended_hastags.dart';
 import 'package:social_notes/screens/auth_screens/controller/notifications_methods.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
@@ -111,11 +112,11 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
   getRecommendedHashtagsBasedOnTopic() {
     if (widget.selectedTopic.contains('Need Support')) {
       recommended = needSupport;
-    } else if (widget.selectedTopic.contains('Relationship & love')) {
+    } else if (widget.selectedTopic.contains('Relationship & Love')) {
       recommended = relationShiplove;
-    } else if (widget.selectedTopic.contains('Confession & secret')) {
+    } else if (widget.selectedTopic.contains('Confession & Secret')) {
       recommended = confessionSecret;
-    } else if (widget.selectedTopic.contains('Inspiration & motivation')) {
+    } else if (widget.selectedTopic.contains('Inspiration & Motivation')) {
       recommended = inspirationMotivation;
     } else if (widget.selectedTopic.contains('Food & Cooking')) {
       recommended = foodCooking;
@@ -149,6 +150,10 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
       recommended = healthAndWellness;
     } else if (widget.selectedTopic.contains('Hobbies & Interests')) {
       recommended = hobbiesAndInterests;
+    } else if (widget.selectedTopic.contains('Music')) {
+      recommended = musicHashtags;
+    } else if (widget.selectedTopic.contains('Podcasts & Interviews')) {
+      recommended = podcastsHast;
     } else if (widget.selectedTopic.contains('other')) {
       recommended = other;
     }
@@ -287,8 +292,8 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                               } else {
                                 // error to show if the hashtag already exist
 
-                                showWhiteOverlayPopup(context, null,'assets/icons/Info (1).svg', null,
-                                    
+                                showWhiteOverlayPopup(context, null,
+                                    'assets/icons/Info (1).svg', null,
                                     title: 'Error',
                                     message: 'Hastag already added.',
                                     isUsernameRes: false);
@@ -296,8 +301,8 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                             } else {
                               //  error to show if the hashtags exceeds the limit of 10
 
-                              showWhiteOverlayPopup(context, null,'assets/icons/Info (1).svg', null,
-                                  
+                              showWhiteOverlayPopup(context, null,
+                                  'assets/icons/Info (1).svg', null,
                                   title: 'Error',
                                   message: 'You can only select 10 hashtags.',
                                   isUsernameRes: false);
@@ -358,13 +363,13 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                           // height: ,
                           // height: ,
                           padding: const EdgeInsets.symmetric(
-                              vertical: 5, horizontal: 0),
+                              vertical: 6, horizontal: 0),
                           decoration: BoxDecoration(
                               color: _selectedOptions
                                       .contains(userAddedHasthtags[index])
                                   ? whiteColor
                                   : Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(40),
                               border: Border.all(color: whiteColor, width: 1)),
                           child: Text(
                             userAddedHasthtags[index],
@@ -396,177 +401,27 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                     fontWeight: FontWeight.w600),
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 15, bottom: 15),
+                padding: const EdgeInsets.symmetric(vertical: 15),
                 child: SizedBox(
-                  width: double.infinity,
-                  height: 85,
-                  child: CustomScrollView(
+                  height: 100, // Increased height to accommodate two lines
+                  child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    slivers: [
-                      SliverPadding(
-                        padding: const EdgeInsets.only(left: 35),
-                        sliver: SliverGrid(
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            childAspectRatio: 2.2 / 10,
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 12,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 35),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: _buildHashtagRows(recommended),
+                            ),
                           ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              return InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    if (_selectedOptions.length < 10) {
-                                      if (_selectedOptions
-                                          .contains(recommended[index])) {
-                                        _selectedOptions
-                                            .remove(recommended[index]);
-                                      } else {
-                                        _selectedOptions
-                                            .add(recommended[index]);
-                                      }
-                                    } else {
-                                      showWhiteOverlayPopup(
-                                        context,
-                                        null,
-                                        'assets/icons/Info (1).svg',
-                                        null,
-                                        title: 'Error',
-                                        message:
-                                            'You can only select 10 hashtags.',
-                                        isUsernameRes: false,
-                                      );
-                                    }
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 0),
-                                  decoration: BoxDecoration(
-                                    color: _selectedOptions
-                                            .contains(recommended[index])
-                                        ? whiteColor
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border:
-                                        Border.all(color: whiteColor, width: 1),
-                                  ),
-                                  child: Text(
-                                    recommended[index],
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: _selectedOptions
-                                              .contains(recommended[index])
-                                          ? blackColor
-                                          : whiteColor,
-                                      fontFamily: khulaRegular,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                            childCount: recommended.length,
-                          ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-              // Padding(
-              //   padding: const EdgeInsets.only(left: 0, top: 15, bottom: 15),
-              //   child: Column(
-              //     children: [
-              //       SizedBox(
-              //         // height: 40,
-              //         width: double.infinity,
-              //         height: 85,
-              //         child: ClipRRect(
-              //           child: Align(
-              //             alignment: Alignment.centerRight,
-              //             widthFactor: 1.0,
-              //             child: Padding(
-              //               padding: const EdgeInsets.only(left: 35),
-              //               child: GridView.builder(
-              //                 gridDelegate:
-              //                     const SliverGridDelegateWithFixedCrossAxisCount(
-              //                         // childAspectRatio: 3 / 10,
-              //                         childAspectRatio: 2.2 / 10,
-              //                         crossAxisCount: 2,
-              //                         // mainAxisExtent: 120,
-              //                         mainAxisSpacing: 10,
-              //                         crossAxisSpacing: 12),
-              //                 itemCount: recommended.length,
-              //                 scrollDirection: Axis.horizontal,
-              //                 itemBuilder: (context, index) {
-              //                   return InkWell(
-              //                     onTap: () {
-              //                       //  select or unselect the hashtag
-
-              //                       setState(() {
-              //                         if (_selectedOptions.length < 10) {
-              //                           if (_selectedOptions
-              //                               .contains(recommended[index])) {
-              //                             _selectedOptions
-              //                                 .remove(recommended[index]);
-              //                           } else {
-              //                             _selectedOptions
-              //                                 .add(recommended[index]);
-              //                           }
-              //                         } else {
-              //                           showWhiteOverlayPopup(context, null,
-              //                               'assets/icons/Info (1).svg', null,
-              //                               title: 'Error',
-              //                               message:
-              //                                   'You can only select 10 hashtags',
-              //                               isUsernameRes: false);
-              //                         }
-              //                       });
-              //                     },
-              //                     child: Padding(
-              //                       padding: const EdgeInsets.symmetric(
-              //                         horizontal: 0,
-              //                       ),
-              //                       child: Container(
-              //                         padding: const EdgeInsets.symmetric(
-              //                             vertical: 8, horizontal: 0),
-              //                         decoration: BoxDecoration(
-              //                             color: _selectedOptions
-              //                                     .contains(recommended[index])
-              //                                 ? whiteColor
-              //                                 : Colors.transparent,
-              //                             borderRadius:
-              //                                 BorderRadius.circular(20),
-              //                             border: Border.all(
-              //                                 color: whiteColor, width: 1)),
-              //                         child: Text(
-              //                           recommended[index],
-              //                           textAlign: TextAlign.center,
-              //                           style: TextStyle(
-              //                               color: _selectedOptions.contains(
-              //                                       recommended[index])
-              //                                   ? blackColor
-              //                                   : whiteColor,
-              //                               fontFamily: khulaRegular,
-              //                               fontSize: 15,
-              //                               fontWeight: FontWeight.w600),
-              //                         ),
-              //                       ),
-              //                     ),
-              //                   );
-              //                 },
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
 
               //trending  hashtags to show
 
@@ -579,86 +434,107 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                     fontWeight: FontWeight.w600),
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 15, bottom: 15),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 85,
-                  child: CustomScrollView(
-                    scrollDirection: Axis.horizontal,
-                    slivers: [
-                      SliverPadding(
-                        padding: const EdgeInsets.only(left: 35),
-                        sliver: SliverGrid(
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            childAspectRatio: 2.2 / 10,
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 12,
-                          ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              return InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    if (_selectedOptions.length < 10) {
-                                      if (_selectedOptions
-                                          .contains(trendings[index])) {
-                                        _selectedOptions
-                                            .remove(trendings[index]);
-                                      } else {
-                                        _selectedOptions.add(trendings[index]);
-                                      }
-                                    } else {
-                                      showWhiteOverlayPopup(
-                                        context,
-                                        null,
-                                        'assets/icons/Info (1).svg',
-                                        null,
-                                        title: 'Error',
-                                        message:
-                                            'You can only select 10 hashtags.',
-                                        isUsernameRes: false,
-                                      );
-                                    }
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 0),
-                                  decoration: BoxDecoration(
-                                    color: _selectedOptions
-                                            .contains(trendings[index])
-                                        ? whiteColor
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border:
-                                        Border.all(color: whiteColor, width: 1),
-                                  ),
-                                  child: Text(
-                                    trendings[index],
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: _selectedOptions
-                                              .contains(trendings[index])
-                                          ? blackColor
-                                          : whiteColor,
-                                      fontFamily: khulaRegular,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  child: SizedBox(
+                      height: 100, // Increased height to accommodate two lines
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 35),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  children: _buildHashtagRows(trendings),
                                 ),
-                              );
-                            },
-                            childCount: trendings.length,
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                      ))),
+              // Padding(
+              //   padding: const EdgeInsets.only(top: 15, bottom: 15),
+              //   child: SizedBox(
+              //     width: double.infinity,
+              //     height: 85,
+              //     child: CustomScrollView(
+              //       scrollDirection: Axis.horizontal,
+              //       slivers: [
+              //         SliverPadding(
+              //           padding: const EdgeInsets.only(left: 35),
+              //           sliver: SliverGrid(
+              //             gridDelegate:
+              //                 const SliverGridDelegateWithFixedCrossAxisCount(
+              //               childAspectRatio: 2.2 / 10,
+              //               crossAxisCount: 2,
+              //               mainAxisSpacing: 10,
+              //               crossAxisSpacing: 12,
+              //             ),
+              //             delegate: SliverChildBuilderDelegate(
+              //               (context, index) {
+              //                 return InkWell(
+              //                   onTap: () {
+              //                     setState(() {
+              //                       if (_selectedOptions.length < 10) {
+              //                         if (_selectedOptions
+              //                             .contains(trendings[index])) {
+              //                           _selectedOptions
+              //                               .remove(trendings[index]);
+              //                         } else {
+              //                           _selectedOptions.add(trendings[index]);
+              //                         }
+              //                       } else {
+              //                         showWhiteOverlayPopup(
+              //                           context,
+              //                           null,
+              //                           'assets/icons/Info (1).svg',
+              //                           null,
+              //                           title: 'Error',
+              //                           message:
+              //                               'You can only select 10 hashtags.',
+              //                           isUsernameRes: false,
+              //                         );
+              //                       }
+              //                     });
+              //                   },
+              //                   child: Container(
+              //                     padding: const EdgeInsets.symmetric(
+              //                         vertical: 8, horizontal: 0),
+              //                     decoration: BoxDecoration(
+              //                       color: _selectedOptions
+              //                               .contains(trendings[index])
+              //                           ? whiteColor
+              //                           : Colors.transparent,
+              //                       borderRadius: BorderRadius.circular(20),
+              //                       border:
+              //                           Border.all(color: whiteColor, width: 1),
+              //                     ),
+              //                     child: Text(
+              //                       trendings[index],
+              //                       textAlign: TextAlign.center,
+              //                       style: TextStyle(
+              //                         color: _selectedOptions
+              //                                 .contains(trendings[index])
+              //                             ? blackColor
+              //                             : whiteColor,
+              //                         fontFamily: khulaRegular,
+              //                         fontSize: 16,
+              //                         fontWeight: FontWeight.w600,
+              //                       ),
+              //                     ),
+              //                   ),
+              //                 );
+              //               },
+              //               childCount: trendings.length,
+              //             ),
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+
               const Expanded(child: SizedBox()),
               Padding(
                 padding: EdgeInsets.symmetric(
@@ -776,7 +652,8 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                                         ? File(widget.thumbnailPath!)
                                         : loadingPro.imageFile!,
                                     context);
-                          } else if (widget.backgroundType.contains('video')) {
+                          } else if (widget.backgroundType.contains('video') &&
+                              widget.backGroundImage.isNotEmpty) {
                             final uint8list =
                                 await VideoThumbnail.thumbnailData(
                               video: widget.backGroundImage,
@@ -881,5 +758,74 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
         ],
       ),
     );
+  }
+
+  List<Widget> _buildHashtagRows(List<String> hashtags) {
+    final int halfLength = (hashtags.length / 2).ceil();
+    return [
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHashtagRow(hashtags.sublist(0, halfLength)),
+          const SizedBox(height: 10),
+          _buildHashtagRow(hashtags.sublist(halfLength)),
+        ],
+      ),
+    ];
+  }
+
+  Widget _buildHashtagRow(List<String> hashtags) {
+    return Row(
+      children: hashtags.map((hashtag) {
+        final isSelected = _selectedOptions.contains(hashtag);
+        return Padding(
+          padding: const EdgeInsets.only(right: 10),
+          child: IntrinsicWidth(
+            child: InkWell(
+              onTap: () => _toggleHashtag(hashtag),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: isSelected ? whiteColor : Colors.transparent,
+                  borderRadius: BorderRadius.circular(40),
+                  border: Border.all(color: whiteColor, width: 1),
+                ),
+                child: Text(
+                  hashtag,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isSelected ? blackColor : whiteColor,
+                    fontFamily: khulaRegular,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  void _toggleHashtag(String hashtag) {
+    setState(() {
+      if (_selectedOptions.contains(hashtag)) {
+        _selectedOptions.remove(hashtag);
+      } else if (_selectedOptions.length < 10) {
+        _selectedOptions.add(hashtag);
+      } else {
+        showWhiteOverlayPopup(
+          context,
+          null,
+          'assets/icons/Info (1).svg',
+          null,
+          title: 'Error',
+          message: 'You can only select ${10} hashtags.',
+          isUsernameRes: false,
+        );
+      }
+    });
   }
 }

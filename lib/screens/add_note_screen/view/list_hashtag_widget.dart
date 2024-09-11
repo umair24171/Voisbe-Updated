@@ -697,3 +697,49 @@ List<String> other = [
   "#TopicSuggestions",
   "#MiscellaneousContent",
 ];
+
+List<String> musicHashtags = [
+  "#NowPlaying",
+  "#MusicLover",
+  "#Soundtrack",
+  "#OnRepeat",
+  "#LiveSession",
+  "#JamSession",
+  "#Concert",
+  "#MusicVideo",
+  "#RecordLabel",
+  "#Music",
+  "#Lyrics",
+  "#Melody",
+  "#MusicArtist",
+  "#NewMusic",
+  "#UnsignedArtist",
+  "#RockOn",
+  "#TuneIn",
+  "#MusicDaily",
+  "#ElectronicMusic",
+  "#MusicJourney"
+];
+
+List<String> podcastsHast = [
+  "#PodcastLife",
+  "#OnAir",
+  "#ListenNow",
+  "#Interview",
+  "#Podcast",
+  "#NowPlaying",
+  "#VoiceOver",
+  "#MicCheck",
+  "#Storytelling",
+  "#InterviewDay",
+  "#Eargasm",
+  "#BehindTheMic",
+  "#ListenUp",
+  "#InTheStudio",
+  "#PodSquad",
+  "#DigitalAudio",
+  "#TalkShow",
+  "#InterviewGoals",
+  "#DailyPod",
+  "#PodcastJourney"
+];

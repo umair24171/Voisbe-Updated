@@ -93,14 +93,18 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
     player.setReleaseMode(ReleaseMode.stop);
     player.setSourceDeviceFile(widget.noteUrl).then((value) {});
     player.onDurationChanged.listen((event) {
-      setState(() {
-        duration = event;
-      });
+      if (mounted) {
+        setState(() {
+          duration = event;
+        });
+      }
     });
     player.onPositionChanged.listen((event) {
-      setState(() {
-        postiion = event;
-      });
+      if (mounted) {
+        setState(() {
+          postiion = event;
+        });
+      }
     });
 
     // widget.player.setReleaseMode(ReleaseMode.stop);
@@ -111,28 +115,28 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
         _cachedFilePath = file.file.path;
       }
     });
-    // widget.player.getCurrentPosition().then(
-    //       (value) => setState(() {
-    //         position = value!;
-    //       }),
-    //     );
+
     player.onPlayerComplete.listen((state) {
-      setState(() {
-        isPlaying = false;
-      });
+      if (mounted) {
+        setState(() {
+          isPlaying = false;
+        });
+      }
     });
 
     player.onPlayerStateChanged.listen((PlayerState state) {
       if (state == PlayerState.playing) {
-        setState(() {
-          isPlaying = true;
-          // widget.isPlaying = widget.isPlaying;
-        });
+        if (mounted) {
+          setState(() {
+            isPlaying = true;
+          });
+        }
       } else {
-        setState(() {
-          isPlaying = false;
-          // widget.isPlaying = widget.isPlaying;
-        }); // Notify parent widget
+        if (mounted) {
+          setState(() {
+            isPlaying = false;
+          });
+        } // Notify parent widget
       }
     });
   }

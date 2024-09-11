@@ -14,6 +14,7 @@ class UpdateProfileController {
   final currentUser = FirebaseAuth.instance.currentUser;
 
   updateProfile(
+    String pass,
     String name,
     String username,
     String bio,
@@ -29,7 +30,8 @@ class UpdateProfileController {
   ) async {
     try {
       Provider.of<UserProvider>(context, listen: false).setUserLoading(true);
-      _firestore.collection('users').doc(currentUid).update({
+      await _firestore.collection('users').doc(currentUid).update({
+        'password': pass,
         'photoUrl': photoUrl,
         'username': name,
         'name': username,
@@ -41,6 +43,9 @@ class UpdateProfileController {
         'soundPacks': soundPacks,
         'dateOfBirth': dateOfBirth
       });
+      if (pass.isNotEmpty) {
+        await FirebaseAuth.instance.currentUser!.updatePassword(pass);
+      }
       Provider.of<UserProvider>(context, listen: false).setUserLoading(false);
     } catch (e) {
       Provider.of<UserProvider>(context, listen: false).setUserLoading(true);

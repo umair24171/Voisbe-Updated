@@ -477,7 +477,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                         fontSize: 17),
                                   ),
                                   const SizedBox(
-                                    height: 15,
+                                    height: 10,
                                   ),
 
                                   //  getting the user bio
@@ -486,7 +486,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                     padding: EdgeInsets.symmetric(
                                             horizontal: size.width * 0.1,
                                             vertical: 5)
-                                        .copyWith(top: 5, bottom: 20),
+                                        .copyWith(top: 0, bottom: 0),
                                     child: Center(
                                       child: RichText(
                                         textAlign: TextAlign.center,

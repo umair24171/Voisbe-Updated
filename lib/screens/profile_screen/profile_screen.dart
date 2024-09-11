@@ -27,6 +27,7 @@ import 'package:social_notes/screens/profile_screen/provider.dart/update_profile
 import 'package:social_notes/screens/profile_screen/widgets/bank_details_popup.dart';
 // import 'package:social_notes/screens/home_screen/view/home_screen.dart';
 import 'package:social_notes/screens/profile_screen/widgets/custom_list_tile.dart';
+import 'package:social_notes/screens/profile_screen/widgets/usernames_list.dart';
 import 'package:social_notes/screens/stripe_controller.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -47,6 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String bio = '';
   String link = '';
   String contact = '';
+  String pass = '';
   String price = '';
   String soundPack = 'Upload your sound pack';
   bool subscription = false;
@@ -89,402 +91,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   //  list of reserverd names
 
-  List<String> reservedNames = [
-    "cristiano",
-    "kyliejenner",
-    "leomessi",
-    "kendalljenner",
-    "selenagomez",
-    "zendaya",
-    "kimkardashian",
-    "beyonce",
-    "arianagrande",
-    "billieeilish",
-    "neymarjr",
-    "lalalalisa_m",
-    "jennierubyjane",
-    "tomholland2013",
-    "virat.kohli",
-    "khaby00",
-    "khloekardashian",
-    "sooyaaa__",
-    "justinbieber",
-    "thv",
-    "roses_are_rosie",
-    "badgalriri",
-    "nickiminaj",
-    "iamcardib",
-    "jin",
-    "agustd",
-    "therock",
-    "instagram",
-    "zayn",
-    "champagnepapi",
-    "rkive",
-    "kourtneykardash",
-    "uarmyhope",
-    "badbunnypr",
-    "katrinakaif",
-    "adele",
-    "harrystyles",
-    "kingjames",
-    "jlo",
-    "k.mbappe",
-    "karolg",
-    "gigihadid",
-    "anushkasharma",
-    "narendramodi",
-    "eunwo.o_c",
-    "dualipa",
-    "charlidamelio",
-    "ester_exposito",
-    "mileycyrus",
-    "georginagio",
-    "actorleeminho",
-    "gal_gadot",
-    "fcbarcelona",
-    "akshaykumar",
-    "shawnmendes",
-    "milliebobbybrown",
-    "chrishemsworth",
-    "dlwlrma",
-    "oliviarodrigo",
-    "mosalah",
-    "rashmika_mandanna",
-    "lelepons",
-    "ursulolita",
-    "priyankachopra",
-    "lilireinhart",
-    "handemiyy",
-    "ddlovato",
-    "blackpinkofficial",
-    "whinderssonnunes",
-    "shraddhakapoor",
-    "meganfox",
-    "haileybieber",
-    "bn_sj2013",
-    "kimberly.loaiza",
-    "real__pcy",
-    "katyperry",
-    "davidbeckham",
-    "camila_cabello",
-    "paulpogba",
-    "aliaabhatt",
-    "dojacat",
-    "iamsrk",
-    "realmadrid",
-    "jongsuk0206",
-    "miakhalifa",
-    "nasa",
-    "bellahadid",
-    "oohsehun",
-    "niallhoran",
-    "hoooooyeony",
-    "addisonraee",
-    "beingsalmankhan",
-    "twicetagram",
-    "emmawatson",
-    "zacefron",
-    "nike",
-    "madelame",
-    "virginia",
-    "jenniferaniston",
-    "iamhalsey",
-    "paulodybala",
-    "dovecameron",
-    "antonelaroccuzzo",
-    "camimendes",
-    "theweeknd",
-    "norafatehi",
-    "iamzlatanibrahimovic",
-    "karimbenzema",
-    "nehakakkar",
-    "skawngur",
-    "chrisbrownofficial",
-    "hi_high_hiy",
-    "realstraykids",
-    "songkang_b",
-    "vindiesel",
-    "sergioramos",
-    "shakira",
-    "louist91",
-    "ladygaga",
-    "varundvn",
-    "kjapa",
-    "dannapaola",
-    "iansomerhalder",
-    "saraalikhan95",
-    "jannatzubair29",
-    "deepikapadukone",
-    "championsleague",
-    "sabrinacarpenter",
-    "juliette",
-    "alluarjunonline",
-    "maluma",
-    "hazardeden_10",
-    "hrithikroshan",
-    "luisitocomunica",
-    "jacksonwang852g7",
-    "madisonbeer",
-    "kunaguero",
-    "elrubiuswtf",
-    "mrbeast",
-    "rohitsharma45",
-    "madelyncline",
-    "stephencurry30",
-    "_jeongjaehyun",
-    "jamesrodriguez10",
-    "433",
-    "eminem",
-    "phil.coutinho",
-    "noahschnapp",
-    "rosalia.vt",
-    "lewishamilton",
-    "dixiedamelio",
-    "anuel",
-    "riaricis1795",
-    "emmachamberlain",
-    "thenotoriousmma",
-    "kartikaaryan",
-    "brentrivera",
-    "kritisanon",
-    "shahidkapoor",
-    "dishapatani",
-    "marcelotwelve",
-    "nina",
-    "manchesterunited",
-    "cznburak",
-    "thedeverakonda",
-    "brunamarquezine",
-    "natgeo",
-    "nusr_et",
-    "taehyung.bighitentertainment",
-    "haileesteinfeld",
-    "skuukzky",
-    "garethbale11",
-    "sadiesink_",
-    "domelipa",
-    "daviddobrik",
-    "samantharuthprabhuoffl",
-    "feliciathegoat",
-    "anitta",
-    "miguel.g.herran",
-    "carryminati",
-    "jungkook_bighitentertainment",
-    "loganpaul",
-    "johnnydepp",
-    "phs1116",
-    "xxxibgdrgn",
-    "theestallion",
-    "kiaraaliaadvani",
-    "paulolondra",
-    "evaluna",
-    "leedongwook_official",
-    "sommerray",
-    "juandediospantoja",
-    "tyga",
-    "erling.haaland",
-    "jbalvin",
-    "jacquelinef143",
-    "annehathaway",
-    "hardikpandya93",
-    "wi__wi__wi",
-    "kevinhart4real",
-    "henrycavill",
-    "lanarhoades",
-    "gianlucavacchi",
-    "joeyking",
-    "zkdlin",
-    "bellapoarch",
-    "holyhaein",
-    "m10_official",
-    "jacobelordi",
-    "samoylovaoxana",
-    "carlinhosmaiaof",
-    "9gag",
-    "gusein.gasanov",
-    "do0_nct",
-    "sunnyleone",
-    "jimin_bighitentertainment",
-    "aron.piper",
-    "finnwolfhardofficial",
-    "iambeckyg",
-    "bhuvan.bam22",
-    "anushkasen0408",
-    "_imyour_joy",
-    "taina",
-    "tinistoessel",
-    "natashawilona12",
-    "emrata",
-    "somsomi0309",
-    "rohittt_15",
-    "iammostwanteddd",
-    "iamnagarjuna",
-    "angelaaguiarangel",
-    "louane",
-    "sammihanratty",
-    "sachintendulkar",
-    "jackson_yee_",
-    "danielaacallee",
-    "romelu.lukaku",
-    "perrieeele",
-    "lisaandlena",
-    "wizkhalifa",
-    "angelalindvall",
-    "lizzzak",
-    "sabina",
-    "gigihadid.xx",
-    "fernanfloo",
-    "ellise",
-    "shane_van_gisbergen",
-    "eljuanpazurita",
-    "willyrex",
-    "yuyacst",
-    "victoriabeckham",
-    "jadeywadey180",
-    "ximeponch",
-    "kaykay",
-    "luisfonsi",
-    "mariale",
-    "kamalikapieris",
-    "arsenal",
-    "ozuna",
-    "stephanyortizr",
-    "mohamedramadanws",
-    "willianborges88",
-    "shilpashirodkar73",
-    "juanpabarbot",
-    "landonmcgregor",
-    "dualipanews",
-    "thehughjackman",
-    "mehakdeep_singh",
-    "karol.g",
-    "amandacerny",
-    "hinddeer",
-    "adamlevine",
-    "laliga",
-    "rayanlvtt",
-    "yusufdemirkol_",
-    "fatimaezzahraofficial",
-    "paniniamerica",
-    "milliebobbybrownupdates",
-    "luisitogarcia10",
-    "nehakakkarlovers",
-    "dmtod",
-    "andresiniesta8",
-    "pokimanelol",
-    "mohamedsalah",
-    "fedefederossi",
-    "deynacorn",
-    "fernandinho",
-    "ddong_gg0",
-    "davidbisbal",
-    "siruthai.siva",
-    "corona",
-    "jana",
-    "daddyyankee",
-    "theellenshow",
-    "lelettroniique",
-    "mrwheelerparker",
-    "sammy",
-    "ross_lynch",
-    "ravensofficial",
-    "muhammadali",
-    "kevin",
-    "tylerthecreator",
-    "andrenocetiii",
-    "giovanni",
-    "maitreyiramakant",
-    "donghyun_m",
-    "jenniferlopez",
-    "sarkodie",
-    "thejensie",
-    "mrtonyvitello",
-    "aishwaryaraibachchan_arb",
-    "petesouza",
-    "mariahcarey",
-    "love_sadkid",
-    "justinbieberr",
-    "caradelevingne",
-    "nikefootball",
-    "naeun",
-    "pabllovittar",
-    "kyrieirving",
-    "valeriabaroni",
-    "leonardodicaprio",
-    "twinmelody",
-    "fakharzaman719",
-    "fazeclan",
-    "jessicaalba",
-    "gianluigibuffon",
-    "marcmarquez93",
-    "jessicachastain",
-    "liltjay",
-    "iamlilimar",
-    "jackgrazer",
-    "tombrady",
-    "lilpump",
-    "yelyahwilliams",
-    "nikkietutorials",
-    "scooterbraun",
-    "alexroe",
-    "renner4real",
-    "zahraelise",
-    "milliegomez",
-    "floydmayweather",
-    "iamyashikaanand",
-    "montesjulia08",
-    "kingjames.lebron23",
-    "theromymont",
-    "martingarrix",
-    "odell",
-    "schwarzenegger",
-    "natsumi",
-    "jacksonwang852g7d",
-    "missmariahsposts",
-    "kourtneykardashiansnapchat",
-    "victoriapaulsen",
-    "ranveersingh",
-    "acefamily",
-    "bobby",
-    "stanlee",
-    "pierre",
-    "justinbiebers",
-    "jamescharles",
-    "florence",
-    "therock13",
-    "davidbeckhamswag",
-    "bellathorne",
-    "eugenio_siller",
-    "john",
-    "joebiden",
-    "mohanlal",
-    "katelynnacon",
-    "michelleobama",
-    "travisscott",
-    "meredithvieirashow",
-    "eltonjohn",
-    "rosalia",
-    "kendalljennersnapchats",
-    "justintimberlake",
-    "victoriabeckhamofficial",
-    "vindieselfacts",
-    "rachelcomey",
-    "andresiniesta8",
-    "meganfox143",
-    "djearworm",
-    "scuderiaferrari",
-    "neyo",
-    "blakegray",
-    "jordynwoods",
-    "harry",
-    "jacob",
-    "nicholas",
-    "lucy",
-    "casey",
-    "jackson",
-    "hunter"
-  ];
+  // List<String> reservedNames = [
+
+  // ];
 
   @override
   void initState() {
@@ -551,6 +160,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? linkError;
   String? contactError;
   String? priceError;
+  String? passError;
 
   @override
   Widget build(BuildContext context) {
@@ -603,6 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         centerTitle: true,
       ),
       body:
+
           //  while the data is loading show the loader
 
           userProvider.user == null
@@ -624,7 +235,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Container(
                           height: size.height,
                           decoration: BoxDecoration(
-                            image: userProvider.imageFile == null
+                            image: userProvider.userImage == null
                                 ? DecorationImage(
                                     fit: BoxFit.cover,
                                     image: NetworkImage(
@@ -634,12 +245,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   )
                                 : DecorationImage(
-                                    image: FileImage(userProvider.imageFile!),
+                                    image: FileImage(userProvider.userImage!),
                                     fit: BoxFit.cover),
                           ),
                         ),
                       if (userProvider.user!.photoUrl.isEmpty &&
-                          userProvider.imageFile == null)
+                          userProvider.userImage == null)
 
                         //  default background of the screen if the profile pic is empty
 
@@ -684,7 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (userProvider.user!.photoUrl.isNotEmpty ||
-                                  userProvider.imageFile != null)
+                                  userProvider.userImage != null)
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 15),
@@ -700,7 +311,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   color: whiteColor, width: 1),
                                               borderRadius:
                                                   BorderRadius.circular(50)),
-                                          child: userProvider.imageFile == null
+                                          child: userProvider.userImage == null
                                               ? CircleAvatar(
                                                   backgroundImage: NetworkImage(
                                                       userProvider
@@ -714,7 +325,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                 )
                                               : CircleAvatar(
                                                   backgroundImage: FileImage(
-                                                      userProvider.imageFile!),
+                                                      userProvider.userImage!),
                                                   radius: 50,
                                                 ),
                                         ),
@@ -733,7 +344,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               ),
                                               child: GestureDetector(
                                                 onTap: () {
-                                                  userProvider.pickImage();
+                                                  userProvider.pickUserImage();
                                                 },
                                                 child: const Icon(
                                                   Icons.edit_outlined,
@@ -747,13 +358,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ),
                               if (userProvider.user!.photoUrl.isEmpty &&
-                                  userProvider.imageFile == null)
+                                  userProvider.userImage == null)
                                 InkWell(
                                   splashColor: Colors.transparent,
                                   onTap: () {
                                     //  calling the pick image function to change the profile pic
 
-                                    userProvider.pickImage();
+                                    userProvider.pickUserImage();
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -837,12 +448,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                       'The requested username has been reserved. If you are the rightful owner of the verified username on a different platform, kindly contact us via the email below.');
                                               setState(() {
                                                 userNameError =
-                                                    'Username reserved';
+                                                    'Username reserved.';
                                               });
                                             } else {
                                               setState(() {
                                                 userNameError =
-                                                    'Username should not be empty';
+                                                    'Username should not be empty.';
                                               });
                                             }
                                           } else if (allUserPro.userNames
@@ -864,7 +475,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             } else {
                                               setState(() {
                                                 userNameError =
-                                                    'Username should not be empty';
+                                                    'Username should not be empty.';
                                               });
                                             }
                                           } else {
@@ -1031,7 +642,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                       bottom:
                                                                           8),
                                                               child: Text(
-                                                                'Must be over 12 years',
+                                                                'Must be over 12 years.',
                                                                 style: TextStyle(
                                                                     height: 0,
                                                                     color:
@@ -1148,7 +759,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               !value.contains('.')) {
                                             setState(() {
                                               linkError =
-                                                  'Please add valid link';
+                                                  'Please add valid link.';
                                             });
                                           } else {
                                             setState(() {
@@ -1179,12 +790,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               !value.contains('.')) {
                                             setState(() {
                                               contactError =
-                                                  'Invalid email address';
+                                                  'Invalid email address.';
                                             });
                                           } else {
                                             setState(() {
                                               contactError = null;
                                               contact = value;
+                                            });
+                                          }
+                                        }
+                                      },
+                                    ),
+
+                                    //  user password update field
+
+                                    CustomListTile(
+                                      isPassword: true,
+                                      username: '',
+                                      name: 'Account Password',
+                                      passError: passError,
+                                      subtitile: pass.isNotEmpty
+                                          ? pass
+                                          : userProvider.user!.password,
+                                      isLink: true,
+                                      inputText: '',
+                                      onChanged: (value) {
+                                        if (value.isNotEmpty) {
+                                          if (value.length < 8) {
+                                            setState(() {
+                                              passError =
+                                                  'Password must be above 8 characters.';
+                                            });
+                                          } else {
+                                            setState(() {
+                                              passError = null;
+                                              pass = value;
                                             });
                                           }
                                         }
@@ -1892,6 +1532,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                       .user!.isVerified) {
                                                     if (userNameError == null &&
                                                         linkError == null &&
+                                                        passError == null &&
                                                         contactError == null &&
                                                         (DateTime.now()
                                                                         .difference(dateOfBirth ??
@@ -1905,7 +1546,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                                                       String? image;
                                                       if (userProvider
-                                                              .imageFile !=
+                                                              .userImage !=
                                                           null) {
                                                         //  uploading the user image to storage
 
@@ -1913,7 +1554,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                             .uploadFile(
                                                                 'profile',
                                                                 userProvider
-                                                                    .imageFile!,
+                                                                    .userImage!,
                                                                 context);
                                                       }
 
@@ -1927,6 +1568,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                                                       UpdateProfileController()
                                                           .updateProfile(
+                                                              pass.isEmpty
+                                                                  ? userProvider
+                                                                      .user!
+                                                                      .password
+                                                                  : pass,
                                                               name.isEmpty
                                                                   ? userProvider
                                                                       .user!
@@ -1934,7 +1580,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                   : name,
                                                               username.isEmpty
                                                                   ? userProvider
-                                                                      .user!.name
+                                                                      .user!
+                                                                      .name
                                                                   : username,
                                                               _bioController
                                                                       .text
@@ -1983,8 +1630,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                       .user!
                                                                       .dateOfBirth,
                                                               context,
-                                                              userProvider
-                                                                  .user!.uid)
+                                                              userProvider.user!.uid)
                                                           .then((value) async {
                                                         if (updatePro
                                                             .price.isNotEmpty) {
@@ -2018,6 +1664,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                                                     if (userNameError == null &&
                                                         linkError == null &&
+                                                        passError == null &&
                                                         contactError == null &&
                                                         (DateTime.now()
                                                                         .difference(dateOfBirth ??
@@ -2031,7 +1678,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                                                       String? image;
                                                       if (userProvider
-                                                              .imageFile !=
+                                                              .userImage !=
                                                           null) {
                                                         //  uploading the user image
 
@@ -2039,7 +1686,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                             .uploadFile(
                                                                 'profile',
                                                                 userProvider
-                                                                    .imageFile!,
+                                                                    .userImage!,
                                                                 context);
                                                       }
 
@@ -2053,6 +1700,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                                                       UpdateProfileController()
                                                           .updateProfile(
+                                                              pass.isEmpty
+                                                                  ? userProvider
+                                                                      .user!
+                                                                      .password
+                                                                  : pass,
                                                               name.isEmpty
                                                                   ? userProvider
                                                                       .user!

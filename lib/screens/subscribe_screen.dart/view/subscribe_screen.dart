@@ -156,7 +156,7 @@ class SubscribeScreen extends StatelessWidget {
                               ),
                               Expanded(
                                 child: Text(
-                                  'Access to exclusive voice messages\n only for subscribers.',
+                                  'Access to exclusive voice messages\nonly for subscribers.',
                                   overflow: TextOverflow.fade,
                                   style: TextStyle(color: whiteColor),
                                 ),
@@ -232,7 +232,7 @@ class SubscribeScreen extends StatelessWidget {
                                 //  getting the subsription user name
 
                                 return Text(
-                                  'Your replies are shown  at the top\n of ${otherUser.otherUser!.username}\'s post',
+                                  'Your replies are shown at the top\nof ${otherUser.otherUser!.username}\'s post',
                                   overflow: TextOverflow.fade,
                                   style: TextStyle(color: whiteColor),
                                 );

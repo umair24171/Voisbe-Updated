@@ -62,6 +62,8 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
     'Current Events & News',
     'Health & Wellness',
     'Hobbies & Interests',
+    'Music',
+    'Podcasts & Interviews',
     'Other'
   ];
 
@@ -86,6 +88,8 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
     const Color(0xff472861),
     const Color(0xff37728c),
     const Color(0xff6cb57f),
+    const Color(0xff9D3558),
+    const Color(0xffC08EE1),
     const Color(0xff83949F)
   ];
 
@@ -126,72 +130,58 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 15),
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        alignment: Alignment.center,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 15),
+                      child: SingleChildScrollView(
+                        child: Wrap(
+                          spacing:
+                              MediaQuery.of(context).size.width > 400 ? 10 : 3,
+                          runSpacing: 10,
+                          alignment: WrapAlignment.center,
+                          children: topics.asMap().entries.map((entry) {
+                            int index = entry.key;
+                            String topic = entry.value;
+                            Color color = colors[index % colors.length];
 
-                          //    displaying all the topics in wrap
-                          child: Wrap(
-                            spacing: MediaQuery.of(context).size.width > 400
-                                ? 10
-                                : 3,
-                            alignment: WrapAlignment.center,
-                            children: topics.asMap().entries.map((entry) {
-                              //  managing the colors which i defined in the list
-                              int index = entry.key;
-                              String topic = entry.value;
-                              Color color = colors[index %
-                                  colors
-                                      .length]; // Use modulo to repeat colors if topics exceed colors
-
-                              //  choice chip to select the topic
-                              return ChoiceChip(
-                                selectedColor: color,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(18),
-                                  side: BorderSide(
-                                    width: 2,
-                                    color: _selectedOption.contains(topic)
-                                        ? Colors.white
-                                        : Colors.transparent,
-                                  ),
+                            return ChoiceChip(
+                              selectedColor: color,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                                side: BorderSide(
+                                  width: 2,
+                                  color: _selectedOption == topic
+                                      ? Colors.white
+                                      : Colors.transparent,
                                 ),
-                                label: Text(topic,
-                                    style: TextStyle(
-                                        color: whiteColor,
-                                        fontFamily: fontFamily)),
-                                backgroundColor: color,
-                                labelStyle: TextStyle(color: blackColor),
-                                showCheckmark: false,
-                                selected: false,
-                                pressElevation: 0,
-                                surfaceTintColor: Colors.transparent,
-                                onSelected: (bool selected) {
-                                  //  function to select the topic and remove the selected topic
-                                  setState(() {
-                                    if (selected) {
-                                      _selectedOption = topic;
-                                    } else {
-                                      _selectedOption = '';
-                                    }
-                                  });
-                                },
-                              );
-                            }).toList(),
-                          ),
+                              ),
+                              label: Text(
+                                topic,
+                                style: TextStyle(
+                                  color: whiteColor,
+                                  fontFamily: fontFamily,
+                                ),
+                              ),
+                              backgroundColor: color,
+                              labelStyle: TextStyle(color: blackColor),
+                              showCheckmark: false,
+                              selected: false,
+                              pressElevation: 0,
+                              surfaceTintColor: Colors.transparent,
+                              onSelected: (bool selected) {
+                                setState(() {
+                                  _selectedOption = selected ? topic : '';
+                                });
+                              },
+                            );
+                          }).toList(),
                         ),
                       ),
                     ),
                   ),
-                  const Expanded(child: SizedBox()),
+
+                  // const Expanded(child: SizedBox()),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,

@@ -106,7 +106,7 @@ class _TrimmerViewState extends State<TrimmerView> {
       try {
         MediaInfo? mediaInfo = await VideoCompress.compressVideo(
           widget.file.path,
-          quality: VideoQuality.LowQuality,
+          quality: VideoQuality.Res960x540Quality,
           deleteOrigin: false,
         );
 

@@ -1050,7 +1050,7 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                       fontSize: 17),
                                 ),
                                 const SizedBox(
-                                  height: 15,
+                                  height: 10,
                                 ),
 
                                 //  showing the bio of the user
@@ -1058,8 +1058,8 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                 Padding(
                                   padding: EdgeInsets.symmetric(
                                           horizontal: size.width * 0.1,
-                                          vertical: 0)
-                                      .copyWith(bottom: 20, top: 5),
+                                          vertical: 5)
+                                      .copyWith(bottom: 0, top: 0),
                                   // .copyWith(bottom: 7),
                                   child: Center(
                                     child: RichText(

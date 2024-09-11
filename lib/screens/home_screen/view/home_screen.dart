@@ -114,10 +114,10 @@ class _HomeScreenState extends State<HomeScreen>
   //  getting all the topics for the filter
 
   List<String> topics = [
-    'Need support',
-    'Relationship & love',
-    'Confession & secret',
-    'Inspiration & motivation',
+    'Need Support',
+    'Relationship & Love',
+    'Confession & Secret',
+    'Inspiration & Motivation',
     'Food & Cooking',
     'Personal Story',
     'Business',
@@ -178,9 +178,10 @@ class _HomeScreenState extends State<HomeScreen>
 // disposing the player when no longer needs it
   @override
   void dispose() {
-    Provider.of<DisplayNotesProvider>(context, listen: false)
-        .setHomeActive(false);
-
+    // Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
+    // Provider.of<DisplayNotesProvider>(context, listen: false)
+    //     .setHomeActive(false);
+    // stopMainPlayer();
     super.dispose();
   }
 

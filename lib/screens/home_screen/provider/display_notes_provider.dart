@@ -37,6 +37,12 @@ class DisplayNotesProvider with ChangeNotifier {
   int changeIndex = 0;
   AudioPlayer audioPlayer = AudioPlayer();
   bool isHomeActive = true;
+  bool isLoading = false;
+
+  setIsloading(bool value) {
+    isLoading = value;
+    notifyListeners();
+  }
 
   // DisplayNotesProvider() {
   //   _initAudioPlayer();

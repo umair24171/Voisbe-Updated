@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+82
+version: 1.0.0+88
 
 environment:
   sdk: '>=3.2.4 <4.0.0'
@@ -124,11 +124,14 @@ dependencies:
   # wakelock_plus: ^1.2.7
   # another_xlider: ^3.0.2
   # ffmpeg_kit_flutter: ^6.0.3
-  video_editor: ^3.0.0
+  # video_editor: ^3.0.0
   # saver_gallery: ^3.0.5
   # flutter_ffmpeg: ^0.4.2
   # ffmpeg_kit_flutter_min_gpl: ^6.0.3
   ffmpeg_kit_flutter: ^6.0.3
+  
+  # ffmpeg_kit_flutter_https_gpl: ^6.0.3
+  # ffmpeg_kit_flutter_full_gpl: ^6.0.3-LTS
   # ffmpeg_kit_flutter_https_gpl: 4.5.1-LTS
   cloudinary_public: ^0.23.1
   flutter_local_notifications: ^17.2.1+2
@@ -141,6 +144,9 @@ dependencies:
   visibility_detector: ^0.4.0+2
   video_thumbnail: ^0.5.3
   firebase_remote_config: ^4.4.7
+  saver_gallery: ^3.0.6
+  firebase_crashlytics: ^3.5.7
+  # media_scanner_scan_file: ^0.0.4
   # cropper_and_trimmer:
   #   path: ./local_packages/cropper_and_trimmer
   # cropper_and_trimmer:  

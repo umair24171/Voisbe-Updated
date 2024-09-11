@@ -66,6 +66,8 @@ class _PersonalizeInterestState extends State<PersonalizeInterest> {
     'Current Events & News',
     'Health & Wellness',
     'Hobbies & Interests',
+    'Music',
+    'Podcasts & Interviews',
     'Other'
   ];
   // Color _randomColor() {
@@ -93,6 +95,8 @@ class _PersonalizeInterestState extends State<PersonalizeInterest> {
     const Color(0xff472861),
     const Color(0xff37728c),
     const Color(0xff6cb57f),
+    const Color(0xff9D3558),
+    const Color(0xffC08EE1),
     const Color(0xff83949F)
   ];
 
@@ -169,70 +173,75 @@ class _PersonalizeInterestState extends State<PersonalizeInterest> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Container(
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 15),
+                    child: Align(
                       alignment: Alignment.center,
                       child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Wrap(
-                          spacing: 3,
-                          alignment: WrapAlignment.center,
-                          children: topics.asMap().entries.map((entry) {
-                            int index = entry.key;
-                            String topic = entry.value;
-                            Color color = colors[index %
-                                colors
-                                    .length]; // Use modulo to repeat colors if topics exceed colors
-                            return ChoiceChip(
-                              selectedColor: color,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                side: BorderSide(
-                                  width: 2,
-                                  color: _selectedOption.contains(topic)
-                                      ? Colors.white
-                                      : Colors.transparent,
-                                ),
-                              ),
-                              label: Text(topic,
-                                  style: TextStyle(
-                                      color: whiteColor,
-                                      fontFamily: fontFamily)),
-                              backgroundColor: color,
-                              labelStyle: TextStyle(color: blackColor),
-                              showCheckmark: false,
-                              selected: false,
-                              pressElevation: 0,
-                              surfaceTintColor: Colors.transparent,
-                              onSelected: (bool selected) {
-                                if (_selectedOption.contains(topic)) {
-                                  _selectedOption.remove(topic);
-                                  setState(() {});
-                                } else {
-                                  _selectedOption.add(topic);
-                                  setState(() {});
-                                }
-                                // if (selected) {
-                                //   _selectedOption.add(topic);
-                                //   setState(() {});
-                                // } else {
-                                //   _selectedOption.remove(topic);
-                                //   setState(() {});
-                                // }
-                              },
-                            );
-                          }).toList(),
+                        alignment: Alignment.center,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Wrap(
+                              spacing: 3,
+                              alignment: WrapAlignment.center,
+                              children: topics.asMap().entries.map((entry) {
+                                int index = entry.key;
+                                String topic = entry.value;
+                                Color color = colors[index %
+                                    colors
+                                        .length]; // Use modulo to repeat colors if topics exceed colors
+                                return ChoiceChip(
+                                  selectedColor: color,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(18),
+                                    side: BorderSide(
+                                      width: 2,
+                                      color: _selectedOption.contains(topic)
+                                          ? Colors.white
+                                          : Colors.transparent,
+                                    ),
+                                  ),
+                                  label: Text(topic,
+                                      style: TextStyle(
+                                          color: whiteColor,
+                                          fontFamily: fontFamily)),
+                                  backgroundColor: color,
+                                  labelStyle: TextStyle(color: blackColor),
+                                  showCheckmark: false,
+                                  selected: false,
+                                  pressElevation: 0,
+                                  surfaceTintColor: Colors.transparent,
+                                  onSelected: (bool selected) {
+                                    if (_selectedOption.contains(topic)) {
+                                      _selectedOption.remove(topic);
+                                      setState(() {});
+                                    } else {
+                                      _selectedOption.add(topic);
+                                      setState(() {});
+                                    }
+                                    // if (selected) {
+                                    //   _selectedOption.add(topic);
+                                    //   setState(() {});
+                                    // } else {
+                                    //   _selectedOption.remove(topic);
+                                    //   setState(() {});
+                                    // }
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
+
                 // const Expanded(child: SizedBox()),
                 // Padding(
                 //   padding: const EdgeInsets.symmetric(
