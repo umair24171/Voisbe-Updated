@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
+import 'package:social_notes/screens/notifications_screen/model/comment_notofication_model.dart';
 import 'package:social_notes/screens/user_profile/models/user_account.dart';
 
 class UserProfileProvider with ChangeNotifier {
@@ -89,7 +90,7 @@ class UserProfileProvider with ChangeNotifier {
   geUserAccounts() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     List<String>? userInfo = preferences.getStringList('userAccounts');
-    if (userInfo != null) {
+    if (userInfo != null && userInfo.isNotEmpty) {
       QuerySnapshot<Map<String, dynamic>> snapshot = await _firestore
           .collection('users')
           .where('uid', whereIn: userInfo)
@@ -135,12 +136,22 @@ class UserProfileProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  addFollowNotification(CommentNotoficationModel notiModel) async {
+    try {
+      await _firestore
+          .collection('commentNotifications')
+          .doc(notiModel.notificationId)
+          .set(notiModel.toMap());
+      log('Add follow not');
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
   //  follow user function
 
-  followUser(
-    UserModel currentUser,
-    UserModel followUser,
-  ) async {
+  followUser(UserModel currentUser, UserModel followUser,
+      CommentNotoficationModel notiModel) async {
     if (followUser.isPrivate) {
       if (followUser.followReq.contains(currentUser.uid)) {
         if (otherUser != null) {
@@ -214,6 +225,7 @@ class UserProfileProvider with ChangeNotifier {
         await _firestore.collection('users').doc(currentUser.uid).update({
           'following': FieldValue.arrayUnion([followUser.uid])
         });
+        addFollowNotification(notiModel);
       }
       // otherUser!.followers.remove(currentUser.uid);
     }

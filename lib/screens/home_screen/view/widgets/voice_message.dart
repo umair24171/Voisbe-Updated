@@ -61,30 +61,29 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
 
   @override
   void initState() {
-    //  initializing the player to get the duration of the voice reply
-
-    initPlayer();
     super.initState();
+    initPlayer();
   }
 
-  initPlayer() async {
+  Future<void> initPlayer() async {
     widget.audioPlayer = AudioPlayer();
     widget.audioPlayer.setReleaseMode(ReleaseMode.stop);
-    widget.audioPlayer.setSourceUrl(widget.commentModel.comment);
+    await widget.audioPlayer.setSourceUrl(widget.commentModel.comment);
     _playerState = widget.audioPlayer.state;
 
     // Check if the file is already cached
-    DefaultCacheManager()
-        .getFileFromCache(widget.commentModel.comment)
-        .then((file) {
-      if (file != null && file.file.existsSync()) {
-        _cachedFilePath = file.file.path;
-      }
-    });
+    final fileInfo = await DefaultCacheManager()
+        .getFileFromCache(widget.commentModel.comment);
+    if (fileInfo != null && fileInfo.file.existsSync()) {
+      _cachedFilePath = fileInfo.file.path;
+    }
+
     widget.audioPlayer.onDurationChanged.listen((event) {
-      setState(() {
-        duration = event;
-      });
+      if (mounted) {
+        setState(() {
+          duration = event;
+        });
+      }
     });
   }
 
@@ -169,10 +168,10 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                 CircularPercentIndicator(
                   radius: circleSize / 2,
                   lineWidth: 6.0, // Reduced line width for better visibility
-                  percent:
-                      widget.isPlaying && widget.changeIndex == widget.index
-                          ? widget.position.inSeconds / duration.inSeconds
-                          : 0.0,
+                  percent: duration.inSeconds > 0
+                      ? (widget.position.inSeconds / duration.inSeconds)
+                          .clamp(0.0, 1.0)
+                      : 0.0,
                   circularStrokeCap: CircularStrokeCap.round,
                   backgroundColor: widget.isPlaying &&
                           widget.changeIndex == widget.index
@@ -193,6 +192,7 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                               : primaryColor,
                   center: _buildProfilePicture(circleSize),
                 ),
+
                 // Play/Pause or Like Icon
                 _buildOverlayIcon(circleSize * 0.5),
               ],

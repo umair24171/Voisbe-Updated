@@ -1,6 +1,5 @@
+import 'dart:developer';
 import 'dart:io';
-import 'dart:isolate';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -86,14 +85,18 @@ class UserProvider with ChangeNotifier {
   }
 
   getUserData() async {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get()
-        .then((value) {
-      user = UserModel.fromMap(value.data()!);
-      notifyListeners();
-    });
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get()
+          .then((value) {
+        user = UserModel.fromMap(value.data()!);
+        notifyListeners();
+      });
+    } catch (e) {
+      log(e.toString());
+    }
   }
 
   setIsSubscription() {

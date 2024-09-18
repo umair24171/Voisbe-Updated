@@ -25,6 +25,7 @@ import 'package:social_notes/screens/auth_screens/controller/notifications_metho
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
+import 'package:social_notes/screens/home_screen/provider/comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/main_player.dart';
@@ -34,16 +35,21 @@ import 'package:social_notes/screens/notifications_screen/model/comment_notofica
 import 'package:uuid/uuid.dart';
 
 class CircleComments extends StatefulWidget {
-  const CircleComments({
-    super.key,
-    required this.mainAudioPlayer,
-    required this.stopMainPlayer,
-    required this.noteModel,
-  });
+  const CircleComments(
+      {super.key,
+      required this.mainAudioPlayer,
+      required this.stopMainPlayer,
+      required this.noteModel,
+      required this.currentIndex,
+      required this.pagController,
+      required this.changeIndex});
   final NoteModel noteModel;
 
   final AudioPlayer mainAudioPlayer;
   final VoidCallback stopMainPlayer;
+  final int currentIndex;
+  final int changeIndex;
+  final PageController pagController;
 
   //  getting the required data from the constructor
 
@@ -65,6 +71,7 @@ class _CircleCommentsState extends State<CircleComments> {
   AudioPlayer _audioPlayer = AudioPlayer();
 
   int _currentIndex = 0;
+  late CommentManager commentManager;
   bool _isPlaying = false;
   Duration position = Duration.zero;
   int? indexNewComment;
@@ -79,18 +86,34 @@ class _CircleCommentsState extends State<CircleComments> {
 
   //  creating the empty lists to manage the colors based on the certain logics
 
-  List<int> subscriberCommentsIndexes = [];
+  // List<int> subscriberCommentsIndexes = [];
 
-  List<int> closeFriendIndexes = [];
-  List<int> remainingCommentsIndex = [];
-  List<CommentModel> commentsList = [];
-  int engageCommentIndex = 0;
+  // List<int> closeFriendIndexes = [];
+  // List<int> remainingCommentsIndex = [];
+  // List<CommentModel> commentsList = [];
+  // int engageCommentIndex = 0;
   String? path;
   late Directory directory;
   // int indexOfNewComent = -1;
+
+  stopPlayingOnScrolling() {
+    widget.pagController.addListener(_checkIndex);
+  }
+
+  _checkIndex() {
+    if (widget.changeIndex != widget.currentIndex) {
+      _audioPlayer.stop();
+      setState(() {
+        _currentIndex = -1;
+        _isPlaying = false;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    commentManager = CommentManager(setState);
     //  initializing the player
     _audioPlayer = AudioPlayer();
 
@@ -101,6 +124,7 @@ class _CircleCommentsState extends State<CircleComments> {
     //  initilizing wave generate controller
 
     _initialiseController();
+    stopPlayingOnScrolling();
   }
 
   void _initialiseController() {
@@ -111,92 +135,173 @@ class _CircleCommentsState extends State<CircleComments> {
       ..sampleRate = 16000;
   }
 
-  getStreamComments() async {
+  bool isLoading = true;
+  Future<void> getStreamComments() async {
     UserModel? currentNoteUser;
-
     var currentUser = Provider.of<UserProvider>(context, listen: false).user;
+
     _userSubscription = FirebaseFirestore.instance
         .collection("users")
         .doc(widget.noteModel.userUid)
         .snapshots()
         .listen((snapshot) {
-      currentNoteUser = UserModel.fromMap(snapshot.data() ?? {});
-    });
-
-    //  reply deletion is managed by the shared prefs if user is  not the reply owner
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-
-    //  getting all the replies time based
-
-    _subscription = FirebaseFirestore.instance
-        .collection('notes')
-        .doc(widget.noteModel.noteId)
-        .collection('comments')
-        .orderBy('time', descending: true)
-        .snapshots()
-        .listen((snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        List<CommentModel> list =
-            snapshot.docs.map((e) => CommentModel.fromMap(e.data())).toList();
-        // list.sort((a, b) => b.playedComment.compareTo(a.playedComment));
-
-        List<int> subcomments = [];
-        List<int> closeComm = [];
-        List<int> remainCom = [];
-        List<CommentModel> itemsToRemove = [];
-        List<String>? commentIDs = preferences.getStringList(currentUser!.uid);
-        if (commentIDs != null) {
-          for (var item in list) {
-            for (var id in commentIDs) {
-              if (item.commentid.contains(id)) {
-                itemsToRemove.add(item);
-                break; // Break inner loop if match is found
-              }
-            }
-          }
-        }
-
-        // Remove the collected items from the list
-        list.removeWhere((item) => itemsToRemove.contains(item));
-        closeFriendIndexes.clear();
-        subscriberCommentsIndexes.clear();
-        remainingCommentsIndex.clear();
-
-        //  filtering the replies and adding them to different lists based on certain conditions
-
-        for (var index = 0; index < list.length; index++) {
-          var comment = list[index];
-          if (currentNoteUser!.closeFriends.contains(comment.userId)) {
-            closeFriendIndexes.add(index);
-          } else if (currentNoteUser!.subscribedUsers
-              .contains(comment.userId)) {
-            subscriberCommentsIndexes.add(index);
-          } else {
-            remainingCommentsIndex.add(index);
-          }
-        }
-        List<CommentModel> engageComments = List.from(list);
-        // engageComments.addAll(list);
-
-        engageComments
-            .sort((a, b) => b.playedComment.compareTo(a.playedComment));
-        CommentModel mostEngageComment = engageComments[0];
-        int indexOfEngageComment = list.indexWhere(
-            (element) => element.commentid == mostEngageComment.commentid);
-
-        //  update the lists with the global lists
-
+      if (mounted) {
         setState(() {
-          commentsList = list;
-          subcomments = subscriberCommentsIndexes;
-          closeComm = closeFriendIndexes;
-          remainCom = remainingCommentsIndex;
-          engageCommentIndex = indexOfEngageComment;
-          // indexNewComment = indexOfNewComent;
+          currentNoteUser = UserModel.fromMap(snapshot.data() ?? {});
         });
       }
     });
+
+    commentManager = CommentManager(setState);
+    commentManager.initComments(
+        widget.noteModel.noteId, currentUser!, widget.noteModel.userUid, false
+        // currentNoteUser,
+        );
+    setState(() {
+      isLoading = false;
+    });
+
+    // _subscription = FirebaseFirestore.instance
+    //     .collection('notes')
+    //     .doc(widget.noteModel.noteId)
+    //     .collection('comments')
+    //     .orderBy('time', descending: true)
+    //     .snapshots()
+    //     .listen((snapshot) {
+    //   if (mounted) {
+    //     if (snapshot.docs.isNotEmpty) {
+    //       // List<CommentModel> list =
+    //       //     snapshot.docs.map((e) => CommentModel.fromMap(e.data())).toList();
+
+    //       // List<CommentModel> itemsToRemove = [];
+    //       // List<String>? commentIDs =
+    //       //     preferences.getStringList(currentUser!.uid);
+    //       // if (commentIDs != null) {
+    //       //   for (var item in list) {
+    //       //     if (commentIDs.contains(item.commentid)) {
+    //       //       itemsToRemove.add(item);
+    //       //     }
+    //       //   }
+    //       // }
+
+    //       // list.removeWhere((item) => itemsToRemove.contains(item));
+
+    //       // List<int> newCloseFriendIndexes = [];
+    //       // List<int> newSubscriberCommentsIndexes = [];
+    //       // List<int> newRemainingCommentsIndex = [];
+
+    //       // for (var index = 0; index < list.length; index++) {
+    //       //   var comment = list[index];
+    //       //   if (currentNoteUser?.closeFriends.contains(comment.userId) ??
+    //       //       false) {
+    //       //     newCloseFriendIndexes.add(index);
+    //       //   } else if (currentNoteUser?.subscribedUsers
+    //       //           .contains(comment.userId) ??
+    //       //       false) {
+    //       //     newSubscriberCommentsIndexes.add(index);
+    //       //   } else {
+    //       //     newRemainingCommentsIndex.add(index);
+    //       //   }
+    //       // }
+
+    //       // List<CommentModel> engageComments = List.from(list);
+    //       // engageComments
+    //       //     .sort((a, b) => b.playedComment.compareTo(a.playedComment));
+    //       // CommentModel mostEngageComment = engageComments[0];
+    //       // int indexOfEngageComment = list.indexWhere(
+    //       //     (element) => element.commentid == mostEngageComment.commentid);
+
+    //       // setState(() {
+    //       //   commentsList = list;
+    //       //   closeFriendIndexes = newCloseFriendIndexes;
+    //       //   subscriberCommentsIndexes = newSubscriberCommentsIndexes;
+    //       //   remainingCommentsIndex = newRemainingCommentsIndex;
+    //       //   engageCommentIndex = indexOfEngageComment;
+    //       // });
+    //     }
+    //   }
+    // });
   }
+
+  // Future<void> getStreamComments() async {
+  //   UserModel? currentNoteUser;
+  //   var currentUser = Provider.of<UserProvider>(context, listen: false).user;
+
+  //   _userSubscription = FirebaseFirestore.instance
+  //       .collection("users")
+  //       .doc(widget.noteModel.userUid)
+  //       .snapshots()
+  //       .listen((snapshot) {
+  //     if (mounted) {
+  //       setState(() {
+  //         currentNoteUser = UserModel.fromMap(snapshot.data() ?? {});
+  //       });
+  //     }
+  //   });
+
+  //   SharedPreferences preferences = await SharedPreferences.getInstance();
+
+  //   _subscription = FirebaseFirestore.instance
+  //       .collection('notes')
+  //       .doc(widget.noteModel.noteId)
+  //       .collection('comments')
+  //       .orderBy('time', descending: true)
+  //       .snapshots()
+  //       .listen((snapshot) {
+  //     if (mounted) {
+  //       if (snapshot.docs.isNotEmpty) {
+  //         List<CommentModel> list =
+  //             snapshot.docs.map((e) => CommentModel.fromMap(e.data())).toList();
+
+  //         List<CommentModel> itemsToRemove = [];
+  //         List<String>? commentIDs =
+  //             preferences.getStringList(currentUser!.uid);
+  //         if (commentIDs != null) {
+  //           for (var item in list) {
+  //             if (commentIDs.contains(item.commentid)) {
+  //               itemsToRemove.add(item);
+  //             }
+  //           }
+  //         }
+
+  //         list.removeWhere((item) => itemsToRemove.contains(item));
+
+  //         List<int> newCloseFriendIndexes = [];
+  //         List<int> newSubscriberCommentsIndexes = [];
+  //         List<int> newRemainingCommentsIndex = [];
+
+  //         for (var index = 0; index < list.length; index++) {
+  //           var comment = list[index];
+  //           if (currentNoteUser?.closeFriends.contains(comment.userId) ??
+  //               false) {
+  //             newCloseFriendIndexes.add(index);
+  //           } else if (currentNoteUser?.subscribedUsers
+  //                   .contains(comment.userId) ??
+  //               false) {
+  //             newSubscriberCommentsIndexes.add(index);
+  //           } else {
+  //             newRemainingCommentsIndex.add(index);
+  //           }
+  //         }
+
+  //         List<CommentModel> engageComments = List.from(list);
+  // engageComments
+  //     .sort((a, b) => b.playedComment.compareTo(a.playedComment));
+  //         CommentModel mostEngageComment = engageComments[0];
+  //         int indexOfEngageComment = list.indexWhere(
+  //             (element) => element.commentid == mostEngageComment.commentid);
+
+  //         setState(() {
+  //           commentsList = list;
+  //           closeFriendIndexes = newCloseFriendIndexes;
+  //           subscriberCommentsIndexes = newSubscriberCommentsIndexes;
+  //           remainingCommentsIndex = newRemainingCommentsIndex;
+  //           engageCommentIndex = indexOfEngageComment;
+  //         });
+  //       }
+  //     }
+  //   });
+  // }
 
   //  updating the value of the comment in the for most played
 
@@ -219,6 +324,10 @@ class _CircleCommentsState extends State<CircleComments> {
     int playedComment,
   ) async {
     DefaultCacheManager cacheManager = DefaultCacheManager();
+    var pro = Provider.of<DisplayNotesProvider>(context, listen: false);
+    pro.pausePlayer();
+    pro.setIsPlaying(false);
+    pro.setChangeIndex(-1);
 
     if (_isPlaying && _currentIndex != index) {
       await _audioPlayer.stop();
@@ -275,7 +384,7 @@ class _CircleCommentsState extends State<CircleComments> {
     // Cancel the subscription when the widget is disposed
     _audioPlayer.dispose();
     // _subscription.cancel();
-    _userSubscription.cancel();
+    commentManager.dispose();
     // _controller.dispose();
     super.dispose();
   }
@@ -284,8 +393,7 @@ class _CircleCommentsState extends State<CircleComments> {
   Widget build(BuildContext context) {
     //  getting the provider
 
-    var commentProvider =
-        Provider.of<DisplayNotesProvider>(context, listen: false);
+    var displayPro = Provider.of<DisplayNotesProvider>(context, listen: false);
 
     //  getting the current user data
 
@@ -293,6 +401,9 @@ class _CircleCommentsState extends State<CircleComments> {
     var size = MediaQuery.of(context).size;
 
     // log('new comment index: $indexOfNewComent ');
+    if (isLoading) {
+      return Text("");
+    }
     return Column(
       children: [
         Padding(
@@ -371,7 +482,7 @@ class _CircleCommentsState extends State<CircleComments> {
 
                                   //  adding comment to firestore
 
-                                  commentProvider
+                                  displayPro
                                       .addComment(widget.noteModel.noteId,
                                           commentId, commentModel, context)
                                       .then((value) async {
@@ -409,6 +520,7 @@ class _CircleCommentsState extends State<CircleComments> {
 
                                       CommentNotoficationModel noti =
                                           CommentNotoficationModel(
+                                              time: DateTime.now(),
                                               postBackground: widget
                                                   .noteModel.backgroundImage,
                                               postThumbnail: widget
@@ -569,7 +681,7 @@ class _CircleCommentsState extends State<CircleComments> {
 
                       //  filterd list to display 3 replies in first row
 
-                      ...commentsList.take(3).map((comment) {
+                      ...commentManager.commentsList.take(3).map((comment) {
                         final key =
                             ValueKey<String>('comment_${comment.commentid}');
                         return KeyedSubtree(
@@ -577,21 +689,24 @@ class _CircleCommentsState extends State<CircleComments> {
                           child: CircleVoiceNotes(
                             // backGround: widget.,
                             audioPlayer: _audioPlayer,
-                            engageCommentIndex: engageCommentIndex,
+                            engageCommentIndex:
+                                commentManager.engageCommentIndex,
                             changeIndex: _currentIndex,
                             onPlayPause: () {
                               _playAudio(
                                   comment.comment,
-                                  commentsList.indexOf(comment),
+                                  commentManager.commentsList.indexOf(comment),
                                   comment.commentid,
                                   comment.playedComment);
                             },
                             isPlaying: _isPlaying,
                             position: position,
-                            index: commentsList.indexOf(comment),
+                            index: commentManager.commentsList.indexOf(comment),
                             commentModel: comment,
-                            subscriberCommentIndex: subscriberCommentsIndexes,
-                            closeFriendIndexs: closeFriendIndexes,
+                            subscriberCommentIndex:
+                                commentManager.subscriberCommentsIndexes,
+                            closeFriendIndexs:
+                                commentManager.closeFriendIndexes,
                             onPlayStateChanged: (isPlaying) {},
                           ),
                         );
@@ -600,28 +715,34 @@ class _CircleCommentsState extends State<CircleComments> {
 
                       //  filterd list to display next 4 replies in second row with the colors
 
-                      ...commentsList.skip(3).take(4).map((comment) {
+                      ...commentManager.commentsList
+                          .skip(3)
+                          .take(4)
+                          .map((comment) {
                         final key =
                             ValueKey<String>('comment_${comment.commentid}');
                         return KeyedSubtree(
                           key: key,
                           child: CircleVoiceNotes(
-                            engageCommentIndex: engageCommentIndex,
+                            engageCommentIndex:
+                                commentManager.engageCommentIndex,
                             audioPlayer: _audioPlayer,
                             changeIndex: _currentIndex,
                             onPlayPause: () {
                               _playAudio(
                                   comment.comment,
-                                  commentsList.indexOf(comment),
+                                  commentManager.commentsList.indexOf(comment),
                                   comment.commentid,
                                   comment.playedComment);
                             },
                             isPlaying: _isPlaying,
                             position: position,
-                            index: commentsList.indexOf(comment),
+                            index: commentManager.commentsList.indexOf(comment),
                             commentModel: comment,
-                            subscriberCommentIndex: subscriberCommentsIndexes,
-                            closeFriendIndexs: closeFriendIndexes,
+                            subscriberCommentIndex:
+                                commentManager.subscriberCommentsIndexes,
+                            closeFriendIndexs:
+                                commentManager.closeFriendIndexes,
                             onPlayStateChanged: (isPlaying) {},
                           ),
                         );

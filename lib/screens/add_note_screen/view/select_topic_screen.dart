@@ -138,7 +138,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                         child: Wrap(
                           spacing:
                               MediaQuery.of(context).size.width > 400 ? 10 : 3,
-                          runSpacing: 10,
+                          // runSpacing: 10,
                           alignment: WrapAlignment.center,
                           children: topics.asMap().entries.map((entry) {
                             int index = entry.key;

@@ -34,6 +34,8 @@ import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dar
 import 'package:social_notes/screens/chat_screen.dart/view/users_screen.dart';
 
 import 'package:social_notes/screens/custom_bottom_bar.dart';
+import 'package:social_notes/screens/home_screen/controller/video_download_methods.dart';
+import 'package:social_notes/screens/home_screen/provider/comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 import 'package:social_notes/screens/home_screen/view/home_screen.dart';
@@ -129,14 +131,14 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  FlutterError.onError = (errorDetails) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  };
-  // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
+  // FlutterError.onError = (errorDetails) {
+  //   FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  // };
+  // // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+  // PlatformDispatcher.instance.onError = (error, stack) {
+  //   FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+  //   return true;
+  // };
 
   Stripe.publishableKey = 'pk_live_VQmRjrzGsFLF6U2yE0bXdThg';
   await Stripe.instance.applySettings();
@@ -195,6 +197,9 @@ void main() async {
     ChangeNotifierProvider(
       create: (context) => BottomProvider(),
     ),
+    // ChangeNotifierProvider(
+    //   create: (context) => CommentsProvider(),
+    // ),
     // ChangeNotifierProvider(
     //   create: (context) => SearchPlayerProvider(),
     // ),
@@ -299,6 +304,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: scaffoldMessengerKey,
       navigatorKey: navigatorKey,
       title: 'Voisbe',
       debugShowCheckedModeBanner: false,

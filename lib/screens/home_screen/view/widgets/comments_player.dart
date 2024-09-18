@@ -72,6 +72,8 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
   String? _cachedFilePath;
   final waveformExtractor = WaveformExtractor();
   List<double> waveForm = [];
+  bool _mounted = true;
+
   // int? _currentIndex;
   // var _player = AudioPlayer();
   // bool isPlaying = false;
@@ -79,32 +81,87 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
   double _playbackSpeed = 1.0;
   Duration duration = Duration.zero;
   Future<void> extractWavedata() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String cacheKey = widget.commentId!;
+    if (!mounted) return;
 
-    List<String>? cachedData = prefs.getStringList(cacheKey);
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String cacheKey = widget.commentId ?? '';
 
-    if (cachedData != null && cachedData.isNotEmpty) {
-      waveForm = cachedData.map((e) => double.tryParse(e) ?? 6.0).toList();
-      setState(() {
-        waveForm = waveForm.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
-      });
-    } else {
-      final result = await waveformExtractor.extractWaveform(
-        widget.noteUrl,
-        useCache: true,
-        cacheKey: cacheKey,
-      );
-      List<int> waveForms = result.waveformData;
+      if (cacheKey.isEmpty) {
+        print('Error: commentId is null or empty');
+        return;
+      }
 
-      setState(() {
-        waveForm = waveForms.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
-      });
+      List<String>? cachedData = prefs.getStringList(cacheKey);
 
-      await prefs.setStringList(
-          cacheKey, waveForms.map((e) => e.toString()).toList());
+      if (cachedData != null && cachedData.isNotEmpty) {
+        List<double> extractedWaveForm = cachedData
+            .map((e) => double.tryParse(e) ?? 6.0)
+            .map((e) => e < 1 ? 6.0 : e)
+            .toList();
+
+        if (_mounted) {
+          setState(() {
+            waveForm = extractedWaveForm;
+          });
+        }
+      } else {
+        if (widget.noteUrl == null || widget.noteUrl!.isEmpty) {
+          print('Error: noteUrl is null or empty');
+          return;
+        }
+
+        final result = await waveformExtractor.extractWaveform(
+          widget.noteUrl!,
+          useCache: true,
+          cacheKey: cacheKey,
+        );
+        List<int> waveForms = result.waveformData;
+
+        List<double> extractedWaveForm =
+            waveForms.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
+
+        if (_mounted) {
+          setState(() {
+            waveForm = extractedWaveForm;
+          });
+        }
+
+        await prefs.setStringList(
+            cacheKey, waveForms.map((e) => e.toString()).toList());
+      }
+    } catch (e) {
+      print('Error in extractWavedata: $e');
+      // Handle the error appropriately
     }
   }
+  // Future<void> extractWavedata() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String cacheKey = widget.commentId!;
+
+  //   List<String>? cachedData = prefs.getStringList(cacheKey);
+
+  //   if (cachedData != null && cachedData.isNotEmpty) {
+  //     waveForm = cachedData.map((e) => double.tryParse(e) ?? 6.0).toList();
+  //     setState(() {
+  //       waveForm = waveForm.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
+  //     });
+  //   } else {
+  //     final result = await waveformExtractor.extractWaveform(
+  //       widget.noteUrl,
+  //       useCache: true,
+  //       cacheKey: cacheKey,
+  //     );
+  //     List<int> waveForms = result.waveformData;
+
+  //     setState(() {
+  //       waveForm = waveForms.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
+  //     });
+
+  //     await prefs.setStringList(
+  //         cacheKey, waveForms.map((e) => e.toString()).toList());
+  //   }
+  // }
 
   // Duration position = Duration.zero;
   initPlayer() async {
@@ -319,6 +376,12 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
           .doc(widget.commentId)
           .update({'playedComment': updateCommentCounter});
     }
+  }
+
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
   }
 
   @override

@@ -1,6 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 //  creating the notification model with required fields
 
 class CommentNotoficationModel {
@@ -14,6 +16,7 @@ class CommentNotoficationModel {
   final String postBackground;
   final String postThumbnail;
   final String postType;
+  final DateTime time;
 
   CommentNotoficationModel(
       {required this.notificationId,
@@ -24,6 +27,7 @@ class CommentNotoficationModel {
       required this.postThumbnail,
       required this.isRead,
       required this.noteUrl,
+      required this.time,
       required this.postType,
       required this.toId});
 
@@ -36,6 +40,7 @@ class CommentNotoficationModel {
       'postThumbnail': postThumbnail,
       'noteUrl': noteUrl,
       'isRead': isRead,
+      'time': time,
       'notificationType': notificationType,
       'toId': toId,
       'postType': postType
@@ -47,6 +52,7 @@ class CommentNotoficationModel {
         postType: map['postType'] as String,
         postBackground: map['postBackground'] as String,
         postThumbnail: map['postThumbnail'] as String,
+        time: (map['time'] as Timestamp).toDate(),
         notificationId: map['notificationId'] as String,
         notification: map['notification'] as String,
         currentUserId: map['currentUserId'] as String,

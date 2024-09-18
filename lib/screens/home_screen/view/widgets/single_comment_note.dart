@@ -18,6 +18,7 @@ import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
 import 'package:social_notes/screens/home_screen/model/sub_comment_model.dart';
+import 'package:social_notes/screens/home_screen/provider/comments_provider.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/comments_player.dart';
 
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
@@ -38,7 +39,10 @@ class SingleCommentNote extends StatefulWidget {
       required this.isPlaying,
       required this.postUserId,
       required this.getStreamComments,
+      required this.currentNoteUser,
       required this.stopMainPlayer,
+      required this.commentManager,
+      required this.mostEgageCOmmentIndex,
       required this.changeIndex,
       required this.subscriberCommentIndex});
   final CommentModel commentModel;
@@ -54,6 +58,9 @@ class SingleCommentNote extends StatefulWidget {
   final VoidCallback stopMainPlayer;
   final String postUserId;
   final VoidCallback getStreamComments;
+  final CommentManager commentManager;
+  final UserModel currentNoteUser;
+  final int mostEgageCOmmentIndex;
 
   @override
   State<SingleCommentNote> createState() => _SingleCommentNoteState();
@@ -95,57 +102,62 @@ class _SingleCommentNoteState extends State<SingleCommentNote> {
     // var userProvider = Provider.of<UserProvider>(context, listen: false).user;
     // var subCommentProvider =
     // Provider.of<DisplayNotesProvider>(context, listen: false);
-    return Slidable(
-      direction: Axis.horizontal,
-      endActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        children: [
-          SlidableAction(
-              padding: const EdgeInsets.all(0),
-              onPressed: (context) async {
-                if (canDismiss) {
-                  await FirebaseFirestore.instance
-                      .collection('notes')
-                      .doc(widget.commentModel.postId)
-                      .collection('comments')
-                      .doc(widget.commentModel.commentid)
-                      .delete();
-                } else {
-                  var currentUser =
-                      Provider.of<UserProvider>(context, listen: false).user;
-                  SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
+    return canDismiss
+        ? Slidable(
+            direction: Axis.horizontal,
+            endActionPane: ActionPane(
+              motion: const ScrollMotion(),
+              children: [
+                SlidableAction(
+                    padding: const EdgeInsets.all(0),
+                    onPressed: (context) async {
+                      final commentManager = widget.commentManager;
+                      await commentManager.deleteComment(
+                        widget.commentModel.commentid,
+                      );
+                      // if (canDismiss) {
+                      //   await FirebaseFirestore.instance
+                      //       .collection('notes')
+                      //       .doc(widget.commentModel.postId)
+                      //       .collection('comments')
+                      //       .doc(widget.commentModel.commentid)
+                      //       .delete();
+                      // } else {
+                      //   var currentUser =
+                      //       Provider.of<UserProvider>(context, listen: false).user;
+                      //   SharedPreferences prefs =
+                      //       await SharedPreferences.getInstance();
 
-                  if (prefs.getStringList(currentUser!.uid) != null) {
-                    List<String>? commentIds =
-                        prefs.getStringList(currentUser.uid);
-                    commentIds == null
-                        ? prefs.setStringList(
-                            currentUser.uid, [widget.commentModel.commentid])
-                        : commentIds.add(widget.commentModel.commentid);
-                    prefs.setStringList(currentUser.uid, commentIds!);
-                  } else {
-                    prefs.setStringList(
-                        currentUser.uid, [widget.commentModel.commentid]);
-                  }
-                  widget.getStreamComments();
-                }
-              },
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
-              flex: 4,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(0),
-                topLeft: Radius.circular(0),
-              ),
-              autoClose: true,
-              icon: Icons.delete,
-              label: "Delete"),
-        ],
-      ),
-      child: BuildCommentContent(widget: widget),
-    );
-    // : BuildCommentContent(widget: widget);
+                      //   if (prefs.getStringList(currentUser!.uid) != null) {
+                      //     List<String>? commentIds =
+                      //         prefs.getStringList(currentUser.uid);
+                      //     commentIds == null
+                      //         ? prefs.setStringList(
+                      //             currentUser.uid, [widget.commentModel.commentid])
+                      //         : commentIds.add(widget.commentModel.commentid);
+                      //     prefs.setStringList(currentUser.uid, commentIds!);
+                      //   } else {
+                      //     prefs.setStringList(
+                      //         currentUser.uid, [widget.commentModel.commentid]);
+                      //   }
+                      //   widget.getStreamComments();
+                      // }
+                    },
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    flex: 4,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(0),
+                      topLeft: Radius.circular(0),
+                    ),
+                    autoClose: true,
+                    icon: Icons.delete,
+                    label: "Delete"),
+              ],
+            ),
+            child: BuildCommentContent(widget: widget),
+          )
+        : BuildCommentContent(widget: widget);
   }
 }
 
@@ -270,7 +282,8 @@ class BuildCommentContent extends StatelessWidget {
                         position: widget.position,
                         size: 10,
                         waveColor: whiteColor,
-                        backgroundColor: widget.index == 0
+                        backgroundColor: widget.index ==
+                                widget.mostEgageCOmmentIndex
                             ? const Color(0xff6cbfd9)
                             : widget.closeFriendIndexs.contains(widget.index)
                                 ? const Color(0xff50a87e)

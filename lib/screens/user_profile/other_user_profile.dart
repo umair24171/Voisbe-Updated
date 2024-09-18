@@ -164,14 +164,16 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
           Consumer<UserProfileProvider>(builder: (context, userProvider, _) {
             return Row(
               children: [
-                Text(
-                  userProvider.otherUser!.name,
-                  style: TextStyle(
-                      fontFamily: fontFamily,
-                      fontSize: 19,
-                      fontWeight: FontWeight.w600),
-                ),
-                if (userProvider.otherUser!.isVerified) verifiedIcon()
+                if (userProvider.otherUser != null)
+                  Text(
+                    userProvider.otherUser!.name,
+                    style: TextStyle(
+                        fontFamily: fontFamily,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w600),
+                  ),
+                if (userProvider.otherUser != null)
+                  if (userProvider.otherUser!.isVerified) verifiedIcon()
               ],
             );
           }),
@@ -209,16 +211,18 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
             Consumer<UserProfileProvider>(builder: (context, userProvider, _) {
               //  background of the screen the profile photo of the user
 
-              return Container(
-                height: size.height,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: CachedNetworkImageProvider(
-                        userProvider.otherUser!.photoUrl),
-                  ),
-                ),
-              );
+              return userProvider.otherUser == null
+                  ? Text('')
+                  : Container(
+                      height: size.height,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: CachedNetworkImageProvider(
+                              userProvider.otherUser!.photoUrl),
+                        ),
+                      ),
+                    );
             }),
 
             //  blur filter above that
@@ -283,28 +287,31 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                     children: [
                                       //  image of the user
 
-                                      CircleAvatar(
-                                        radius: 14,
-                                        backgroundImage:
-                                            CachedNetworkImageProvider(
-                                                userProvider
-                                                    .otherUser!.photoUrl),
-                                      ),
+                                      if (userProvider.otherUser != null)
+                                        CircleAvatar(
+                                          radius: 14,
+                                          backgroundImage:
+                                              CachedNetworkImageProvider(
+                                                  userProvider
+                                                      .otherUser!.photoUrl),
+                                        ),
                                       const SizedBox(
                                         width: 8,
                                       ),
 
                                       //  username of the user
 
-                                      Text(
-                                        userProvider.otherUser!.name,
-                                        style: TextStyle(
-                                            fontFamily: fontFamily,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                      if (userProvider.otherUser!.isVerified)
-                                        verifiedIcon()
+                                      if (userProvider.otherUser != null)
+                                        Text(
+                                          userProvider.otherUser!.name,
+                                          style: TextStyle(
+                                              fontFamily: fontFamily,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600),
+                                        ),
+                                      if (userProvider.otherUser != null)
+                                        if (userProvider.otherUser!.isVerified)
+                                          verifiedIcon()
                                     ],
                                   );
                                 }),
@@ -312,8 +319,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
                               Consumer<UserProfileProvider>(
                                   builder: (context, userProvider, _) {
-                                return userProvider.otherUser!.uid !=
-                                        currentUSer!.uid
+                                return userProvider.otherUser != null &&
+                                        userProvider.otherUser!.uid !=
+                                            currentUSer!.uid
                                     ? const SizedBox(
                                         width: 5,
                                       )
@@ -324,8 +332,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
                               Consumer<UserProfileProvider>(
                                   builder: (context, userProvider, _) {
-                                return userProvider.otherUser!.uid !=
-                                        currentUSer!.uid
+                                return userProvider.otherUser != null &&
+                                        userProvider.otherUser!.uid !=
+                                            currentUSer!.uid
                                     ? InkWell(
                                         onTap: () async {
                                           if (userProvider
@@ -374,9 +383,12 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                 color: whiteColor,
                                                 borderRadius:
                                                     BorderRadius.circular(30)),
-                                            child: !userProvider.otherUser!
-                                                    .notificationsEnable
-                                                    .contains(currentUSer.uid)
+                                            child: userProvider.otherUser !=
+                                                        null &&
+                                                    !userProvider.otherUser!
+                                                        .notificationsEnable
+                                                        .contains(
+                                                            currentUSer.uid)
                                                 ? SvgPicture.asset(
                                                     'assets/icons/Bell inactive.svg',
                                                     height: 30,
@@ -398,7 +410,8 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
                               Consumer<UserProfileProvider>(
                                   builder: (context, userProvider, _) {
-                                return userProvider.otherUser!.uid !=
+                                return userProvider.otherUser != null &&
+                                        userProvider.otherUser!.uid !=
                                             currentUSer!.uid &&
                                         userProvider
                                             .otherUser!.isSubscriptionEnable &&
@@ -460,8 +473,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
                               Consumer<UserProfileProvider>(
                                   builder: (context, userProvider, _) {
-                                return userProvider.otherUser!.uid !=
-                                        currentUSer!.uid
+                                return userProvider.otherUser != null &&
+                                        userProvider.otherUser!.uid !=
+                                            currentUSer!.uid
                                     ? InkWell(
                                         onTap: () {
                                           showDialog(
@@ -1041,36 +1055,38 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
                                 //  showing the name of the user
 
-                                Text(
-                                  userProvider.otherUser!.username,
-                                  style: TextStyle(
-                                      color: whiteColor,
-                                      fontFamily: fontFamily,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 17),
-                                ),
+                                if (userProvider.otherUser != null)
+                                  Text(
+                                    userProvider.otherUser!.username,
+                                    style: TextStyle(
+                                        color: whiteColor,
+                                        fontFamily: fontFamily,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 17),
+                                  ),
                                 const SizedBox(
                                   height: 10,
                                 ),
 
                                 //  showing the bio of the user
 
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                          horizontal: size.width * 0.1,
-                                          vertical: 5)
-                                      .copyWith(bottom: 0, top: 0),
-                                  // .copyWith(bottom: 7),
-                                  child: Center(
-                                    child: RichText(
-                                      textAlign: TextAlign.center,
-                                      text: TextSpan(
-                                        children: _buildTextSpans(context,
-                                            userProvider.otherUser!.bio),
+                                if (userProvider.otherUser != null)
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                            horizontal: size.width * 0.1,
+                                            vertical: 5)
+                                        .copyWith(bottom: 0, top: 0),
+                                    // .copyWith(bottom: 7),
+                                    child: Center(
+                                      child: RichText(
+                                        textAlign: TextAlign.center,
+                                        text: TextSpan(
+                                          children: _buildTextSpans(context,
+                                              userProvider.otherUser!.bio),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                )
+                                  )
                               ],
                             );
                           }),
@@ -1083,37 +1099,41 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
                         Consumer<UserProfileProvider>(
                             builder: (context, userProvider, _) {
-                          return userProvider.otherUser!.link.isEmpty
+                          return userProvider.otherUser != null &&
+                                  userProvider.otherUser!.link.isEmpty
                               ? SizedBox()
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    InkWell(
-                                      onTap: () async {
-                                        var url =
-                                            'https://${userProvider.otherUser!.link}';
-                                        if (await launchUrl(Uri.parse(url))) {
-                                        } else {
-                                          throw Exception(
-                                              'Could not launch $url');
-                                        }
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 7, vertical: 3),
-                                        decoration: BoxDecoration(
-                                            color: blackColor,
-                                            borderRadius:
-                                                BorderRadius.circular(16)),
-                                        child: Text(
-                                          userProvider.otherUser!.link,
-                                          style: TextStyle(
-                                              color: whiteColor,
-                                              fontFamily: fontFamily,
-                                              fontWeight: FontWeight.w600),
+                                    if (userProvider.otherUser != null)
+                                      InkWell(
+                                        onTap: () async {
+                                          var url =
+                                              'https://${userProvider.otherUser!.link}';
+                                          if (await launchUrl(Uri.parse(url))) {
+                                          } else {
+                                            throw Exception(
+                                                'Could not launch $url');
+                                          }
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 7, vertical: 3),
+                                          decoration: BoxDecoration(
+                                              color: blackColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(16)),
+                                          child: Text(
+                                            userProvider.otherUser != null
+                                                ? userProvider.otherUser!.link
+                                                : '',
+                                            style: TextStyle(
+                                                color: whiteColor,
+                                                fontFamily: fontFamily,
+                                                fontWeight: FontWeight.w600),
+                                          ),
                                         ),
                                       ),
-                                    ),
                                   ],
                                 );
                         }),
@@ -1143,25 +1163,37 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
                                   //  showing total followers
 
-                                  StreamBuilder(
-                                      stream: FirebaseFirestore.instance
-                                          .collection('users')
-                                          .doc(widget.userId)
-                                          .snapshots(),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.hasData) {
-                                          UserModel followUser =
-                                              UserModel.fromMap(
-                                                  snapshot.data!.data()!);
-                                          return Row(
-                                            children: [
-                                              InkWell(
-                                                splashColor: Colors.transparent,
-                                                onTap: () {
-                                                  if (followUser.isPrivate) {
-                                                    if (followUser.followers
-                                                        .contains(
-                                                            currentUSer!.uid)) {
+                                  if (userProvider.otherUser != null)
+                                    StreamBuilder(
+                                        stream: FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(widget.userId)
+                                            .snapshots(),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.hasData) {
+                                            UserModel followUser =
+                                                UserModel.fromMap(
+                                                    snapshot.data!.data()!);
+                                            return Row(
+                                              children: [
+                                                InkWell(
+                                                  splashColor:
+                                                      Colors.transparent,
+                                                  onTap: () {
+                                                    if (followUser.isPrivate) {
+                                                      if (followUser.followers
+                                                          .contains(currentUSer!
+                                                              .uid)) {
+                                                        Navigator.push(context,
+                                                            MaterialPageRoute(
+                                                                builder:
+                                                                    (context) {
+                                                          return FollowersScreen(
+                                                              userId: widget
+                                                                  .userId);
+                                                        }));
+                                                      }
+                                                    } else {
                                                       Navigator.push(context,
                                                           MaterialPageRoute(
                                                               builder:
@@ -1171,35 +1203,38 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                                 widget.userId);
                                                       }));
                                                     }
-                                                  } else {
-                                                    Navigator.push(context,
-                                                        MaterialPageRoute(
-                                                            builder: (context) {
-                                                      return FollowersScreen(
-                                                          userId:
-                                                              widget.userId);
-                                                    }));
-                                                  }
-                                                },
-                                                child: CustomFollowing(
-                                                  number: formatCount(followUser
-                                                      .followers.length),
-                                                  text: 'Followers',
+                                                  },
+                                                  child: CustomFollowing(
+                                                    number: formatCount(
+                                                        followUser
+                                                            .followers.length),
+                                                    text: 'Followers',
+                                                  ),
                                                 ),
-                                              ),
-                                              const SizedBox(
-                                                width: 30,
-                                              ),
+                                                const SizedBox(
+                                                  width: 30,
+                                                ),
 
-                                              //  showing total followings
+                                                //  showing total followings
 
-                                              InkWell(
-                                                splashColor: Colors.transparent,
-                                                onTap: () {
-                                                  if (followUser.isPrivate) {
-                                                    if (followUser.followers
-                                                        .contains(
-                                                            currentUSer!.uid)) {
+                                                InkWell(
+                                                  splashColor:
+                                                      Colors.transparent,
+                                                  onTap: () {
+                                                    if (followUser.isPrivate) {
+                                                      if (followUser.followers
+                                                          .contains(currentUSer!
+                                                              .uid)) {
+                                                        Navigator.push(context,
+                                                            MaterialPageRoute(
+                                                                builder:
+                                                                    (context) {
+                                                          return FollowingScreen(
+                                                              userId: widget
+                                                                  .userId);
+                                                        }));
+                                                      }
+                                                    } else {
                                                       Navigator.push(context,
                                                           MaterialPageRoute(
                                                               builder:
@@ -1209,35 +1244,27 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                                 widget.userId);
                                                       }));
                                                     }
-                                                  } else {
-                                                    Navigator.push(context,
-                                                        MaterialPageRoute(
-                                                            builder: (context) {
-                                                      return FollowingScreen(
-                                                          userId:
-                                                              widget.userId);
-                                                    }));
-                                                  }
-                                                },
-                                                child: CustomFollowing(
-                                                  number: formatCount(followUser
-                                                      .following.length),
-                                                  text: 'Followings',
+                                                  },
+                                                  child: CustomFollowing(
+                                                    number: formatCount(
+                                                        followUser
+                                                            .following.length),
+                                                    text: 'Followings',
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          );
-                                        } else {
-                                          return Text(
-                                            '0',
-                                            style: TextStyle(
-                                                color: primaryColor,
-                                                fontSize: 25,
-                                                fontFamily: fontFamilyMedium,
-                                                fontWeight: FontWeight.w700),
-                                          );
-                                        }
-                                      })
+                                              ],
+                                            );
+                                          } else {
+                                            return Text(
+                                              '0',
+                                              style: TextStyle(
+                                                  color: primaryColor,
+                                                  fontSize: 25,
+                                                  fontFamily: fontFamilyMedium,
+                                                  fontWeight: FontWeight.w700),
+                                            );
+                                          }
+                                        })
                                 ],
                               );
                             }),
@@ -1248,7 +1275,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
                         Consumer<UserProfileProvider>(
                             builder: (context, userProvider, _) {
-                          return userProvider.otherUser!.uid != currentUSer!.uid
+                          return userProvider.otherUser != null &&
+                                  userProvider.otherUser!.uid !=
+                                      currentUSer!.uid
                               ? const OtherContactButtons()
                               : const SizedBox();
                         }),
@@ -1258,7 +1287,8 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
                         Consumer<UserProfileProvider>(
                             builder: (context, userPro, _) {
-                          return userPro.otherUser!.isPrivate &&
+                          return userPro.otherUser != null &&
+                                  userPro.otherUser!.isPrivate &&
                                   !userPro.otherUser!.followers
                                       .contains(currentUSer!.uid)
 

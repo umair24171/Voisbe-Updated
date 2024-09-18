@@ -243,13 +243,15 @@ class _FeedDetailScreenState extends State<FeedDetailScreen> {
                         Consumer<DisplayNotesProvider>(
                             builder: (context, displayPro, _) {
                           return MainPlayer(
+                              lockPosts: [],
+                              title: '',
                               // playCounts: playCounts,
                               listenedWaves:
                                   widget.feedModel.note.mostListenedWaves,
                               postId: widget.feedModel.note.noteId,
                               duration: displayPro.duration,
                               playPause: widget.feedModel.playPause,
-                              audioPlayer: displayPro.audioPlayer!,
+                              audioPlayer: displayPro.audioPlayer,
                               changeIndex: displayPro.changeIndex,
                               position: displayPro.position,
                               isPlaying: displayPro.isPlaying,
@@ -313,7 +315,7 @@ class _FeedDetailScreenState extends State<FeedDetailScreen> {
                                       username: userProvider!.name,
                                       time: DateTime.now(),
                                       userId: userProvider.uid,
-                                      postId: filterPro.detailsNote!.noteId,
+                                      postId: widget.feedModel.note.noteId,
                                       likes: [],
                                       playedComment: 0,
                                       userImage: userProvider.photoUrl,
@@ -325,7 +327,7 @@ class _FeedDetailScreenState extends State<FeedDetailScreen> {
 
                                     commentProvider
                                         .addComment(
-                                            filterPro.detailsNote!.noteId,
+                                            widget.feedModel.note.noteId,
                                             commentId,
                                             commentModel,
                                             context)
@@ -340,8 +342,8 @@ class _FeedDetailScreenState extends State<FeedDetailScreen> {
                                           userModel = await FirebaseFirestore
                                               .instance
                                               .collection('users')
-                                              .doc(filterPro
-                                                  .detailsNote!.userUid)
+                                              .doc(
+                                                  widget.feedModel.note.userUid)
                                               .get();
 
                                       UserModel toNotiUser =
@@ -349,12 +351,11 @@ class _FeedDetailScreenState extends State<FeedDetailScreen> {
 
                                       if (toNotiUser.isReply &&
                                           userProvider.uid !=
-                                              filterPro.detailsNote!.userUid) {
+                                              widget.feedModel.note.userUid) {
                                         NotificationMethods
                                             .sendPushNotification(
-                                                filterPro.detailsNote!.userUid,
-                                                filterPro
-                                                    .detailsNote!.userToken,
+                                                widget.feedModel.note.userUid,
+                                                widget.feedModel.note.userToken,
                                                 'replied',
                                                 userProvider.name,
                                                 'notification',
@@ -362,21 +363,22 @@ class _FeedDetailScreenState extends State<FeedDetailScreen> {
 
                                         CommentNotoficationModel noti =
                                             CommentNotoficationModel(
+                                                time: DateTime.now(),
                                                 postBackground: widget.feedModel
                                                     .note.backgroundImage,
                                                 postThumbnail: widget.feedModel
                                                     .note.videoThumbnail,
                                                 postType: widget.feedModel.note
                                                     .backgroundType,
-                                                noteUrl: filterPro
-                                                    .detailsNote!.noteUrl,
+                                                noteUrl: widget
+                                                    .feedModel.note.noteUrl,
                                                 isRead: '',
                                                 notificationId: notificationId,
                                                 notification: comment,
                                                 currentUserId: userProvider.uid,
                                                 notificationType: 'comment',
-                                                toId: filterPro
-                                                    .detailsNote!.userUid);
+                                                toId: widget
+                                                    .feedModel.note.userUid);
                                         Provider.of<NotificationProvider>(
                                                 context,
                                                 listen: false)

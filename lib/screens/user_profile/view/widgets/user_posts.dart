@@ -1,23 +1,19 @@
 // import 'package:audioplayers/audioplayers.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 // import 'package:just_waveform/just_waveform.dart';
 import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
-import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/bottom_provider.dart';
-import 'package:social_notes/screens/custom_bottom_bar.dart';
 import 'package:social_notes/screens/home_screen/view/home_screen.dart';
-import 'package:social_notes/screens/search_screen/view/note_details_screen.dart';
 import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
-import 'package:social_notes/screens/user_profile/view/widgets/custom_player.dart';
 // import 'package:social_notes/screens/home_screen/view/widgets/voice_message.dart';
 import 'package:social_notes/screens/user_profile/view/widgets/single_post_note.dart';
 // import 'package:voice_message_package/voice_message_package.dart';
@@ -33,6 +29,66 @@ class _UserPostsState extends State<UserPosts> {
   List<NoteModel> pinnedPosts = [];
 
   List<NoteModel> nonPinnedPosts = [];
+
+  AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isPlaying = false;
+  Duration position = Duration.zero;
+
+  int _currentIndex = 0;
+
+  void _playAudio(
+    String url,
+    int index,
+  ) async {
+    DefaultCacheManager cacheManager = DefaultCacheManager();
+
+    if (_isPlaying && _currentIndex != index) {
+      await _audioPlayer.stop();
+    }
+
+    if (_currentIndex == index && _isPlaying) {
+      if (_audioPlayer.state == PlayerState.playing) {
+        _audioPlayer.pause();
+        setState(() {
+          _currentIndex = -1;
+          _isPlaying = false;
+        });
+      } else {
+        _audioPlayer.resume();
+        setState(() {
+          _currentIndex = index;
+          _isPlaying = true;
+        });
+      }
+    } else {
+      File cachedFile = await cacheManager.getSingleFile(url);
+      if (cachedFile != null && await cachedFile.exists()) {
+        await _audioPlayer.play(UrlSource(cachedFile.path));
+      } else {
+        await _audioPlayer.play(UrlSource(url));
+      }
+      setState(() {
+        _currentIndex = index;
+        _isPlaying = true;
+      });
+    }
+
+    _audioPlayer.onPositionChanged.listen((event) {
+      if (_currentIndex == index) {
+        setState(() {
+          position = event;
+        });
+      }
+    });
+
+    _audioPlayer.onPlayerComplete.listen((event) {
+      // _updatePlayedComment(commentId, playedComment);
+      setState(() {
+        _isPlaying = false;
+        position = Duration.zero;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,6 +217,17 @@ class _UserPostsState extends State<UserPosts> {
                       //  design of the post
 
                       child: SinglePostNote(
+                        position: position,
+                        currentIndex: index,
+                        audioPlayer: _audioPlayer,
+                        changeIndex: _currentIndex,
+                        isPlaying: _isPlaying,
+                        onPlayPause: () {
+                          _playAudio(
+                            userPosts[index].noteUrl,
+                            index,
+                          );
+                        },
                         isFirstPost: index == 0,
                         lockPosts: [],
                         index: index,
@@ -216,6 +283,17 @@ class _UserPostsState extends State<UserPosts> {
                       }
                     },
                     child: SinglePostNote(
+                      audioPlayer: _audioPlayer,
+                      changeIndex: _currentIndex,
+                      currentIndex: index + 2,
+                      isPlaying: _isPlaying,
+                      onPlayPause: () {
+                        _playAudio(
+                          userPosts[index + 2].noteUrl,
+                          index + 2,
+                        );
+                      },
+                      position: position,
                       lockPosts: [],
                       index: index + 2,
                       isGridViewPost: true,

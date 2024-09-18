@@ -429,6 +429,7 @@ class _UiHideScreenState extends State<UiHideScreen> {
 
                                         CommentNotoficationModel noti =
                                             CommentNotoficationModel(
+                                                time: DateTime.now(),
                                                 postBackground: widget
                                                     .feedModel.backgroundImage,
                                                 postThumbnail: widget

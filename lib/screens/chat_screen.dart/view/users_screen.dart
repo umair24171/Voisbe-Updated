@@ -273,7 +273,7 @@ class _UsersScreenState extends State<UsersScreen> {
               return Row(
                 children: [
                   Text(
-                    userPro.user!.name,
+                    userPro.user!.name.isEmpty ? '' : userPro.user!.name,
                     style: TextStyle(
                         color: blackColor,
                         fontFamily: fontFamily,

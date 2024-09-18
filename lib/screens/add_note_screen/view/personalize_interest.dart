@@ -306,7 +306,7 @@ class _PersonalizeInterestState extends State<PersonalizeInterest> {
                 //     ],
                 //   ),
                 // ),
-                Expanded(child: SizedBox()),
+                // Expanded(child: SizedBox()),
 
                 Padding(
                   padding: EdgeInsets.only(

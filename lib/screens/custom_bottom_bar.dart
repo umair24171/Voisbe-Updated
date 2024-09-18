@@ -76,57 +76,23 @@ class _BottomBarState extends State<BottomBar> {
 
   @override
   void initState() {
-    // Provider.of<NoteProvider>(context, listen: false).initRecorder();
-    // Future.delayed(
-    //   const Duration(seconds: 5),
-    //   () {
-    //
-    //   },
-    // );
-
-    // else {
-
-    // }
     SchedulerBinding.instance.scheduleFrameCallback(
       (timeStamp) {
-        // if (widget.screenChange != null) {
-        //   Provider.of<BottomProvider>(context, listen: false)
-        //       .initPageController(1);
-        // }
+        updateUserToken();
         Provider.of<DisplayNotesProvider>(context, listen: false)
             .getAllNotes(context);
         Provider.of<UserProvider>(context, listen: false).getUserData();
-        updateUserToken();
-        // var provider = Provider.of<DisplayNotesProvider>(context, listen: false);
-
-        // provider.getAllNotes();
-        // Provider.of<SoundProvider>(context, listen: false).getFreeSoundPacks();
-        // Provider.of<SoundProvider>(context, listen: false)
-        //     .getSubscribedSoundPacks();
-        // Provider.of<SoundProvider>(context, listen: false).getSavedNotes();
 
         Provider.of<UserProfileProvider>(context, listen: false)
             .geUserAccounts();
         Provider.of<ChatProvider>(context, listen: false).getAllUsersForChat();
 
-        // Provider.of<DisplayNotesProvider>(context, listen: false).getAllUsers();
         DeepLinkPostService().initDynamicLinks(context);
         DeepLinkPostService().initDynamicLinksForProfile(context);
       },
     );
-    // Provider.of<NotificationProvider>(context, listen: false)
-    //     .getAllNotifications(FirebaseAuth.instance.currentUser!.uid);
-    super.initState();
-    // Provider.of<FilterProvider>(context, listen: false).initPlayer();
-    // Future.delayed(Duration.zero, () {
-    //   Provider.of<DisplayNotesProvider>(context, listen: false).getAllNotes();
-    //   Provider.of<FilterProvider>(context, listen: false)
-    //       .setSelectedFilter('For you');
-    //   Provider.of<UserProvider>(context, listen: false).getUserData();
-    //   Provider.of<DisplayNotesProvider>(context, listen: false).getAllUsers();
 
-    //   // getSoundsOfUnsubscribedUsers();
-    // });
+    super.initState();
   }
 
   updateUserToken() async {

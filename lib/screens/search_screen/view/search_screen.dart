@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
@@ -74,49 +75,85 @@ class _SearchScreenState extends State<SearchScreen> {
   // through this finction we get the posts and filter them based on the likes and update our lists
 
   void getLikesLogicsAndFilteration() {
-    var provider = Provider.of<DisplayNotesProvider>(context, listen: false);
-    UserModel? currentUser =
-        Provider.of<UserProvider>(context, listen: false).user;
+    if (!mounted) return;
 
-    postsAfterFilter.clear();
+    final provider = Provider.of<DisplayNotesProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
 
-    for (int i = 0; i < provider.notes.length; i++) {
-      log('likes in condition $likesThreshold');
-      if (provider.notes[i].likes.length > likesThreshold) {
-        postsAfterFilter.add(provider.notes[i]);
-      }
+    final currentUser = userProvider.user;
+    if (currentUser == null) {
+      log('Current user is null');
+      return;
     }
 
-    List<NoteModel> displayPosts = [];
+    postsAfterFilter = provider.notes.where((note) {
+      if (note.likes.length <= likesThreshold) return false;
 
-    for (var note in postsAfterFilter) {
-      bool isSubscribed =
-          currentUser?.subscribedSoundPacks.contains(note.userUid) ?? false;
-      bool isPostForSubscriber = note.isPostForSubscribers;
+      final isSubscribed =
+          currentUser.subscribedSoundPacks.contains(note.userUid);
+      if (note.isPostForSubscribers && !isSubscribed) return false;
 
-      if (!(isPostForSubscriber && !isSubscribed)) {
-        UserModel? user;
-        try {
-          user = Provider.of<ChatProvider>(context, listen: false)
-              .users
-              .firstWhere((element) => element.uid == note.userUid);
-        } catch (e) {
-          continue;
-        }
+      final user = chatProvider.users
+          .firstWhereOrNull((element) => element.uid == note.userUid);
+      if (user == null) return false;
 
-        if (user.isPrivate &&
-            !(currentUser?.following.contains(note.userUid) ?? false) &&
-            note.userUid != currentUser!.uid) {
-          continue;
-        }
-
-        displayPosts.add(note);
+      if (user.isPrivate &&
+          !currentUser.following.contains(note.userUid) &&
+          note.userUid != currentUser.uid) {
+        return false;
       }
-    }
 
-    postsAfterFilter = displayPosts;
+      return true;
+    }).toList();
+
     setState(() {});
   }
+
+  // void getLikesLogicsAndFilteration() {
+  //   var provider = Provider.of<DisplayNotesProvider>(context, listen: false);
+  //   UserModel? currentUser =
+  //       Provider.of<UserProvider>(context, listen: false).user;
+
+  //   postsAfterFilter.clear();
+
+  //   for (int i = 0; i < provider.notes.length; i++) {
+  //     log('likes in condition $likesThreshold');
+  //     if (provider.notes[i].likes.length > likesThreshold) {
+  //       postsAfterFilter.add(provider.notes[i]);
+  //     }
+  //   }
+
+  //   List<NoteModel> displayPosts = [];
+
+  //   for (var note in postsAfterFilter) {
+  //     bool isSubscribed =
+  //         currentUser?.subscribedSoundPacks.contains(note.userUid) ?? false;
+  //     bool isPostForSubscriber = note.isPostForSubscribers;
+
+  //     if (!(isPostForSubscriber && !isSubscribed)) {
+  //       UserModel? user;
+  //       try {
+  //         user = Provider.of<ChatProvider>(context, listen: false)
+  //             .users
+  //             .firstWhere((element) => element.uid == note.userUid);
+  //       } catch (e) {
+  //         continue;
+  //       }
+
+  //       if (user.isPrivate &&
+  //           !(currentUser?.following.contains(note.userUid) ?? false) &&
+  //           note.userUid != currentUser!.uid) {
+  //         continue;
+  //       }
+
+  //       displayPosts.add(note);
+  //     }
+  //   }
+
+  //   postsAfterFilter = displayPosts;
+  //   setState(() {});
+  // }
 
 //   getLikesLogicsAndFilteration() {
 //     var provider = Provider.of<DisplayNotesProvider>(context, listen: false);

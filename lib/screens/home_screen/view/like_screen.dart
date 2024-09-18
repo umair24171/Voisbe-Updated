@@ -5,8 +5,10 @@ import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
+import 'package:social_notes/screens/notifications_screen/model/comment_notofication_model.dart';
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
 import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class LikeScreen extends StatelessWidget {
   const LikeScreen({super.key, required this.likes, required this.postOwner});
@@ -150,10 +152,25 @@ class LikeScreen extends StatelessWidget {
                                                 width: 1)),
                                       ),
                                       onPressed: () {
+                                        String notiID = Uuid().v4();
+                                        CommentNotoficationModel notiModel =
+                                            CommentNotoficationModel(
+                                                notificationId: notiID,
+                                                notification: '',
+                                                currentUserId: userProvider.uid,
+                                                notificationType: 'follow',
+                                                postBackground: '',
+                                                postThumbnail: '',
+                                                isRead: '',
+                                                noteUrl: '',
+                                                time: DateTime.now(),
+                                                postType: '',
+                                                toId: user.uid);
                                         Provider.of<UserProfileProvider>(
                                                 context,
                                                 listen: false)
-                                            .followUser(userProvider, user);
+                                            .followUser(
+                                                userProvider, user, notiModel);
                                       },
                                       child: Text(
                                         text,

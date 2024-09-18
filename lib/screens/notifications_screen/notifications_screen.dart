@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/resources/navigation.dart';
@@ -16,7 +17,9 @@ import 'package:social_notes/screens/notifications_screen/model/comment_notofica
 import 'package:social_notes/screens/notifications_screen/widgets/single_comment_notification.dart';
 import 'package:social_notes/screens/notifications_screen/widgets/single_like_noti.dart';
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
+import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
 import 'package:social_notes/screens/user_profile/view/widgets/custom_player.dart';
+import 'package:uuid/uuid.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -36,6 +39,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   List<CommentNotoficationModel> likeNotifications = [];
 
+  List<CommentNotoficationModel> followNotifications = [];
+
+  List<String> followIds = [];
+  List<String> notiIds = [];
+
   @override
   void initState() {
     getStreamNotifictions();
@@ -48,6 +56,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     notificationStream = await FirebaseFirestore.instance
         .collection('commentNotifications')
         .where('toId', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .orderBy('time', descending: true)
         .snapshots()
         .listen((snapshot) {
       List<CommentNotoficationModel> notoficationModel = snapshot.docs
@@ -57,14 +66,26 @@ class _NotificationScreenState extends State<NotificationScreen> {
       List<CommentNotoficationModel> likeNotific = [];
       commentNotifi.clear();
       likeNotific.clear();
+      followNotifications.clear();
+      followIds.clear();
+      notiIds.clear();
 
       //  adding notifications to seperate list based on the type
 
       for (var noti in notoficationModel) {
         if (noti.notificationType.contains('comment')) {
           commentNotifi.add(noti);
+        } else if (noti.notificationType.contains('follow')) {
+          followNotifications.add(noti);
         } else {
           likeNotific.add(noti);
+        }
+      }
+
+      for (var ids in followNotifications) {
+        if (!followIds.contains(ids.currentUserId)) {
+          followIds.add(ids.currentUserId);
+          notiIds.add(ids.notificationId);
         }
       }
 
@@ -82,6 +103,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
     //  getting current user
 
     var userProvider = Provider.of<UserProvider>(context, listen: false).user;
+    log('user private ${userProvider!.isPrivate}');
+    log('user ids $followIds');
 
     //  getting the notification provider
 
@@ -175,10 +198,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
             //  stream to get the followers and following req
 
+            if (!userProvider!.isPrivate && followIds.isNotEmpty)
+              FollowUserWidget(
+                  notiIDs: notiIds,
+                  followIds: followIds,
+                  userProvider: userProvider),
+            // if (userProvider.isPrivate)
             StreamBuilder(
                 stream: FirebaseFirestore.instance
                     .collection('users')
-                    .where('followTo', arrayContains: userProvider!.uid)
+                    .where('followTo', arrayContains: userProvider.uid)
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
@@ -458,6 +487,254 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
           ]),
         ),
+      ),
+    );
+  }
+}
+
+class FollowUserWidget extends StatelessWidget {
+  const FollowUserWidget(
+      {super.key,
+      required this.followIds,
+      required this.userProvider,
+      required this.notiIDs});
+
+  final List<String> followIds;
+  final List<String> notiIDs;
+  final UserModel? userProvider;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .where('uid', whereIn: followIds)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return Column(
+              children: [
+                //  building the requests
+
+                ListView.builder(
+                    itemCount: snapshot.data!.docs.length,
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      UserModel user =
+                          UserModel.fromMap(snapshot.data!.docs[index].data());
+                      bool isContains =
+                          user.followers.contains(userProvider!.uid);
+                      String text = '';
+                      if (user.isPrivate) {
+                        if (user.followReq.contains(userProvider!.uid)) {
+                          text = 'Requested';
+                        } else if (user.followers.contains(userProvider!.uid)) {
+                          text = 'Unfollow';
+                        } else if (user.following.contains(userProvider!.uid)) {
+                          text = 'Follow back';
+                        } else {
+                          text = 'Follow';
+                        }
+                      } else {
+                        if (user.followers.contains(userProvider!.uid)) {
+                          text = 'Unfollow';
+                        } else if (user.following.contains(userProvider!.uid)) {
+                          text = 'Follow back';
+                        } else {
+                          text = 'Follow';
+                        }
+                      }
+                      return FollowUserNotification(
+                          notiId: notiIDs[index],
+                          user: user,
+                          isContains: isContains,
+                          userProvider: userProvider,
+                          text: text);
+                    }),
+                const SizedBox(
+                  height: 10,
+                ),
+                if (snapshot.data!.docs.length > 4)
+                  GestureDetector(
+                    onTap: () {
+                      //  length greater than 4 than thow the expand
+
+                      Provider.of<NotificationProvider>(context, listen: false)
+                          .setIsFollowExpand();
+                    },
+                    child: const Icon(
+                      Icons.add,
+                      size: 35,
+                      color: Color.fromARGB(255, 46, 43, 43),
+                    ),
+                  ),
+              ],
+            );
+          } else {
+            return const SizedBox();
+          }
+        });
+  }
+}
+
+class FollowUserNotification extends StatefulWidget {
+  const FollowUserNotification({
+    super.key,
+    required this.user,
+    required this.isContains,
+    required this.userProvider,
+    required this.text,
+    required this.notiId,
+  });
+
+  final UserModel user;
+  final bool isContains;
+  final UserModel? userProvider;
+  final String text;
+  final String notiId;
+
+  @override
+  State<FollowUserNotification> createState() => _FollowUserNotificationState();
+}
+
+class _FollowUserNotificationState extends State<FollowUserNotification> {
+  @override
+  void initState() {
+    SchedulerBinding.instance.scheduleFrameCallback((timer) {
+      Provider.of<NotificationProvider>(context, listen: false)
+          .readNotification(widget.notiId);
+    });
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          InkWell(
+            splashColor: Colors.transparent,
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        OtherUserProfile(userId: widget.user.uid),
+                  ));
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                CircleAvatar(
+                  backgroundImage:
+                      CachedNetworkImageProvider(widget.user.photoUrl),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 3),
+                  child: Text(
+                    widget.user.name,
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: khulaRegular),
+                  ),
+                ),
+                if (widget.user.isVerified) verifiedIcon()
+              ],
+            ),
+          ),
+          Row(
+            children: [
+              ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    fixedSize: const Size(90, 20),
+                    padding: const EdgeInsets.all(0),
+                    minimumSize: const Size(90, 35),
+                    elevation: 0,
+                    backgroundColor:
+                        widget.isContains ? whiteColor : blackColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(
+                          color: widget.isContains
+                              ? blackColor
+                              : Colors.transparent,
+                          width: 1),
+                    ),
+                  ),
+                  onPressed: () async {
+                    //  accepting the request
+
+                    String notiID = Uuid().v4();
+                    CommentNotoficationModel notiModel =
+                        CommentNotoficationModel(
+                            notificationId: notiID,
+                            notification: '',
+                            currentUserId: widget.userProvider!.uid,
+                            notificationType: 'follow',
+                            postBackground: '',
+                            postThumbnail: '',
+                            isRead: '',
+                            noteUrl: '',
+                            time: DateTime.now(),
+                            postType: '',
+                            toId: widget.user.uid);
+                    Provider.of<UserProfileProvider>(context, listen: false)
+                        .followUser(
+                            widget.userProvider!, widget.user, notiModel);
+                  },
+                  child: Text(
+                    widget.text,
+                    style: TextStyle(
+                        color: widget.isContains ? blackColor : whiteColor,
+                        fontSize: 14,
+                        fontFamily: khulaRegular,
+                        fontWeight: FontWeight.w700),
+                  )),
+              const SizedBox(
+                width: 4,
+              ),
+              // ElevatedButton(
+              //     style: ElevatedButton.styleFrom(
+              //       fixedSize: const Size(90, 20),
+              //       padding:
+              //           const EdgeInsets.all(0),
+              //       minimumSize: const Size(90, 35),
+              //       elevation: 0,
+              //       backgroundColor:
+              //           Colors.transparent,
+              //       shape: RoundedRectangleBorder(
+              //           borderRadius:
+              //               BorderRadius.circular(
+              //                   20),
+              //           side: BorderSide(
+              //               color: blackColor,
+              //               width: 1)),
+              //     ),
+              //     onPressed: () {
+              //       //  canceling the request
+
+              //       notiProvider.cancelFollowReq(
+              //           userProvider.uid, user.uid);
+              //     },
+              //     child: Text(
+              //       'Cancel',
+              //       style: TextStyle(
+              //           color: blackColor,
+              //           fontSize: 14,
+              //           fontFamily: khulaRegular,
+              //           fontWeight:
+              //               FontWeight.w700),
+              //     ))
+            ],
+          )
+        ],
       ),
     );
   }

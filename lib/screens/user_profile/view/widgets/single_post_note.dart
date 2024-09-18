@@ -19,6 +19,7 @@ import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
+import 'package:social_notes/screens/home_screen/view/widgets/main_player.dart';
 import 'package:social_notes/screens/search_screen/view/widgets/search_player.dart';
 import 'package:social_notes/screens/subscribe_screen.dart/view/subscribe_screen.dart';
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
@@ -29,15 +30,21 @@ import 'package:social_notes/screens/user_profile/view/widgets/thumbnail_video_p
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class SinglePostNote extends StatefulWidget {
-  const SinglePostNote(
+  SinglePostNote(
       {super.key,
       required this.note,
       required this.isPinned,
       this.isThirdPost = false,
       required this.index,
       required this.lockPosts,
+      required this.changeIndex,
+      required this.isPlaying,
+      required this.onPlayPause,
+      required this.currentIndex,
+      required this.position,
       this.isSecondPost = false,
       this.isFirstPost = false,
+      required this.audioPlayer,
       required this.isGridViewPost});
   final NoteModel note;
   final bool isPinned;
@@ -47,6 +54,13 @@ class SinglePostNote extends StatefulWidget {
   final List<int> lockPosts;
   final int index;
   final bool isFirstPost;
+  AudioPlayer audioPlayer;
+
+  bool isPlaying;
+  Duration position;
+  VoidCallback onPlayPause;
+  int changeIndex;
+  int currentIndex;
 
   //  getting all the data from the constructor
 
@@ -55,120 +69,126 @@ class SinglePostNote extends StatefulWidget {
 }
 
 class _SinglePostNoteState extends State<SinglePostNote> {
+  PlayerState? _playerState;
   //  creating the instance of the audio playeer
 
-  late AudioPlayer _audioPlayer;
+  // late AudioPlayer _audioPlayer;
   String? _cachedFilePath;
-  bool _isPlaying = false;
+  // bool _isPlaying = false;
 
   @override
   void initState() {
     super.initState();
-    // preloadThumbnails();
+    initPlayer();
+    // _audioPlayer = AudioPlayer();
+    // _audioPlayer.setReleaseMode(ReleaseMode.stop);
 
-    //  initializing the audio player
+    // if (widget.note.noteUrl != null) {
+    //   // Add null check
+    //   _audioPlayer.setSourceUrl(widget.note.noteUrl!);
 
-    _audioPlayer = AudioPlayer();
-    _audioPlayer.setReleaseMode(ReleaseMode.stop);
+    //   DefaultCacheManager().getFileFromCache(widget.note.noteUrl!).then((file) {
+    //     if (file != null && file.file.existsSync()) {
+    //       setState(() {
+    //         // Wrap in setState
+    //         _cachedFilePath = file.file.path;
+    //       });
+    //     }
+    //   });
+    // }
 
-    //  setting the url to play
+    // _audioPlayer.onDurationChanged.listen((event) {
+    //   setState(() {
+    //     duration = event;
+    //   });
+    // });
 
-    _audioPlayer.setSourceUrl(widget.note.noteUrl);
-    // Check if the file is already cached
+    // _audioPlayer.onPositionChanged.listen((event) {
+    //   setState(() {
+    //     position = event;
+    //   });
+    // });
 
-    //  saving in the cached
+    // _audioPlayer.onPlayerComplete.listen((state) {
+    //   setState(() {
+    //     _isPlaying = false;
+    //   });
+    // });
+  }
 
-    DefaultCacheManager().getFileFromCache(widget.note.noteUrl).then((file) {
-      if (file != null && file.file.existsSync()) {
-        _cachedFilePath = file.file.path;
-      }
+  Future<void> initPlayer() async {
+    widget.audioPlayer = AudioPlayer();
+    widget.audioPlayer.setReleaseMode(ReleaseMode.stop);
+    widget.audioPlayer.setSourceUrl(widget.note.noteUrl).then((value) {
+      // widget.player.getDuration().then(
+      //       (value) => setState(() {
+      //         duration = value!;
+      //         // playPause();
+      //       }),
+      //     );
     });
-
-    //  setting the duration
-
-    _audioPlayer.onDurationChanged.listen((event) {
+    widget.audioPlayer.onDurationChanged.listen((event) {
       setState(() {
         duration = event;
       });
     });
-
-    //  setting the position
-
-    _audioPlayer.onPositionChanged.listen((event) {
-      setState(() {
-        position = event;
-      });
-    });
-
-    //  changing the player on completion
-
-    _audioPlayer.onPlayerComplete.listen((state) {
-      setState(() {
-        _isPlaying = false;
-      });
-    });
   }
-  // @override
-  // void didChangeDependencies() {
-  //   getDuration();
-  //   super.didChangeDependencies();
-  // }
 
 // disposing it when no longer needs \
 
-  @override
-  void dispose() {
-    _audioPlayer.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _audioPlayer.dispose();
+  //   super.dispose();
+  // }
 
   //  playing and pause the audio with the caching
 
-  void playPause() async {
-    if (_isPlaying) {
-      await _audioPlayer.pause();
-    } else {
-      if (_cachedFilePath != null) {
-        _audioPlayer.setReleaseMode(ReleaseMode.stop);
-        await _audioPlayer.setPlaybackRate(1); // Set playback speed
-        await _audioPlayer.play(UrlSource(_cachedFilePath!));
+  // void playPause() async {
+  //   if (_isPlaying) {
+  //     await _audioPlayer.pause();
+  //   } else {
+  //     if (_cachedFilePath != null) {
+  //       _audioPlayer.setReleaseMode(ReleaseMode.stop);
+  //       await _audioPlayer.setPlaybackRate(1); // Set playback speed
+  //       await _audioPlayer.play(UrlSource(_cachedFilePath!));
 
-        // updatePlayedComment();
-      } else {
-        // Cache the file if not already cached
-        _audioPlayer.setReleaseMode(ReleaseMode.stop);
-        DefaultCacheManager()
-            .downloadFile(widget.note.noteUrl)
-            .then((fileInfo) {
-          if (fileInfo.file.existsSync()) {
-            _cachedFilePath = fileInfo.file.path;
-            _audioPlayer.setPlaybackRate(1); // Set playback speed
-            _audioPlayer.play(
-              UrlSource(_cachedFilePath!),
-            );
-          }
-        });
-      }
-    }
-    setState(() {
-      _isPlaying = !_isPlaying;
-    });
-  }
+  //       // updatePlayedComment();
+  //     } else {
+  //       // Cache the file if not already cached
+  //       _audioPlayer.setReleaseMode(ReleaseMode.stop);
+  //       DefaultCacheManager()
+  //           .downloadFile(widget.note.noteUrl)
+  //           .then((fileInfo) {
+  //         if (fileInfo.file.existsSync()) {
+  //           _cachedFilePath = fileInfo.file.path;
+  //           _audioPlayer.setPlaybackRate(1); // Set playback speed
+  //           _audioPlayer.play(
+  //             UrlSource(_cachedFilePath!),
+  //           );
+  //         }
+  //       });
+  //     }
+  //   }
+  //   setState(() {
+  //     _isPlaying = !_isPlaying;
+  //   });
+  // }
 
   Duration duration = Duration.zero;
-  Duration position = Duration.zero;
+  // Duration position = Duration.zero;
 
-  //  getting duruation of the  voice
+  // //  getting duruation of the  voice
 
-  getDuration() async {
-    duration = (await _audioPlayer.getDuration())!;
-    position = (await _audioPlayer.getCurrentPosition())!;
-    setState(() {});
-  }
+  // getDuration() async {
+  //   duration = (await _audioPlayer.getDuration())!;
+  //   position = (await _audioPlayer.getCurrentPosition())!;
+  //   setState(() {});
+  // }
 
-  getPosition() async {
-    setState(() {});
-  }
+  // getPosition() async {
+  //   setState(() {});
+  // }
 
   //  setting format of duration to play
 
@@ -297,11 +317,19 @@ class _SinglePostNoteState extends State<SinglePostNote> {
                 //  if the post index is 0 show this player
 
                 if (widget.isFirstPost)
-                  CustomProgressPlayer(
+                  MainPlayer(
+                      audioPlayer: widget.audioPlayer,
+                      changeIndex: widget.changeIndex,
+                      currentIndex: widget.currentIndex,
+                      duration: duration,
+                      isPlaying: widget.isPlaying,
+                      playPause: widget.onPlayPause,
+                      position: widget.position,
                       lockPosts: widget.lockPosts,
                       postId: widget.note.noteId,
                       backgroundColor: Colors.transparent,
-                      stopMainPlayer: () {},
+                      listenedWaves: [],
+                      // stopMainPlayer: () {},
                       mainWidth: size.width >= 412
                           ? MediaQuery.of(context).size.width * 0.45
                           : MediaQuery.of(context).size.width * 0.55,
@@ -322,7 +350,12 @@ class _SinglePostNoteState extends State<SinglePostNote> {
                     child: CircularPercentIndicator(
                       radius: 35.0,
                       lineWidth: 8.0,
-                      percent: position.inSeconds / duration.inSeconds,
+                      percent: widget.isPlaying &&
+                              widget.changeIndex == widget.currentIndex &&
+                              duration.inSeconds > 0
+                          ? (widget.position.inSeconds / duration.inSeconds)
+                              .clamp(0.0, 1.0)
+                          : 0.0,
                       center: widget.lockPosts.contains(widget.index)
 
                           //  if any of the post is lock post show icon lock and naviagte to subscribe screen
@@ -352,7 +385,7 @@ class _SinglePostNoteState extends State<SinglePostNote> {
 
                           : InkWell(
                               splashColor: Colors.transparent,
-                              onTap: playPause,
+                              onTap: widget.onPlayPause,
                               child: Container(
                                 // height: 10,
                                 // width: 10,
@@ -361,26 +394,37 @@ class _SinglePostNoteState extends State<SinglePostNote> {
                                     color: whiteColor,
                                     borderRadius: BorderRadius.circular(30)),
                                 child: Icon(
-                                  _isPlaying ? Icons.pause : Icons.play_arrow,
+                                  widget.isPlaying &&
+                                          widget.changeIndex ==
+                                              widget.currentIndex
+                                      ? Icons.pause
+                                      : Icons.play_arrow,
                                   color: primaryColor,
                                   size: 20,
                                 ),
                               ),
                             ),
                       circularStrokeCap: CircularStrokeCap.round,
-                      backgroundColor: _isPlaying ? whiteColor : whiteColor,
-                      progressColor: _isPlaying ? primaryColor : whiteColor,
-                      animation: _isPlaying,
+                      backgroundColor: widget.isPlaying &&
+                              widget.changeIndex == widget.currentIndex
+                          ? whiteColor
+                          : whiteColor,
+                      progressColor: widget.isPlaying &&
+                              widget.changeIndex == widget.currentIndex
+                          ? primaryColor
+                          : whiteColor,
+                      animation: widget.isPlaying &&
+                          widget.changeIndex == widget.currentIndex,
 
                       // fillColor: whiteColor,
                       animationDuration: duration.inSeconds,
                     ),
                   ),
 
-                //  showing the duration and position when the post is playing
+                //  showing the duration and widget.position when the post is playing
 
                 if (widget.index != 0)
-                  position.inSeconds == 0
+                  widget.position.inSeconds == 0
                       ? Text(
                           getInitialDurationnText(duration),
                           style: TextStyle(
@@ -390,7 +434,7 @@ class _SinglePostNoteState extends State<SinglePostNote> {
                               color: whiteColor),
                         )
                       : Text(
-                          getReverseDuration(position, duration),
+                          getReverseDuration(widget.position, duration),
                           style: TextStyle(
                               fontFamily: fontFamily,
                               fontSize: 10,

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:developer' as lo;
+// import 'dart:developer' as lo;
 import 'dart:math';
 // import 'dart:nativewrappers/_internal/vm/lib/math_patch.dart';
 
@@ -8,6 +8,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
+import 'package:flutter_svg/svg.dart';
 // import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +17,7 @@ import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
 // import 'package:social_notes/screens/home_screen/controller/play_count_service.dart';
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/most_listened_waves.dart';
+import 'package:social_notes/screens/subscribe_screen.dart/view/subscribe_screen.dart';
 // import 'package:uuid/uuid.dart';
 // import 'package:wave/config.dart';
 // import 'package:wave/wave.dart';
@@ -46,6 +48,9 @@ class MainPlayer extends StatefulWidget {
     required this.listenedWaves,
     required this.changeIndex,
     required this.position,
+    required this.lockPosts,
+    required this.title,
+    this.isProfilePlayer = false,
     // required this.waveformData,
     this.waveColor,
   }) : super(key: key);
@@ -76,6 +81,9 @@ class MainPlayer extends StatefulWidget {
 
   int currentIndex;
   List<double> listenedWaves;
+  List<int> lockPosts;
+  bool isProfilePlayer;
+  final String title;
 
   @override
   State<MainPlayer> createState() => _MainPlayerState();
@@ -115,37 +123,21 @@ class _MainPlayerState extends State<MainPlayer> {
   //     print('Error updating Firestore: $e');
   //   }
   // }
-
-  // void loadWaveHeights() async {
-  //   try {
-  //     DocumentSnapshot doc = await FirebaseFirestore.instance
-  //         .collection('notes')
-  //         .doc(widget.postId)
-  //         .get();
-
-  //     if (doc.exists && doc.data() != null) {
-  //       var data = doc.data() as Map<String, dynamic>;
-  //       if (data['mostListenedWaves'] != null &&
-  //           data['mostListenedWaves'].isNotEmpty) {
-  //         setState(() {
-  //           waveHeights = List<double>.from(data['mostListenedWaves']);
-  //         });
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print('Error loading wave heights: $e');
-  //   }
-  // }
+  bool _mounted = true;
 
   Future<void> extractWavedata() async {
+    if (!_mounted) return;
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String cacheKey = widget.postId!;
 
     List<String>? cachedData = prefs.getStringList(cacheKey);
 
+    if (!_mounted) return;
+
     if (cachedData != null && cachedData.isNotEmpty) {
       waveForm = cachedData.map((e) => double.tryParse(e) ?? 6.0).toList();
-      setState(() {
+      _safeSetState(() {
         waveForm = waveForm.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
       });
     } else {
@@ -154,24 +146,66 @@ class _MainPlayerState extends State<MainPlayer> {
         useCache: true,
         cacheKey: cacheKey,
       );
+
+      if (!_mounted) return;
+
       List<int> waveForms = result.waveformData;
 
-      setState(() {
+      _safeSetState(() {
         waveForm = waveForms.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
       });
 
       await prefs.setStringList(
           cacheKey, waveForms.map((e) => e.toString()).toList());
     }
-    lo.log('waveLengths are ${waveForm.length}');
+
+    if (!_mounted) return;
+
     waveHeights = List.filled(waveForm.length, 1.0);
-    setState(() {});
+    _safeSetState(() {});
   }
+
+  void _safeSetState(VoidCallback fn) {
+    if (_mounted) {
+      setState(fn);
+    }
+  }
+  // Future<void> extractWavedata() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String cacheKey = widget.postId!;
+
+  //   List<String>? cachedData = prefs.getStringList(cacheKey);
+
+  //   if (cachedData != null && cachedData.isNotEmpty) {
+  //     waveForm = cachedData.map((e) => double.tryParse(e) ?? 6.0).toList();
+  //     setState(() {
+  //       waveForm = waveForm.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
+  //     });
+  //   } else {
+  //     final result = await waveformExtractor.extractWaveform(
+  //       widget.noteUrl,
+  //       useCache: true,
+  //       cacheKey: cacheKey,
+  //     );
+  //     List<int> waveForms = result.waveformData;
+
+  //     setState(() {
+  //       waveForm = waveForms.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
+  //     });
+
+  //     await prefs.setStringList(
+  //         cacheKey, waveForms.map((e) => e.toString()).toList());
+  //   }
+  //   // lo.log('waveLengths are ${waveForm.length}');
+  //   waveHeights = List.filled(waveForm.length, 1.0);
+  //   setState(() {});
+  // }
 
   @override
   void dispose() {
     widget.duration = Duration.zero;
     _scrollController.dispose();
+    _mounted = false;
     super.dispose();
   }
 
@@ -205,7 +239,7 @@ class _MainPlayerState extends State<MainPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    lo.log('WaveHeights: ${waveHeights}');
+    // lo.log('WaveHeights: ${waveHeights}');
     // lo.log('Waveform plugin: ${waveForm}');
 
     return Padding(
@@ -223,161 +257,325 @@ class _MainPlayerState extends State<MainPlayer> {
             children: [
               Row(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: InkWell(
-                      splashColor: Colors.transparent,
-                      onTap: () {
-                        widget.playPause();
-                        scrollToPosition(widget.position);
-                      },
-                      child: Consumer<FilterProvider>(
-                          builder: (context, filterPro, _) {
-                        return Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: filterPro.selectedFilter
-                                    .contains('Close Friends')
-                                ? greenColor
-                                : widget.waveColor ?? primaryColor,
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: widget.isPlaying &&
-                                  widget.currentIndex == widget.changeIndex
-                              ? Icon(
-                                  Icons.pause_outlined,
-                                  color: whiteColor,
-                                  size: 20,
-                                )
-                              : Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.play_arrow,
-                                      color: whiteColor,
-                                      size: 20,
-                                    ),
-                                  ],
-                                ),
-                        );
-                      }),
-                    ),
-                  ),
-                  Consumer<FilterProvider>(builder: (context, filterPro, _) {
-                    return SizedBox(
-                      height: widget.height,
-                      width: widget.width,
-                      child: SingleChildScrollView(
-                        controller: _scrollController,
-                        scrollDirection: Axis.horizontal,
-                        child: GestureDetector(
-                          onHorizontalDragStart: (details) async {
-                            final position = details.localPosition.dx /
-                                widget.width *
-                                widget.duration.inMilliseconds;
-                            final seekPosition =
-                                Duration(milliseconds: position.toInt());
-                            widget.audioPlayer.seek(seekPosition);
-                            // int index = (position /
-                            //         widget.duration.inMilliseconds *
-                            //         waveHeights.length)
-                            //     .floor();
-                            // if (index >= 0 && index < waveHeights.length) {
-                            //   setState(() {
-                            //     waveHeights[index] = min(
-                            //         waveHeights[index] + 0.5,
-                            //         9.0); // Increment by 0.5, max of 9.0
-                            //   });
-
-                            //   // Update Firestore
-                            //   updateFirestore(waveHeights);
-                            // }
-                          },
-                          onHorizontalDragEnd: (details) {
-                            final position = details.localPosition.dx /
-                                widget.width *
-                                widget.duration.inMilliseconds;
-                            final seekPosition =
-                                Duration(milliseconds: position.toInt());
-                            widget.audioPlayer.seek(seekPosition);
-                            // int index = (position /
-                            //         widget.duration.inMilliseconds *
-                            //         waveHeights.length)
-                            //     .floor();
-                            // if (index >= 0 && index < waveHeights.length) {
-                            //   setState(() {
-                            //     waveHeights[index] = min(
-                            //         waveHeights[index] + 0.1,
-                            //         9.0); // Smaller increment for continuous update
-                            //   });
-
-                            //   // Update Firestore less frequently to avoid too many writes
-                            //   if (index % 5 == 0) {
-                            //     updateFirestore(waveHeights);
-                            //   }
-                            // }
-                          },
-                          onTapUp: (details) {
-                            final position = details.localPosition.dx /
-                                widget.width *
-                                widget.duration.inMilliseconds;
-                            final seekPosition =
-                                Duration(milliseconds: position.toInt());
-                            widget.audioPlayer.seek(seekPosition);
-                            scrollToPosition(seekPosition);
-                            // int index = (position /
-                            //         widget.duration.inMilliseconds *
-                            //         waveHeights.length)
-                            //     .floor();
-                            // if (index >= 0 && index < waveHeights.length) {
-                            //   setState(() {
-                            //     waveHeights[index] = min(
-                            //         waveHeights[index] + 0.1,
-                            //         9.0); // Smaller increment for continuous update
-                            //   });
-
-                            //   // Update Firestore less frequently to avoid too many writes
-                            //   if (index % 5 == 0) {
-                            //     updateFirestore(waveHeights);
-                            //   }
-                            // }
-                          },
-                          child: CustomPaint(
-                            size: Size(widget.width, widget.height),
-                            painter: RectangleActiveWaveformPainter(
-                              onSeek: (position) {
-                                widget.audioPlayer.seek(position);
-                                // scrollToPosition(position);
+                  if (widget.isProfilePlayer)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: widget.lockPosts.contains(0)
+                          ? GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => SubscribeScreen(),
+                                    ));
                               },
-                              activeColor: filterPro.selectedFilter
-                                      .contains('Close Friends')
-                                  ? greenColor
-                                  : primaryColor,
-                              inactiveColor: filterPro.selectedFilter
-                                      .contains('Close Friends')
-                                  ? greenColor.withOpacity(0.5)
-                                  : primaryColor.withOpacity(0.5),
-                              scrollController: _scrollController,
-                              duration: widget.duration,
-                              position: widget.position,
-                              style: PaintingStyle.fill,
-                              activeSamples: waveForm,
-                              borderColor: primaryColor.withOpacity(0.5),
-                              sampleWidth: 2.5,
-                              borderWidth: BorderSide.strokeAlignCenter,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: whiteColor,
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                                // onPressed: playPause,
+                                child:
+                                    SvgPicture.asset('assets/icons/Lock.svg'),
+                              ),
+                            )
+                          : InkWell(
+                              splashColor: Colors.transparent,
+                              onTap: widget.playPause,
+                              child: Container(
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: whiteColor,
+                                    border: widget.isProfilePlayer
+                                        ? Border.all(
+                                            color: whiteColor, width: 5)
+                                        : null,
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  // onPressed: playPause,
+                                  child: Icon(
+                                    widget.isPlaying &&
+                                            widget.changeIndex ==
+                                                widget.currentIndex
+                                        ? Icons.pause
+                                        : Icons.play_arrow,
+                                    color: primaryColor,
+                                    size: 20,
+                                  )),
+                            ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: InkWell(
+                        splashColor: Colors.transparent,
+                        onTap: () {
+                          widget.playPause();
+                          scrollToPosition(widget.position);
+                        },
+                        child: Consumer<FilterProvider>(
+                            builder: (context, filterPro, _) {
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
                               color: filterPro.selectedFilter
                                       .contains('Close Friends')
-                                  ? greenColor.withOpacity(0.5)
-                                  : primaryColor.withOpacity(0.5),
-                              isCentered: true,
-                              isRoundedRectangle: true,
-                              waveformAlignment: WaveformAlignment.center,
+                                  ? greenColor
+                                  : widget.waveColor ?? primaryColor,
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: widget.isPlaying &&
+                                    widget.currentIndex == widget.changeIndex
+                                ? Icon(
+                                    Icons.pause_outlined,
+                                    color: whiteColor,
+                                    size: 20,
+                                  )
+                                : Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.play_arrow,
+                                        color: whiteColor,
+                                        size: 20,
+                                      ),
+                                    ],
+                                  ),
+                          );
+                        }),
+                      ),
+                    ),
+                  if (widget.isProfilePlayer)
+                    Consumer<FilterProvider>(builder: (context, filterPro, _) {
+                      return SizedBox(
+                        height: widget.height,
+                        width: widget.width,
+                        child: SingleChildScrollView(
+                          controller: _scrollController,
+                          scrollDirection: Axis.horizontal,
+                          child: GestureDetector(
+                            onHorizontalDragStart: (details) async {
+                              final position = details.localPosition.dx /
+                                  widget.width *
+                                  widget.duration.inMilliseconds;
+                              final seekPosition =
+                                  Duration(milliseconds: position.toInt());
+                              widget.audioPlayer.seek(seekPosition);
+                              // int index = (position /
+                              //         widget.duration.inMilliseconds *
+                              //         waveHeights.length)
+                              //     .floor();
+                              // if (index >= 0 && index < waveHeights.length) {
+                              //   setState(() {
+                              //     waveHeights[index] = min(
+                              //         waveHeights[index] + 0.5,
+                              //         9.0); // Increment by 0.5, max of 9.0
+                              //   });
+
+                              //   // Update Firestore
+                              //   updateFirestore(waveHeights);
+                              // }
+                            },
+                            onHorizontalDragEnd: (details) {
+                              final position = details.localPosition.dx /
+                                  widget.width *
+                                  widget.duration.inMilliseconds;
+                              final seekPosition =
+                                  Duration(milliseconds: position.toInt());
+                              widget.audioPlayer.seek(seekPosition);
+                              // int index = (position /
+                              //         widget.duration.inMilliseconds *
+                              //         waveHeights.length)
+                              //     .floor();
+                              // if (index >= 0 && index < waveHeights.length) {
+                              //   setState(() {
+                              //     waveHeights[index] = min(
+                              //         waveHeights[index] + 0.1,
+                              //         9.0); // Smaller increment for continuous update
+                              //   });
+
+                              //   // Update Firestore less frequently to avoid too many writes
+                              //   if (index % 5 == 0) {
+                              //     updateFirestore(waveHeights);
+                              //   }
+                              // }
+                            },
+                            onTapUp: (details) {
+                              final position = details.localPosition.dx /
+                                  widget.width *
+                                  widget.duration.inMilliseconds;
+                              final seekPosition =
+                                  Duration(milliseconds: position.toInt());
+                              widget.audioPlayer.seek(seekPosition);
+                              scrollToPosition(seekPosition);
+                              // int index = (position /
+                              //         widget.duration.inMilliseconds *
+                              //         waveHeights.length)
+                              //     .floor();
+                              // if (index >= 0 && index < waveHeights.length) {
+                              //   setState(() {
+                              //     waveHeights[index] = min(
+                              //         waveHeights[index] + 0.1,
+                              //         9.0); // Smaller increment for continuous update
+                              //   });
+
+                              //   // Update Firestore less frequently to avoid too many writes
+                              //   if (index % 5 == 0) {
+                              //     updateFirestore(waveHeights);
+                              //   }
+                              // }
+                            },
+                            child: CustomPaint(
+                              size: Size(widget.width, widget.height),
+                              painter: RectangleActiveWaveformPainter(
+                                onSeek: (position) {
+                                  widget.audioPlayer.seek(position);
+                                  // scrollToPosition(position);
+                                },
+                                activeColor:
+                                    widget.changeIndex == widget.currentIndex &&
+                                            widget.isPlaying
+                                        ? whiteColor
+                                        : whiteColor.withOpacity(0.5),
+                                inactiveColor: whiteColor.withOpacity(0.5),
+                                scrollController: _scrollController,
+                                duration: widget.duration,
+                                position: widget.position,
+                                style: PaintingStyle.fill,
+                                activeSamples: waveForm,
+                                borderColor: primaryColor.withOpacity(0.5),
+                                sampleWidth: 2.5,
+                                borderWidth: BorderSide.strokeAlignCenter,
+                                color: filterPro.selectedFilter
+                                        .contains('Close Friends')
+                                    ? greenColor.withOpacity(0.5)
+                                    : primaryColor.withOpacity(0.5),
+                                isCentered: true,
+                                isRoundedRectangle: true,
+                                waveformAlignment: WaveformAlignment.center,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    })
+                  else
+                    Consumer<FilterProvider>(builder: (context, filterPro, _) {
+                      return SizedBox(
+                        height: widget.height,
+                        width: widget.width,
+                        child: SingleChildScrollView(
+                          controller: _scrollController,
+                          scrollDirection: Axis.horizontal,
+                          child: GestureDetector(
+                            onHorizontalDragStart: (details) async {
+                              final position = details.localPosition.dx /
+                                  widget.width *
+                                  widget.duration.inMilliseconds;
+                              final seekPosition =
+                                  Duration(milliseconds: position.toInt());
+                              widget.audioPlayer.seek(seekPosition);
+                              // int index = (position /
+                              //         widget.duration.inMilliseconds *
+                              //         waveHeights.length)
+                              //     .floor();
+                              // if (index >= 0 && index < waveHeights.length) {
+                              //   setState(() {
+                              //     waveHeights[index] = min(
+                              //         waveHeights[index] + 0.5,
+                              //         9.0); // Increment by 0.5, max of 9.0
+                              //   });
+
+                              //   // Update Firestore
+                              //   updateFirestore(waveHeights);
+                              // }
+                            },
+                            onHorizontalDragEnd: (details) {
+                              final position = details.localPosition.dx /
+                                  widget.width *
+                                  widget.duration.inMilliseconds;
+                              final seekPosition =
+                                  Duration(milliseconds: position.toInt());
+                              widget.audioPlayer.seek(seekPosition);
+                              // int index = (position /
+                              //         widget.duration.inMilliseconds *
+                              //         waveHeights.length)
+                              //     .floor();
+                              // if (index >= 0 && index < waveHeights.length) {
+                              //   setState(() {
+                              //     waveHeights[index] = min(
+                              //         waveHeights[index] + 0.1,
+                              //         9.0); // Smaller increment for continuous update
+                              //   });
+
+                              //   // Update Firestore less frequently to avoid too many writes
+                              //   if (index % 5 == 0) {
+                              //     updateFirestore(waveHeights);
+                              //   }
+                              // }
+                            },
+                            onTapUp: (details) {
+                              final position = details.localPosition.dx /
+                                  widget.width *
+                                  widget.duration.inMilliseconds;
+                              final seekPosition =
+                                  Duration(milliseconds: position.toInt());
+                              widget.audioPlayer.seek(seekPosition);
+                              scrollToPosition(seekPosition);
+                              // int index = (position /
+                              //         widget.duration.inMilliseconds *
+                              //         waveHeights.length)
+                              //     .floor();
+                              // if (index >= 0 && index < waveHeights.length) {
+                              //   setState(() {
+                              //     waveHeights[index] = min(
+                              //         waveHeights[index] + 0.1,
+                              //         9.0); // Smaller increment for continuous update
+                              //   });
+
+                              //   // Update Firestore less frequently to avoid too many writes
+                              //   if (index % 5 == 0) {
+                              //     updateFirestore(waveHeights);
+                              //   }
+                              // }
+                            },
+                            child: CustomPaint(
+                              size: Size(widget.width, widget.height),
+                              painter: RectangleActiveWaveformPainter(
+                                onSeek: (position) {
+                                  widget.audioPlayer.seek(position);
+                                  // scrollToPosition(position);
+                                },
+                                activeColor: filterPro.selectedFilter
+                                        .contains('Close Friends')
+                                    ? greenColor
+                                    : primaryColor,
+                                inactiveColor: filterPro.selectedFilter
+                                        .contains('Close Friends')
+                                    ? greenColor.withOpacity(0.5)
+                                    : primaryColor.withOpacity(0.5),
+                                scrollController: _scrollController,
+                                duration: widget.duration,
+                                position: widget.position,
+                                style: PaintingStyle.fill,
+                                activeSamples: waveForm,
+                                borderColor: primaryColor.withOpacity(0.5),
+                                sampleWidth: 2.5,
+                                borderWidth: BorderSide.strokeAlignCenter,
+                                color: filterPro.selectedFilter
+                                        .contains('Close Friends')
+                                    ? greenColor.withOpacity(0.5)
+                                    : primaryColor.withOpacity(0.5),
+                                isCentered: true,
+                                isRoundedRectangle: true,
+                                waveformAlignment: WaveformAlignment.center,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
                   const SizedBox(
                     width: 10,
                   ),
@@ -390,11 +588,13 @@ class _MainPlayerState extends State<MainPlayer> {
                                 getInitialDurationnText(widget.duration),
                                 style: TextStyle(
                                   fontFamily: fontFamily,
-                                  fontSize: 12,
-                                  color: filterPro.selectedFilter
-                                          .contains('Close Friends')
-                                      ? greenColor
-                                      : widget.waveColor ?? primaryColor,
+                                  fontSize: widget.isProfilePlayer ? 10 : 12,
+                                  color: widget.isProfilePlayer
+                                      ? whiteColor
+                                      : filterPro.selectedFilter
+                                              .contains('Close Friends')
+                                          ? greenColor
+                                          : widget.waveColor ?? primaryColor,
                                 ),
                               )
                             : Text(
@@ -405,11 +605,13 @@ class _MainPlayerState extends State<MainPlayer> {
                                     : getInitialDurationnText(widget.duration),
                                 style: TextStyle(
                                   fontFamily: fontFamily,
-                                  fontSize: 12,
-                                  color: filterPro.selectedFilter
-                                          .contains('Close Friends')
-                                      ? greenColor
-                                      : widget.waveColor ?? primaryColor,
+                                  fontSize: widget.isProfilePlayer ? 10 : 12,
+                                  color: widget.isProfilePlayer
+                                      ? whiteColor
+                                      : filterPro.selectedFilter
+                                              .contains('Close Friends')
+                                          ? greenColor
+                                          : widget.waveColor ?? primaryColor,
                                 ),
                               ),
                         const SizedBox(height: 5),

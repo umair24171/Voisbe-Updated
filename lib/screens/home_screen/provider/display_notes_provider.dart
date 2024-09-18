@@ -132,31 +132,6 @@ class DisplayNotesProvider with ChangeNotifier {
     }
   }
 
-  playAudioPlayer(String url, int index) async {
-    await audioPlayer!.play(UrlSource(url)).then((value) async {
-      setChangeIndex(index);
-      setIsPlaying(true);
-      // setState(() {
-      //   _currentIndex = index;
-      //   _isPlaying = true;
-      // });
-      duration = (await audioPlayer!.getDuration())!;
-      setDuration(duration);
-    });
-    notifyListeners();
-  }
-
-  resumeAudioPlayer() {
-    audioPlayer!.resume();
-    notifyListeners();
-  }
-
-  disposePlayer() {
-    audioPlayer!.stop();
-    audioPlayer!.dispose();
-    notifyListeners();
-  }
-
   setChangeIndex(int index) {
     changeIndex = index;
     notifyListeners();
@@ -172,14 +147,59 @@ class DisplayNotesProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  playAudioPlayer(String url, int index) async {
+    if (audioPlayer == null) {
+      print("AudioPlayer is null. Initializing...");
+      audioPlayer = AudioPlayer(); // Or however you initialize your AudioPlayer
+    }
+
+    try {
+      await audioPlayer!.play(UrlSource(url));
+      setChangeIndex(index);
+      setIsPlaying(true);
+
+      Duration? audioDuration = await audioPlayer!.getDuration();
+      if (audioDuration != null) {
+        setDuration(audioDuration);
+      } else {
+        print("Failed to get audio duration");
+      }
+    } catch (e) {
+      print("Error playing audio: $e");
+      setIsPlaying(false);
+    }
+
+    notifyListeners();
+  }
+
+  // playAudioPlayer(String url, int index) async {
+  //   await audioPlayer!.play(UrlSource(url)).then((value) async {
+  //     setChangeIndex(index);
+  //     setIsPlaying(true);
+
+  //     duration = (await audioPlayer!.getDuration())!;
+  //     setDuration(duration);
+  //   });
+  //   notifyListeners();
+  // }
+
+  resumeAudioPlayer() {
+    audioPlayer!.resume();
+    notifyListeners();
+  }
+
+  disposePlayer() {
+    audioPlayer!.stop();
+    audioPlayer!.dispose();
+    notifyListeners();
+  }
+
   setIsPlaying(bool value) {
     isPlaying = value;
     notifyListeners();
   }
 
   void playPause(String url, int index) async {
-    // if (!isHomeActive) return;
-    // Check if the file is already cached
     final cacheManager = DefaultCacheManager();
     FileInfo? fileInfo = await cacheManager.getFileFromCache(url);
 
@@ -206,55 +226,24 @@ class DisplayNotesProvider with ChangeNotifier {
         pausePlayer();
         setChangeIndex(-1);
         setIsPlaying(false);
-        // setState(() {
-        //   _currentIndex = -1;
-        //   _isPlaying = false;
-        // });
       } else {
         resumeAudioPlayer();
         setChangeIndex(index);
         setIsPlaying(true);
-        // setState(() {
-        //   _currentIndex = index;
-        //   _isPlaying = true;
-        // });
       }
     } else {
       playAudioPlayer(fileInfo.file.path, index);
-      // await audioPlayer!
-      //     .play(
-      //   UrlSource(fileInfo.file.path),
-      // )
-      //     .then((value) async {
-      //   setChangeIndex(index);
-      //   setIsPlaying(true);
-      //   // setState(() {
-      //   //   _currentIndex = index;
-      //   //   _isPlaying = true;
-      //   // });
-      //   duration = (await audioPlayer!.getDuration())!;
-      //   setDuration(duration);
-      //   // setState(() {});
-      // });
     }
 
     audioPlayer!.onPositionChanged.listen((event) {
       if (changeIndex == index) {
         setPosition(event);
-        // setState(() {
-        //   position = event;
-        // });
       }
     });
     audioPlayer!.onPlayerComplete.listen((event) {
       setChangeIndex(-1);
       setIsPlaying(false);
       setPosition(Duration.zero);
-      // setState(() {
-      //   _isPlaying = false;
-      //   _currentIndex = -1;
-      //   position = Duration.zero;
-      // });
     });
   }
 

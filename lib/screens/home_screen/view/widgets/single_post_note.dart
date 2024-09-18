@@ -244,6 +244,9 @@ class _SingleNotePostState extends State<SingleNotePost> {
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: MainPlayer(
+              lockPosts: [],
+              title: '',
+              
                 // playCounts: playCounts,
                 listenedWaves: widget.note.mostListenedWaves,
                 postId: widget.note.noteId,
@@ -326,6 +329,7 @@ class _SingleNotePostState extends State<SingleNotePost> {
 
                         CommentNotoficationModel commentNotoficationModel =
                             CommentNotoficationModel(
+                                time: DateTime.now(),
                                 postBackground: widget.note.backgroundImage,
                                 postThumbnail: widget.note.videoThumbnail,
                                 postType: widget.note.backgroundType,
@@ -372,6 +376,7 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                   'assets/icons/Like inactive.svg',
                                   height: 28,
                                   width: 35,
+
                                   // fit: BoxFit.cover,
                                 );
                               }
@@ -571,17 +576,11 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                                         'assets/icons/gifvideo.mp4',
                                                     isVerified: verifiedUSer.isVerified,
                                                     outputFileName: 'voisbe/videos');
+                                            // if (context.mounted)
+                                            //   ScaffoldMessenger.of(context)
+                                            //       .hideCurrentSnackBar();
                                             pro.setIsloading(false);
-                                            navPop(context);
-                                            showWhiteOverlayPopup(
-                                                context,
-                                                Icons.check_box,
-                                                null,
-                                                null,
-                                                title: 'Successful',
-                                                message:
-                                                    'Post downloaded successfully.',
-                                                isUsernameRes: false);
+                                            // navPop(context);
                                           },
                                     child: displayPro.isLoading
                                         ? Padding(
@@ -1065,6 +1064,9 @@ class _SingleNotePostState extends State<SingleNotePost> {
           //  all the circle replies
 
           CircleComments(
+            pagController: widget.pageController,
+            changeIndex: widget.changeIndex,
+            currentIndex: widget.currentIndex,
             stopMainPlayer: widget.stopMainPlayer,
             mainAudioPlayer: widget.audioPlayer,
 

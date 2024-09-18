@@ -229,7 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Stack(
                     children: [
                       if (userProvider.user!.photoUrl.isNotEmpty ||
-                          userProvider.imageFile != null)
+                          userProvider.userImage != null)
 
                         //  background of the screen if the profile pic is selected or empty
                         Container(

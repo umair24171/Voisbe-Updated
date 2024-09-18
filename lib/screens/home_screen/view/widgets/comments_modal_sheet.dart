@@ -24,6 +24,7 @@ import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
 import 'package:social_notes/screens/home_screen/model/sub_comment_model.dart';
+import 'package:social_notes/screens/home_screen/provider/comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/single_comment_note.dart';
 import 'package:social_notes/screens/notifications_screen/controller/notification_provider.dart';
@@ -54,9 +55,9 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
   bool _isPlaying = false;
   late StreamSubscription<QuerySnapshot> _subscription;
   List<CommentModel> commentsList = [];
-  List<int> subscriberComments = [];
-  List<int> remainingComments = [];
-  List<int> closeCOmments = [];
+  // List<int> subscriberComments = [];
+  // List<int> remainingComments = [];
+  // List<int> closeCOmments = [];
 
   final _player = AudioPlayer();
   Duration position = Duration.zero;
@@ -65,6 +66,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
   void initState() {
     super.initState();
     // _initialiseControllers();
+    commentManager = CommentManager(setState);
     _audioPlayer = AudioPlayer();
     _player.onPlayerComplete.listen((state) {
       setState(() {
@@ -79,79 +81,85 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
     getStreamComments();
   }
 
+  late CommentManager commentManager;
+  UserModel? currentNoteUser;
+
   getStreamComments() async {
     // Subscribe to the Firestore collection
     var currentUser = Provider.of<UserProvider>(context, listen: false).user;
     SharedPreferences preferences = await SharedPreferences.getInstance();
 
-    UserModel? currentNoteUser;
     await FirebaseFirestore.instance
         .collection("users")
         .doc(widget.noteData.userUid)
         .get()
         .then((value) {
       currentNoteUser = UserModel.fromMap(value.data() ?? {});
+      setState(() {});
     });
+    commentManager = CommentManager(setState);
+    commentManager.initComments(
+        widget.postId, currentUser!, currentNoteUser!.uid, true);
 
-    _subscription = FirebaseFirestore.instance
-        .collection('notes')
-        .doc(widget.postId)
-        .collection('comments')
-        .snapshots()
-        .listen((snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        List<CommentModel> list =
-            snapshot.docs.map((e) => CommentModel.fromMap(e.data())).toList();
-        list.sort((a, b) => b.playedComment.compareTo(a.playedComment));
+    // _subscription = FirebaseFirestore.instance
+    //     .collection('notes')
+    //     .doc(widget.postId)
+    //     .collection('comments')
+    //     .snapshots()
+    //     .listen((snapshot) {
+    //   if (snapshot.docs.isNotEmpty) {
+    //     List<CommentModel> list =
+    //         snapshot.docs.map((e) => CommentModel.fromMap(e.data())).toList();
+    //     list.sort((a, b) => b.playedComment.compareTo(a.playedComment));
 
-        List<int> subscriberCommentsIndexes = [];
-        List<int> closeFriendIndexes = [];
-        List<int> remainingCommentsIndex = [];
+    //     List<int> subscriberCommentsIndexes = [];
+    //     List<int> closeFriendIndexes = [];
+    //     List<int> remainingCommentsIndex = [];
 
-        // Collect the items to be removed in a separate list
-        List<CommentModel> itemsToRemove = [];
-        List<String>? commentIDs = preferences.getStringList(currentUser!.uid);
-        if (commentIDs != null) {
-          for (var item in list) {
-            for (var id in commentIDs) {
-              if (item.commentid.contains(id)) {
-                itemsToRemove.add(item);
-                break; // Break inner loop if match is found
-              }
-            }
-          }
-        }
+    //     // Collect the items to be removed in a separate list
+    //     List<CommentModel> itemsToRemove = [];
+    //     List<String>? commentIDs = preferences.getStringList(currentUser!.uid);
+    //     if (commentIDs != null) {
+    //       for (var item in list) {
+    //         for (var id in commentIDs) {
+    //           if (item.commentid.contains(id)) {
+    //             itemsToRemove.add(item);
+    //             break; // Break inner loop if match is found
+    //           }
+    //         }
+    //       }
+    //     }
 
-        // Remove the collected items from the list
-        list.removeWhere((item) => itemsToRemove.contains(item));
+    //     // Remove the collected items from the list
+    //     list.removeWhere((item) => itemsToRemove.contains(item));
 
-        for (var index = 0; index < list.length; index++) {
-          var comment = list[index];
-          if (currentNoteUser!.closeFriends.contains(comment.userId)) {
-            closeFriendIndexes.add(index);
-            log('Close Friends Comments: $closeFriendIndexes');
-          } else if (currentNoteUser!.subscribedUsers
-              .contains(comment.userId)) {
-            subscriberCommentsIndexes.add(index);
-            log('Subscriber Comments: $subscriberCommentsIndexes');
-          } else {
-            remainingCommentsIndex.add(index);
-            log('Remaining Comments: $remainingCommentsIndex');
-          }
-        }
+    //     for (var index = 0; index < list.length; index++) {
+    //       var comment = list[index];
+    //       if (currentNoteUser!.closeFriends.contains(comment.userId)) {
+    //         closeFriendIndexes.add(index);
+    //         log('Close Friends Comments: $closeFriendIndexes');
+    //       } else if (currentNoteUser!.subscribedUsers
+    //           .contains(comment.userId)) {
+    //         subscriberCommentsIndexes.add(index);
+    //         log('Subscriber Comments: $subscriberCommentsIndexes');
+    //       } else {
+    //         remainingCommentsIndex.add(index);
+    //         log('Remaining Comments: $remainingCommentsIndex');
+    //       }
+    //     }
 
-        log('index of subscriber comments: $subscriberCommentsIndexes');
-        log('RemainingComments: $remainingComments');
-        log('CloseFriednIndexes: $closeFriendIndexes');
-        setState(() {
-          // Update the local list with the sorted list
-          commentsList = list;
-          subscriberComments = subscriberCommentsIndexes;
-          closeCOmments = closeFriendIndexes;
-          remainingComments = remainingComments;
-        });
-      }
-    });
+    //     log('index of subscriber comments: $subscriberCommentsIndexes');
+    //     log('RemainingComments: $remainingComments');
+    //     log('CloseFriednIndexes: $closeFriendIndexes');
+    //     setState(() {
+    //       // Update the local list with the sorted list
+    //       commentsList = list;
+    //       subscriberComments = subscriberCommentsIndexes;
+    //       closeCOmments = closeFriendIndexes;
+    //       remainingComments = remainingComments;
+    //     });
+    // }
+    // });
   }
 
   // getStreamComments() async {
@@ -304,7 +312,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
   void dispose() {
     // Cancel the subscription when the widget is disposed
     _audioPlayer.dispose();
-    _subscription.cancel();
+    commentManager.dispose();
     // recorderController.dispose();
     super.dispose();
   }
@@ -314,6 +322,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
   @override
   Widget build(BuildContext context) {
     // var noteProvider = Provider.of<NoteProvider>(context);
+    commentsList = commentManager.commentsList;
 
     var commentProvider =
         Provider.of<DisplayNotesProvider>(context, listen: false);
@@ -357,9 +366,9 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
             color: Colors.grey[300],
           ),
           Expanded(
-              child: commentsList.isNotEmpty
+              child: commentManager.commentsList.isNotEmpty
                   ? SingleChildScrollView(
-                      //  building all the comments
+                      //  building all the commentsList
 
                       child: ListView.builder(
                         shrinkWrap: true,
@@ -374,16 +383,22 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                           return KeyedSubtree(
                             key: key,
                             child: SingleCommentNote(
+                              mostEgageCOmmentIndex:
+                                  commentManager.engageCommentIndex,
+                              currentNoteUser: currentNoteUser!,
                               getStreamComments: getStreamComments,
                               postUserId: widget.userId,
+                              commentManager: commentManager,
                               stopMainPlayer: stopAudio,
                               isPlaying: _isPlaying,
                               player: _audioPlayer,
                               position: position,
                               index: index,
                               commentModel: commentsList[index],
-                              subscriberCommentIndex: subscriberComments,
-                              closeFriendIndexs: closeCOmments,
+                              subscriberCommentIndex:
+                                  commentManager.subscriberCommentsIndexes,
+                              closeFriendIndexs:
+                                  commentManager.closeFriendIndexes,
                               commentsList: commentsList,
                               playPause: () {
                                 _playAudio(
@@ -526,6 +541,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                       const Uuid().v4();
                                                   CommentNotoficationModel noti =
                                                       CommentNotoficationModel(
+                                                          time: DateTime.now(),
                                                           postBackground: widget
                                                               .noteData
                                                               .backgroundImage,

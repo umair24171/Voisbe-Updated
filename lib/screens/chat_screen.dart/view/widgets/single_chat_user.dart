@@ -43,6 +43,7 @@ class SingleChatUser extends StatefulWidget {
 class _SingleChatUserState extends State<SingleChatUser> {
   late StreamSubscription<QuerySnapshot> chatStream;
   ChatModel? chat;
+
   @override
   void initState() {
     super.initState();
@@ -55,16 +56,51 @@ class _SingleChatUserState extends State<SingleChatUser> {
         .doc(widget.chatModel.usersId)
         .collection('messages')
         .where('messageRead', isEqualTo: '')
-        // .orderBy('time', descending: true)
         .snapshots()
         .listen((value) {
-      List<ChatModel> chats =
-          value.docs.map((e) => ChatModel.fromMap(e.data())).toList();
+      if (value.docs.isNotEmpty) {
+        // Sort the documents in Dart code
+        final sortedDocs = value.docs.toList()
+          ..sort((a, b) => (b.data()['time'] as Timestamp)
+              .compareTo(a.data()['time'] as Timestamp));
 
-      setState(() {
-        chat = chats.last;
-      });
+        setState(() {
+          chat = ChatModel.fromMap(sortedDocs.first.data());
+        });
+      } else {
+        setState(() {
+          chat = null;
+        });
+      }
     });
+  }
+
+  // checkSeenStatus() async {
+  //   chatStream = FirebaseFirestore.instance
+  //       .collection('chats')
+  //       .doc(widget.chatModel.usersId)
+  //       .collection('messages')
+  //       .where('messageRead', isEqualTo: '')
+  //       .orderBy('time', descending: true)
+  //       .limit(1)
+  //       .snapshots()
+  //       .listen((value) {
+  //     if (value.docs.isNotEmpty) {
+  //       setState(() {
+  //         chat = ChatModel.fromMap(value.docs.first.data());
+  //       });
+  //     } else {
+  //       setState(() {
+  //         chat = null;
+  //       });
+  //     }
+  //   });
+  // }
+
+  @override
+  void dispose() {
+    chatStream.cancel();
+    super.dispose();
   }
 
   @override

@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
+import 'package:social_notes/screens/notifications_screen/model/comment_notofication_model.dart';
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
 import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class FollowersScreen extends StatelessWidget {
   const FollowersScreen({super.key, required this.userId});
@@ -145,9 +147,24 @@ class FollowersScreen extends StatelessWidget {
                                             width: 1)),
                                   ),
                                   onPressed: () {
+                                    String notiID = Uuid().v4();
+                                    CommentNotoficationModel notiModel =
+                                        CommentNotoficationModel(
+                                            notificationId: notiID,
+                                            notification: '',
+                                            currentUserId: userProvider.uid,
+                                            notificationType: 'follow',
+                                            postBackground: '',
+                                            postThumbnail: '',
+                                            isRead: '',
+                                            noteUrl: '',
+                                            time: DateTime.now(),
+                                            postType: '',
+                                            toId: user.uid);
                                     Provider.of<UserProfileProvider>(context,
                                             listen: false)
-                                        .followUser(userProvider, user);
+                                        .followUser(
+                                            userProvider, user, notiModel);
                                   },
                                   child: Text(
                                     text,

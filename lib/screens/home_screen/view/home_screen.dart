@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -133,7 +134,10 @@ class _HomeScreenState extends State<HomeScreen>
     'Technology & Innovation',
     'Current Events & News',
     'Health & Wellness',
-    'Hobbies & Interests'
+    'Hobbies & Interests',
+    'Music',
+    'Podcasts & Interviews',
+    'Other',
   ];
 
   //  getting all the colors of the topics
@@ -158,7 +162,11 @@ class _HomeScreenState extends State<HomeScreen>
     const Color(0xff45897a), // color17
     const Color(0xff472861), // color18
     const Color(0xff37728c), // color19
+
     const Color(0xff6cb57f), // color20
+    const Color(0xff9D3558),
+    const Color(0xffC08EE1),
+    const Color(0xff83949F)
   ];
 
   Color _getColor(int index) {
@@ -383,11 +391,47 @@ class _HomeScreenState extends State<HomeScreen>
                     userProvider.user!.mutedAccouts.contains(note.userUid)) {
                   return false;
                 }
+                // Use firstWhere with orElse to avoid exceptions
                 UserModel user =
                     Provider.of<ChatProvider>(context, listen: false)
                         .users
                         .firstWhere(
                           (element) => element.uid == note.userUid,
+                          orElse: () => UserModel(
+                            uid: '',
+                            username: '',
+                            email: '',
+                            bio: '',
+                            blockedByUsers: [],
+                            blockedUsers: [],
+                            closeFriends: [],
+                            contact: '',
+                            dateOfBirth: DateTime.now(),
+                            followReq: [],
+                            followTo: [],
+                            followers: [],
+                            following: [],
+                            isFollows: false,
+                            isLike: false,
+                            isOtpVerified: false,
+                            isPrivate: false,
+                            isReply: false,
+                            isSubscriptionEnable: false,
+                            isTwoFa: false,
+                            isVerified: false,
+                            link: '',
+                            mutedAccouts: [],
+                            name: '',
+                            notificationsEnable: [],
+                            password: '',
+                            photoUrl: '',
+                            price: 0,
+                            pushToken: '',
+                            soundPacks: [],
+                            subscribedSoundPacks: [],
+                            subscribedUsers: [],
+                            token: '',
+                          ), // Provide a default user
                         );
 
                 bool isContains =
@@ -395,8 +439,8 @@ class _HomeScreenState extends State<HomeScreen>
 
                 bool isAccountPrivate = user.isPrivate;
 
-                log('is contains $isContains');
-                log('is private $isAccountPrivate');
+                // log('is contains $isContains');
+                // log('is private $isAccountPrivate');
                 // New check for private accounts
                 if (user.isPrivate &&
                     !userProvider.user!.following.contains(note.userUid) &&
@@ -628,8 +672,8 @@ class _HomeScreenState extends State<HomeScreen>
                                                     ),
                                                     child: InkWell(
                                                       onTap: () {
-                                                        filterPro.searchValue =
-                                                            '';
+                                                        filterPro
+                                                            .clearSearchValue();
                                                         filterPro
                                                             .setSearchingValue(
                                                                 topics[index]);
@@ -663,6 +707,24 @@ class _HomeScreenState extends State<HomeScreen>
                                     // certain checks
 
                                     List<NoteModel> getFilteredNotes() {
+                                      final provider =
+                                          Provider.of<DisplayNotesProvider>(
+                                              context,
+                                              listen: false);
+                                      final userProvider =
+                                          Provider.of<UserProvider>(context,
+                                              listen: false);
+                                      final chatProvider =
+                                          Provider.of<ChatProvider>(context,
+                                              listen: false);
+
+                                      // Null check for userProvider.user
+                                      if (userProvider.user == null) {
+                                        print(
+                                            "User is null in getFilteredNotes");
+                                        return [];
+                                      }
+
                                       return provider.notes.where((note) {
                                         // Always show the post to its owner
                                         if (note.userUid ==
@@ -681,36 +743,34 @@ class _HomeScreenState extends State<HomeScreen>
                                                 .contains(note.userUid)) {
                                           return false;
                                         }
-                                        UserModel user =
-                                            Provider.of<ChatProvider>(context,
-                                                    listen: false)
-                                                .users
-                                                .firstWhere(
-                                                  (element) =>
-                                                      element.uid ==
-                                                      note.userUid,
-                                                );
 
-                                        bool isContains = userProvider
+                                        UserModel? user =
+                                            chatProvider.users.firstWhereOrNull(
+                                          (element) =>
+                                              element.uid == note.userUid,
+                                        );
+
+                                        if (user == null) {
+                                          print(
+                                              "No user found with uid: ${note.userUid}");
+                                          return false;
+                                        }
+
+                                        bool isFollowing = userProvider
                                             .user!.following
                                             .contains(note.userUid);
 
-                                        bool isAccountPrivate = user.isPrivate;
-
-                                        log('is contains $isContains');
-                                        log('is private $isAccountPrivate');
-                                        // New check for private accounts
+                                        // Check for private accounts
                                         if (user.isPrivate &&
-                                            !userProvider.user!.following
-                                                .contains(note.userUid) &&
+                                            !isFollowing &&
                                             note.userUid !=
                                                 userProvider.user!.uid) {
                                           return false;
                                         }
+
                                         return true;
                                       }).toList();
                                     }
-
                                     //  get personalized posts
 
                                     List<NoteModel> getPersonalizedNotes(

@@ -4,9 +4,11 @@ import 'package:social_notes/resources/colors.dart';
 // import 'package:social_notes/resources/navigation.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/chat_screen.dart/view/chat_screen.dart';
+import 'package:social_notes/screens/notifications_screen/model/comment_notofication_model.dart';
 // import 'package:social_notes/screens/user_profile/other_user_profile.dart';
 import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:uuid/uuid.dart';
 
 class OtherContactButtons extends StatelessWidget {
   const OtherContactButtons({super.key});
@@ -45,8 +47,21 @@ class OtherContactButtons extends StatelessWidget {
           padding: const EdgeInsets.only(left: 3),
           child: CustomContactButton(
               onTap: () {
+                String notiID = Uuid().v4();
+                CommentNotoficationModel notiModel = CommentNotoficationModel(
+                    notificationId: notiID,
+                    notification: '',
+                    currentUserId: currentUSer.uid,
+                    notificationType: 'follow',
+                    postBackground: '',
+                    postThumbnail: '',
+                    isRead: '',
+                    noteUrl: '',
+                    time: DateTime.now(),
+                    postType: '',
+                    toId: otherUser.uid);
                 Provider.of<UserProfileProvider>(context, listen: false)
-                    .followUser(currentUSer, otherUser);
+                    .followUser(currentUSer, otherUser, notiModel);
               },
               icon: 'assets/images/tagpeople_white.png',
               text: text),

@@ -11,6 +11,7 @@ class FilterProvider with ChangeNotifier {
   String selectedFilter = 'For you';
   bool isSearch = false;
   String searchValue = '';
+
   List<NoteModel> searcheNote = [];
   PersonalizeModel? userPersonalizeData;
   NoteModel? detailsNote;
@@ -21,6 +22,11 @@ class FilterProvider with ChangeNotifier {
   bool isPlaying = false;
 
   addSingleNote() {}
+
+  clearSearchValue() {
+    searchValue = '';
+    notifyListeners();
+  }
 
   setDetailNote(NoteModel note) {
     detailsNote = note;
@@ -33,16 +39,18 @@ class FilterProvider with ChangeNotifier {
   }
 
   getPersoanlizeData() async {
-    DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-        .instance
-        .collection('user_interests')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get();
+    if (FirebaseAuth.instance.currentUser != null) {
+      DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
+          .instance
+          .collection('user_interests')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get();
 
-    if (snapshot.exists) {
-      userPersonalizeData = PersonalizeModel.fromMap(snapshot.data()!);
-      log('Person data $userPersonalizeData');
-      notifyListeners();
+      if (snapshot.exists) {
+        userPersonalizeData = PersonalizeModel.fromMap(snapshot.data()!);
+        log('Person data $userPersonalizeData');
+        notifyListeners();
+      }
     }
   }
 

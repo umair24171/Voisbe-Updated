@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -35,6 +36,66 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
   List<NoteModel> pinnedPosts = [];
   List<NoteModel> nonPinnedPosts = [];
   List<int> lockPosts = [];
+
+  AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isPlaying = false;
+  Duration position = Duration.zero;
+
+  int _currentIndex = 0;
+
+  void _playAudio(
+    String url,
+    int index,
+  ) async {
+    DefaultCacheManager cacheManager = DefaultCacheManager();
+
+    if (_isPlaying && _currentIndex != index) {
+      await _audioPlayer.stop();
+    }
+
+    if (_currentIndex == index && _isPlaying) {
+      if (_audioPlayer.state == PlayerState.playing) {
+        _audioPlayer.pause();
+        setState(() {
+          _currentIndex = -1;
+          _isPlaying = false;
+        });
+      } else {
+        _audioPlayer.resume();
+        setState(() {
+          _currentIndex = index;
+          _isPlaying = true;
+        });
+      }
+    } else {
+      File cachedFile = await cacheManager.getSingleFile(url);
+      if (cachedFile != null && await cachedFile.exists()) {
+        await _audioPlayer.play(UrlSource(cachedFile.path));
+      } else {
+        await _audioPlayer.play(UrlSource(url));
+      }
+      setState(() {
+        _currentIndex = index;
+        _isPlaying = true;
+      });
+    }
+
+    _audioPlayer.onPositionChanged.listen((event) {
+      if (_currentIndex == index) {
+        setState(() {
+          position = event;
+        });
+      }
+    });
+
+    _audioPlayer.onPlayerComplete.listen((event) {
+      // _updatePlayedComment(commentId, playedComment);
+      setState(() {
+        _isPlaying = false;
+        position = Duration.zero;
+      });
+    });
+  }
 
   @override
   void initState() {
@@ -243,6 +304,17 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
                           //  returning the post design and passing the required data
 
                           child: SinglePostNote(
+                            position: position,
+                            currentIndex: index,
+                            audioPlayer: _audioPlayer,
+                            changeIndex: _currentIndex,
+                            isPlaying: _isPlaying,
+                            onPlayPause: () {
+                              _playAudio(
+                                not.noteUrl,
+                                index,
+                              );
+                            },
                             isFirstPost: index == 0,
                             lockPosts: lockPosts,
                             index: index,
@@ -294,6 +366,17 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
                     }
                   },
                   child: SinglePostNote(
+                    position: position,
+                    currentIndex: index + 2,
+                    audioPlayer: _audioPlayer,
+                    changeIndex: _currentIndex,
+                    isPlaying: _isPlaying,
+                    onPlayPause: () {
+                      _playAudio(
+                        noteModel.noteUrl,
+                        index + 2,
+                      );
+                    },
                     lockPosts: lockPosts,
                     index: index + 2,
                     isGridViewPost: true,

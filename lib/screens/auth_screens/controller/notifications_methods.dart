@@ -5,21 +5,36 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 
 class NotificationMethods {
   // for getting and updating the pushToken in firestore
   FirebaseMessaging messaging = FirebaseMessaging.instance;
   Future<String> getFirebaseMessagingToken() async {
-    String token = '';
-    await messaging.requestPermission();
-    await messaging.getToken().then((pushToken) {
-      if (pushToken != null) {
-        log('Push Token: $pushToken');
-        token = pushToken;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String? storedToken = prefs.getString('fcm_token');
+
+      if (storedToken != null) {
+        log('Using stored FCM token: $storedToken');
+        return storedToken;
       }
-    });
-    return token;
+
+      await messaging.requestPermission();
+      String? newToken = await messaging.getToken();
+
+      if (newToken != null) {
+        log('New FCM Token: $newToken');
+        await prefs.setString('fcm_token', newToken);
+        return newToken;
+      }
+
+      throw Exception('Failed to get FCM token');
+    } catch (e) {
+      log('Error getting FCM token: $e');
+      rethrow;
+    }
   }
 
   static Future<void> sendPushNotification(String? userUid, String pushToken,
