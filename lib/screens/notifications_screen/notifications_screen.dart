@@ -198,7 +198,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
             //  stream to get the followers and following req
 
-            if (!userProvider!.isPrivate && followIds.isNotEmpty)
+            if (followIds.isNotEmpty)
               FollowUserWidget(
                   notiIDs: notiIds,
                   followIds: followIds,

@@ -121,6 +121,21 @@ class _CircleCommentsState extends State<CircleComments> {
 
     getStreamComments();
 
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .audioPlayer
+        .onPlayerStateChanged
+        .listen((PlayerState state) {
+      if (state == PlayerState.playing) {
+        // Assuming there's a method to check if main audio is playing
+
+        _audioPlayer.stop();
+        setState(() {
+          _currentIndex = -1;
+          _isPlaying = false;
+        });
+      }
+    });
+
     //  initilizing wave generate controller
 
     _initialiseController();

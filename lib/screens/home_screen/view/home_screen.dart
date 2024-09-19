@@ -588,499 +588,522 @@ class _HomeScreenState extends State<HomeScreen>
 
                 //  refresh the posts to fetch the latest posts
 
-                : RefreshIndicator(
-                    backgroundColor: whiteColor,
-                    color: primaryColor,
-                    onRefresh: () {
-                      return widget.note == null
-                          ? getAllNotesWithUsers()
-                          : andhi();
+                : PopScope(
+                    onPopInvoked: (val) {
+                      stopMainPlayer();
                     },
-                    child: Container(
-                      height: MediaQuery.of(context).size.height,
-                      child: Stack(
-                        children: [
-                          //  default background color
+                    child: RefreshIndicator(
+                      backgroundColor: whiteColor,
+                      color: primaryColor,
+                      onRefresh: () {
+                        return widget.note == null
+                            ? getAllNotesWithUsers()
+                            : andhi();
+                      },
+                      child: Container(
+                        height: MediaQuery.of(context).size.height,
+                        child: Stack(
+                          children: [
+                            //  default background color
 
-                          Consumer<FilterProvider>(
-                              builder: (context, filterpro, _) {
-                            return Container(
-                              height: MediaQuery.of(context).size.height,
-                              decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      stops: const [
-                                        0.25,
-                                        0.75,
-                                      ],
-                                      colors: filterpro.selectedFilter
-                                              .contains('Close Friends')
-                                          ? [greenColor, greenColor]
-                                          : [
-                                              const Color(0xffee856d),
-                                              const Color(0xffed6a5a)
-                                            ])),
-                            );
-                          }),
+                            Consumer<FilterProvider>(
+                                builder: (context, filterpro, _) {
+                              return Container(
+                                height: MediaQuery.of(context).size.height,
+                                decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        stops: const [
+                                          0.25,
+                                          0.75,
+                                        ],
+                                        colors: filterpro.selectedFilter
+                                                .contains('Close Friends')
+                                            ? [greenColor, greenColor]
+                                            : [
+                                                const Color(0xffee856d),
+                                                const Color(0xffed6a5a)
+                                              ])),
+                              );
+                            }),
 
-                          //  show the topics if the selected filter is filter topics
+                            //  show the topics if the selected filter is filter topics
 
-                          SizedBox(
-                            height: size.height,
-                            child: Column(
-                              children: [
-                                Consumer<FilterProvider>(
-                                  builder: (context, filterPro, _) {
-                                    return !filterProvider.selectedFilter
-                                            .contains('Filter Topics')
-                                        ? const SizedBox()
-                                        : SizedBox(
-                                            height: 50,
-                                            width: double.infinity,
-                                            child: ListView.builder(
-                                              itemCount: topics.length,
-                                              scrollDirection: Axis.horizontal,
-                                              itemBuilder: (context, index) =>
-                                                  Stack(
-                                                children: [
-                                                  Container(
-                                                    width: 150,
-                                                    height: 50,
-                                                    color: _getColor(index + 1 <
-                                                            topics.length
-                                                        ? index + 1
-                                                        : index),
-                                                  ),
-                                                  Container(
-                                                    width: 150,
-                                                    height: 50,
-                                                    alignment: Alignment.center,
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 5),
-                                                    decoration: BoxDecoration(
-                                                      color: _getColor(index),
-                                                      borderRadius:
-                                                          const BorderRadius
-                                                              .only(
-                                                        topRight:
-                                                            Radius.circular(40),
-                                                        bottomRight:
-                                                            Radius.circular(40),
-                                                      ),
+                            SizedBox(
+                              height: size.height,
+                              child: Column(
+                                children: [
+                                  Consumer<FilterProvider>(
+                                    builder: (context, filterPro, _) {
+                                      return !filterProvider.selectedFilter
+                                              .contains('Filter Topics')
+                                          ? const SizedBox()
+                                          : SizedBox(
+                                              height: 50,
+                                              width: double.infinity,
+                                              child: ListView.builder(
+                                                itemCount: topics.length,
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                itemBuilder: (context, index) =>
+                                                    Stack(
+                                                  children: [
+                                                    Container(
+                                                      width: 150,
+                                                      height: 50,
+                                                      color: _getColor(
+                                                          index + 1 <
+                                                                  topics.length
+                                                              ? index + 1
+                                                              : index),
                                                     ),
-                                                    child: InkWell(
-                                                      onTap: () {
-                                                        filterPro
-                                                            .clearSearchValue();
-                                                        filterPro
-                                                            .setSearchingValue(
-                                                                topics[index]);
-                                                      },
-                                                      child: Text(
-                                                        topics[index],
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 11,
+                                                    Container(
+                                                      width: 150,
+                                                      height: 50,
+                                                      alignment:
+                                                          Alignment.center,
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 5),
+                                                      decoration: BoxDecoration(
+                                                        color: _getColor(index),
+                                                        borderRadius:
+                                                            const BorderRadius
+                                                                .only(
+                                                          topRight:
+                                                              Radius.circular(
+                                                                  40),
+                                                          bottomRight:
+                                                              Radius.circular(
+                                                                  40),
+                                                        ),
+                                                      ),
+                                                      child: InkWell(
+                                                        onTap: () {
+                                                          filterPro
+                                                              .clearSearchValue();
+                                                          filterPro
+                                                              .setSearchingValue(
+                                                                  topics[
+                                                                      index]);
+                                                        },
+                                                        child: Text(
+                                                          topics[index],
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 11,
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ],
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                          );
-                                  },
-                                ),
+                                            );
+                                    },
+                                  ),
 
-                                //  building the notes or posts through the page builder
+                                  //  building the notes or posts through the page builder
 
-                                Expanded(
-                                  child: Consumer<FilterProvider>(
-                                      builder: (context, filPro, _) {
-                                    final userProvider =
-                                        Provider.of<UserProvider>(context,
-                                            listen: false);
-
-                                    // filtering the posts
-                                    // certain checks
-
-                                    List<NoteModel> getFilteredNotes() {
-                                      final provider =
-                                          Provider.of<DisplayNotesProvider>(
-                                              context,
-                                              listen: false);
+                                  Expanded(
+                                    child: Consumer<FilterProvider>(
+                                        builder: (context, filPro, _) {
                                       final userProvider =
                                           Provider.of<UserProvider>(context,
                                               listen: false);
-                                      final chatProvider =
-                                          Provider.of<ChatProvider>(context,
-                                              listen: false);
 
-                                      // Null check for userProvider.user
-                                      if (userProvider.user == null) {
-                                        print(
-                                            "User is null in getFilteredNotes");
-                                        return [];
-                                      }
+                                      // filtering the posts
+                                      // certain checks
 
-                                      return provider.notes.where((note) {
-                                        // Always show the post to its owner
-                                        if (note.userUid ==
-                                            userProvider.user!.uid) {
-                                          return true;
-                                        }
+                                      List<NoteModel> getFilteredNotes() {
+                                        final provider =
+                                            Provider.of<DisplayNotesProvider>(
+                                                context,
+                                                listen: false);
+                                        final userProvider =
+                                            Provider.of<UserProvider>(context,
+                                                listen: false);
+                                        final chatProvider =
+                                            Provider.of<ChatProvider>(context,
+                                                listen: false);
 
-                                        // Check other conditions
-                                        if (userProvider.user!.blockedUsers
-                                                .contains(note.userUid) ||
-                                            (note.isPostForSubscribers &&
-                                                !userProvider
-                                                    .user!.subscribedSoundPacks
-                                                    .contains(note.userUid)) ||
-                                            userProvider.user!.mutedAccouts
-                                                .contains(note.userUid)) {
-                                          return false;
-                                        }
-
-                                        UserModel? user =
-                                            chatProvider.users.firstWhereOrNull(
-                                          (element) =>
-                                              element.uid == note.userUid,
-                                        );
-
-                                        if (user == null) {
+                                        // Null check for userProvider.user
+                                        if (userProvider.user == null) {
                                           print(
-                                              "No user found with uid: ${note.userUid}");
-                                          return false;
+                                              "User is null in getFilteredNotes");
+                                          return [];
                                         }
 
-                                        bool isFollowing = userProvider
-                                            .user!.following
-                                            .contains(note.userUid);
+                                        return provider.notes.where((note) {
+                                          // Always show the post to its owner
+                                          if (note.userUid ==
+                                              userProvider.user!.uid) {
+                                            return true;
+                                          }
 
-                                        // Check for private accounts
-                                        if (user.isPrivate &&
-                                            !isFollowing &&
-                                            note.userUid !=
-                                                userProvider.user!.uid) {
-                                          return false;
+                                          // Check other conditions
+                                          if (userProvider.user!.blockedUsers
+                                                  .contains(note.userUid) ||
+                                              (note.isPostForSubscribers &&
+                                                  !userProvider.user!
+                                                      .subscribedSoundPacks
+                                                      .contains(
+                                                          note.userUid)) ||
+                                              userProvider.user!.mutedAccouts
+                                                  .contains(note.userUid)) {
+                                            return false;
+                                          }
+
+                                          UserModel? user = chatProvider.users
+                                              .firstWhereOrNull(
+                                            (element) =>
+                                                element.uid == note.userUid,
+                                          );
+
+                                          if (user == null) {
+                                            print(
+                                                "No user found with uid: ${note.userUid}");
+                                            return false;
+                                          }
+
+                                          bool isFollowing = userProvider
+                                              .user!.following
+                                              .contains(note.userUid);
+
+                                          // Check for private accounts
+                                          if (user.isPrivate &&
+                                              !isFollowing &&
+                                              note.userUid !=
+                                                  userProvider.user!.uid) {
+                                            return false;
+                                          }
+
+                                          return true;
+                                        }).toList();
+                                      }
+                                      //  get personalized posts
+
+                                      List<NoteModel> getPersonalizedNotes(
+                                          List<NoteModel> filteredNotes) {
+                                        if (filPro.userPersonalizeData ==
+                                                null ||
+                                            filPro.selectedFilter
+                                                .contains('Close Friends') ||
+                                            filPro.selectedFilter
+                                                .contains('Filter Topics')) {
+                                          return [];
                                         }
-
-                                        return true;
-                                      }).toList();
-                                    }
-                                    //  get personalized posts
-
-                                    List<NoteModel> getPersonalizedNotes(
-                                        List<NoteModel> filteredNotes) {
-                                      if (filPro.userPersonalizeData == null ||
-                                          filPro.selectedFilter
-                                              .contains('Close Friends') ||
-                                          filPro.selectedFilter
-                                              .contains('Filter Topics')) {
-                                        return [];
+                                        return filteredNotes
+                                            .where((note) =>
+                                                filPro.userPersonalizeData!
+                                                    .interest
+                                                    .contains(note.topic) ||
+                                                note.userUid ==
+                                                    userProvider.user!.uid ||
+                                                userProvider.user!.following
+                                                    .contains(note.userUid))
+                                            .toList();
                                       }
-                                      return filteredNotes
-                                          .where((note) =>
-                                              filPro
-                                                  .userPersonalizeData!.interest
-                                                  .contains(note.topic) ||
-                                              note.userUid ==
-                                                  userProvider.user!.uid ||
-                                              userProvider.user!.following
-                                                  .contains(note.userUid))
-                                          .toList();
-                                    }
 
-                                    //  get close friend posts
+                                      //  get close friend posts
 
-                                    List<NoteModel> getCloseFriendsPosts(
-                                        List<NoteModel> filteredNotes) {
-                                      if (!filPro.selectedFilter
-                                          .contains('Close Friends')) return [];
-                                      return filteredNotes
-                                          .where((note) => userProvider
-                                              .user!.closeFriends
-                                              .contains(note.userUid))
-                                          .toList();
-                                    }
-
-// get posts based on the selected filter
-
-                                    List<NoteModel> getFilteredTopicNotes(
-                                        List<NoteModel> filteredNotes) {
-                                      if (!filPro.selectedFilter
-                                          .contains('Filter Topics')) return [];
-                                      return filteredNotes
-                                          .where((note) => note.topic
-                                              .contains(filPro.searchValue))
-                                          .toList();
-                                    }
-
-                                    final filteredNotes = getFilteredNotes();
-                                    final personalizedNotes =
-                                        getPersonalizedNotes(filteredNotes);
-                                    final closeFriendsPosts =
-                                        getCloseFriendsPosts(filteredNotes);
-                                    final filteredTopicNotes =
-                                        getFilteredTopicNotes(filteredNotes);
-
-                                    List<NoteModel> getCurrentNotes() {
-                                      if (widget.note != null) {
-                                        return [widget.note!];
+                                      List<NoteModel> getCloseFriendsPosts(
+                                          List<NoteModel> filteredNotes) {
+                                        if (!filPro.selectedFilter
+                                            .contains('Close Friends'))
+                                          return [];
+                                        return filteredNotes
+                                            .where((note) => userProvider
+                                                .user!.closeFriends
+                                                .contains(note.userUid))
+                                            .toList();
                                       }
-                                      if (personalizedNotes.isNotEmpty) {
-                                        return personalizedNotes;
+
+                                      // get posts based on the selected filter
+
+                                      List<NoteModel> getFilteredTopicNotes(
+                                          List<NoteModel> filteredNotes) {
+                                        if (!filPro.selectedFilter
+                                            .contains('Filter Topics'))
+                                          return [];
+                                        return filteredNotes
+                                            .where((note) => note.topic
+                                                .contains(filPro.searchValue))
+                                            .toList();
                                       }
-                                      if (closeFriendsPosts.isNotEmpty) {
-                                        return closeFriendsPosts;
+
+                                      final filteredNotes = getFilteredNotes();
+                                      final personalizedNotes =
+                                          getPersonalizedNotes(filteredNotes);
+                                      final closeFriendsPosts =
+                                          getCloseFriendsPosts(filteredNotes);
+                                      final filteredTopicNotes =
+                                          getFilteredTopicNotes(filteredNotes);
+
+                                      List<NoteModel> getCurrentNotes() {
+                                        if (widget.note != null) {
+                                          return [widget.note!];
+                                        }
+                                        if (personalizedNotes.isNotEmpty) {
+                                          return personalizedNotes;
+                                        }
+                                        if (closeFriendsPosts.isNotEmpty) {
+                                          return closeFriendsPosts;
+                                        }
+                                        if (filteredTopicNotes.isNotEmpty) {
+                                          return filteredTopicNotes;
+                                        }
+                                        return filteredNotes;
                                       }
-                                      if (filteredTopicNotes.isNotEmpty) {
-                                        return filteredTopicNotes;
+
+                                      final currentNotes = getCurrentNotes();
+
+                                      if (filPro.detailsNote == null &&
+                                          currentNotes.isNotEmpty) {
+                                        Provider.of<FilterProvider>(context,
+                                                listen: false)
+                                            .setFirstDetailNote(
+                                                currentNotes.first);
                                       }
-                                      return filteredNotes;
-                                    }
 
-                                    final currentNotes = getCurrentNotes();
+                                      //  building the posts after the filteration
 
-                                    if (filPro.detailsNote == null &&
-                                        currentNotes.isNotEmpty) {
-                                      Provider.of<FilterProvider>(context,
-                                              listen: false)
-                                          .setFirstDetailNote(
-                                              currentNotes.first);
-                                    }
-
-                                    //  building the posts after the filteration
-
-                                    return PageView.builder(
-                                        controller: _pageController,
-                                        onPageChanged: (value) {
-                                          final currentNote =
-                                              currentNotes[value];
-                                          provider.playPause(
-                                              currentNote.noteUrl, value);
-                                        },
-                                        itemCount: filPro.userPersonalizeData !=
-                                                    null &&
-                                                !filPro.selectedFilter.contains(
-                                                    'Close Friends') &&
-                                                !filPro.selectedFilter
-                                                    .contains('Filter Topics')
-                                            ? personalizedNotes.length
-                                            : filPro.selectedFilter
-                                                    .contains('Close Friends')
-                                                ? filPro
-                                                    .closeFriendsPosts.length
-                                                : filPro.selectedFilter
-                                                        .contains(
-                                                            'Filter Topics')
-                                                    ? filPro.searcheNote.length
-                                                    : widget.note != null
-                                                        ? 1
-                                                        : filteredNotes.length,
-                                        scrollDirection: Axis.vertical,
-                                        itemBuilder: (context, index) {
-                                          final note = widget.note ??
-                                              (filPro.userPersonalizeData !=
-                                                          null &&
-                                                      !filPro.selectedFilter
-                                                          .contains(
-                                                              'Close Friends') &&
-                                                      !filPro.selectedFilter
-                                                          .contains(
-                                                              'Filter Topics')
-                                                  ? personalizedNotes[index]
+                                      return PageView.builder(
+                                          controller: _pageController,
+                                          onPageChanged: (value) {
+                                            final currentNote =
+                                                currentNotes[value];
+                                            provider.playPause(
+                                                currentNote.noteUrl, value);
+                                          },
+                                          itemCount: filPro
+                                                          .userPersonalizeData !=
+                                                      null &&
+                                                  !filPro.selectedFilter
+                                                      .contains(
+                                                          'Close Friends') &&
+                                                  !filPro.selectedFilter
+                                                      .contains('Filter Topics')
+                                              ? personalizedNotes.length
+                                              : filPro.selectedFilter
+                                                      .contains('Close Friends')
+                                                  ? filPro
+                                                      .closeFriendsPosts.length
                                                   : filPro.selectedFilter
                                                           .contains(
-                                                              'Close Friends')
-                                                      ? filPro.closeFriendsPosts[
-                                                          index]
-                                                      : filPro.selectedFilter
-                                                              .contains(
-                                                                  'Filter Topics')
-                                                          ? filPro.searcheNote[
-                                                              index]
-                                                          : filteredNotes[
-                                                              index]);
+                                                              'Filter Topics')
+                                                      ? filPro
+                                                          .searcheNote.length
+                                                      : widget.note != null
+                                                          ? 1
+                                                          : filteredNotes
+                                                              .length,
+                                          scrollDirection: Axis.vertical,
+                                          itemBuilder: (context, index) {
+                                            final note = widget.note ??
+                                                (filPro.userPersonalizeData !=
+                                                            null &&
+                                                        !filPro.selectedFilter
+                                                            .contains(
+                                                                'Close Friends') &&
+                                                        !filPro.selectedFilter
+                                                            .contains(
+                                                                'Filter Topics')
+                                                    ? personalizedNotes[index]
+                                                    : filPro.selectedFilter
+                                                            .contains(
+                                                                'Close Friends')
+                                                        ? filPro.closeFriendsPosts[
+                                                            index]
+                                                        : filPro.selectedFilter
+                                                                .contains(
+                                                                    'Filter Topics')
+                                                            ? filPro.searcheNote[
+                                                                index]
+                                                            : filteredNotes[
+                                                                index]);
 
-                                          final key = ValueKey<String>(
-                                              'comment_${note.noteId}');
-                                          return Container(
-                                            height: MediaQuery.of(context)
-                                                .size
-                                                .height,
-                                            child: Stack(
-                                              children: [
-                                                //  background of the post
-                                                note.backgroundImage.isNotEmpty
-                                                    ? Container(
-                                                        height: MediaQuery.of(
-                                                                context)
-                                                            .size
-                                                            .height,
-                                                        child: Stack(
-                                                          children: [
-                                                            //showing the drop filter above the image or video
-
-                                                            ClipRRect(
-                                                                child:
-                                                                    BackdropFilter(
-                                                                        filter: ImageFilter.blur(
-                                                                            sigmaX:
-                                                                                3,
-                                                                            tileMode: TileMode
-                                                                                .mirror,
-                                                                            sigmaY:
-                                                                                3),
-                                                                        child:
-                                                                            Container(
-                                                                          color: Colors
-                                                                              .white
-                                                                              .withOpacity(0.15), // Transparent color
-
-                                                                          child: Container(
-                                                                              height: MediaQuery.of(context).size.height,
-                                                                              child: _buildBackgroundContent(
-                                                                                note,
-                                                                                context,
-                                                                                // index,
-                                                                                // provider.changeIndex
-                                                                              )),
-                                                                        ))),
-                                                            Container(
-                                                              child: ClipRRect(
-                                                                child:
-                                                                    BackdropFilter(
-                                                                  filter: ImageFilter.blur(
-                                                                      sigmaX: 3,
-                                                                      tileMode:
-                                                                          TileMode
-                                                                              .mirror,
-                                                                      sigmaY:
-                                                                          3),
-                                                                  child:
-                                                                      Container(
-                                                                    color: Colors
-                                                                        .white
-                                                                        .withOpacity(
-                                                                            0.15), // Transparent color
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-
-                                                            //  showing the gradient above the blur filter
-                                                            Container(
-                                                              height:
-                                                                  size.height,
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                gradient:
-                                                                    LinearGradient(
-                                                                  begin: Alignment
-                                                                      .topCenter,
-                                                                  end: Alignment
-                                                                      .bottomCenter,
-                                                                  stops: const [
-                                                                    0.25,
-                                                                    0.75
-                                                                  ],
-                                                                  colors: [
-                                                                    Colors
-                                                                        .transparent,
-                                                                    Colors.black
-                                                                        .withOpacity(
-                                                                            0.5)
-                                                                    // const Color(
-                                                                    //         0xff3d3d3d)
-                                                                    //     .withOpacity(
-                                                                    //         0.5),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      )
-
-                                                    //  default background color
-
-                                                    : Consumer<FilterProvider>(
-                                                        builder: (context,
-                                                            filterpro, _) {
-                                                        return Container(
+                                            final key = ValueKey<String>(
+                                                'comment_${note.noteId}');
+                                            return Container(
+                                              height: MediaQuery.of(context)
+                                                  .size
+                                                  .height,
+                                              child: Stack(
+                                                children: [
+                                                  //  background of the post
+                                                  note.backgroundImage
+                                                          .isNotEmpty
+                                                      ? Container(
                                                           height: MediaQuery.of(
                                                                   context)
                                                               .size
                                                               .height,
-                                                          decoration:
-                                                              BoxDecoration(
+                                                          child: Stack(
+                                                            children: [
+                                                              //showing the drop filter above the image or video
+
+                                                              ClipRRect(
+                                                                  child:
+                                                                      BackdropFilter(
+                                                                          filter: ImageFilter.blur(
+                                                                              sigmaX: 3,
+                                                                              tileMode: TileMode.mirror,
+                                                                              sigmaY: 3),
+                                                                          child: Container(
+                                                                            color:
+                                                                                Colors.white.withOpacity(0.15), // Transparent color
+
+                                                                            child: Container(
+                                                                                height: MediaQuery.of(context).size.height,
+                                                                                child: _buildBackgroundContent(
+                                                                                  note,
+                                                                                  context,
+                                                                                  // index,
+                                                                                  // provider.changeIndex
+                                                                                )),
+                                                                          ))),
+                                                              Container(
+                                                                child:
+                                                                    ClipRRect(
+                                                                  child:
+                                                                      BackdropFilter(
+                                                                    filter: ImageFilter.blur(
+                                                                        sigmaX:
+                                                                            3,
+                                                                        tileMode:
+                                                                            TileMode
+                                                                                .mirror,
+                                                                        sigmaY:
+                                                                            3),
+                                                                    child:
+                                                                        Container(
+                                                                      color: Colors
+                                                                          .white
+                                                                          .withOpacity(
+                                                                              0.15), // Transparent color
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+
+                                                              //  showing the gradient above the blur filter
+                                                              Container(
+                                                                height:
+                                                                    size.height,
+                                                                decoration:
+                                                                    BoxDecoration(
                                                                   gradient:
                                                                       LinearGradient(
-                                                                          begin: Alignment
-                                                                              .topCenter,
-                                                                          end: Alignment
-                                                                              .bottomCenter,
-                                                                          stops: const [
-                                                                            0.25,
-                                                                            0.75,
-                                                                          ],
-                                                                          colors: filterpro.selectedFilter.contains('Close Friends')
-                                                                              ? [
-                                                                                  greenColor,
-                                                                                  greenColor
-                                                                                ]
-                                                                              : [
-                                                                                  const Color(0xffee856d),
-                                                                                  const Color(0xffed6a5a)
-                                                                                ])),
+                                                                    begin: Alignment
+                                                                        .topCenter,
+                                                                    end: Alignment
+                                                                        .bottomCenter,
+                                                                    stops: const [
+                                                                      0.25,
+                                                                      0.75
+                                                                    ],
+                                                                    colors: [
+                                                                      Colors
+                                                                          .transparent,
+                                                                      Colors
+                                                                          .black
+                                                                          .withOpacity(
+                                                                              0.5)
+                                                                      // const Color(
+                                                                      //         0xff3d3d3d)
+                                                                      //     .withOpacity(
+                                                                      //         0.5),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        )
+
+                                                      //  default background color
+
+                                                      : Consumer<
+                                                              FilterProvider>(
+                                                          builder: (context,
+                                                              filterpro, _) {
+                                                          return Container(
+                                                            height:
+                                                                MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .height,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                                    gradient:
+                                                                        LinearGradient(
+                                                                            begin: Alignment
+                                                                                .topCenter,
+                                                                            end: Alignment
+                                                                                .bottomCenter,
+                                                                            stops: const [
+                                                                              0.25,
+                                                                              0.75,
+                                                                            ],
+                                                                            colors: filterpro.selectedFilter.contains('Close Friends')
+                                                                                ? [
+                                                                                    greenColor,
+                                                                                    greenColor
+                                                                                  ]
+                                                                                : [
+                                                                                    const Color(0xffee856d),
+                                                                                    const Color(0xffed6a5a)
+                                                                                  ])),
+                                                          );
+                                                        }),
+
+                                                  //  building the post and passing the data to the template or widget of the post
+
+                                                  KeyedSubtree(
+                                                    key: key,
+                                                    child: SingleNotePost(
+                                                      isSecondHome:
+                                                          widget.note != null,
+                                                      duration:
+                                                          provider.duration,
+                                                      stopMainPlayer:
+                                                          stopMainPlayer,
+                                                      playPause: () {
+                                                        provider.playPause(
+                                                          note.noteUrl,
+                                                          index,
                                                         );
-                                                      }),
-
-                                                //  building the post and passing the data to the template or widget of the post
-
-                                                KeyedSubtree(
-                                                  key: key,
-                                                  child: SingleNotePost(
-                                                    isSecondHome:
-                                                        widget.note != null,
-                                                    duration: provider.duration,
-                                                    stopMainPlayer:
-                                                        stopMainPlayer,
-                                                    playPause: () {
-                                                      provider.playPause(
-                                                        note.noteUrl,
-                                                        index,
-                                                      );
-                                                    },
-                                                    audioPlayer:
-                                                        provider.audioPlayer,
-                                                    position: provider.position,
-                                                    changeIndex:
-                                                        provider.changeIndex,
-                                                    isPlaying:
-                                                        provider.isPlaying,
-                                                    postIndex: index,
-                                                    pageController:
-                                                        _pageController,
-                                                    currentIndex: index,
-                                                    size: size,
-                                                    note: note,
+                                                      },
+                                                      audioPlayer:
+                                                          provider.audioPlayer,
+                                                      position:
+                                                          provider.position,
+                                                      changeIndex:
+                                                          provider.changeIndex,
+                                                      isPlaying:
+                                                          provider.isPlaying,
+                                                      postIndex: index,
+                                                      pageController:
+                                                          _pageController,
+                                                      currentIndex: index,
+                                                      size: size,
+                                                      note: note,
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        });
-                                  }),
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
+                                                ],
+                                              ),
+                                            );
+                                          });
+                                    }),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
                       ),
                     ),
                   ));
