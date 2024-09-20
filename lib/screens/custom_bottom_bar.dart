@@ -20,6 +20,7 @@ import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dar
 // import 'package:social_notes/screens/chat_screen.dart/view/chat_screen.dart';
 import 'package:social_notes/screens/chat_screen.dart/view/users_screen.dart';
 import 'package:social_notes/screens/home_screen/controller/share_services.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/view/feed_detail_screen.dart';
 // import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
@@ -64,6 +65,7 @@ class _BottomBarState extends State<BottomBar> {
   void navigationTapped(int page) {
     pageController.jumpToPage(page);
     stopMainPlayer();
+    Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
   }
 
   stopMainPlayer() {

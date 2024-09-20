@@ -56,7 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   //  function to get the user date of birth
 
-  showDatPicker() async {
+  showDatPicker(UserModel user) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       barrierColor: primaryColor,
@@ -81,6 +81,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       },
     );
+    if (picked != null &&
+        (DateTime.now().difference(picked ?? user!.dateOfBirth).inDays / 365)
+                .floor() <
+            12) {
+      showWhiteOverlayPopup(context, null, 'assets/icons/Info (1).svg', null,
+          title: 'Enter valid date of birth',
+          message: 'You must be at least 12+ years old to use VOISBE.',
+          isUsernameRes: false);
+    }
 
     if (picked != null && picked != dateOfBirth) {
       setState(() {
@@ -676,11 +685,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                           20),
                                                             ),
                                                             child: Text(
-                                                              DateFormat.yMMMd().format(
-                                                                  dateOfBirth ??
-                                                                      userProvider
-                                                                          .user!
-                                                                          .dateOfBirth),
+                                                              dateOfBirth ==
+                                                                          null &&
+                                                                      (DateTime.now().difference(userProvider.user!.dateOfBirth).inDays / 365)
+                                                                              .floor() <
+                                                                          12
+                                                                  ? ''
+                                                                  : DateFormat
+                                                                          .yMMMd()
+                                                                      .format(dateOfBirth ??
+                                                                          userProvider
+                                                                              .user!
+                                                                              .dateOfBirth),
                                                               // textAlign:
                                                               //     TextAlign.center,
                                                               style: TextStyle(
@@ -714,7 +730,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                           onTap: () {
                                                             //  show date picker popup
 
-                                                            showDatPicker();
+                                                            showDatPicker(
+                                                                userProvider
+                                                                    .user!);
                                                           },
                                                           child: const Icon(
                                                             Icons.edit_outlined,

@@ -35,6 +35,7 @@ import 'package:social_notes/screens/chat_screen.dart/view/users_screen.dart';
 
 import 'package:social_notes/screens/custom_bottom_bar.dart';
 import 'package:social_notes/screens/home_screen/controller/video_download_methods.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
@@ -197,9 +198,9 @@ void main() async {
     ChangeNotifierProvider(
       create: (context) => BottomProvider(),
     ),
-    // ChangeNotifierProvider(
-    //   create: (context) => CommentsProvider(),
-    // ),
+    ChangeNotifierProvider(
+      create: (context) => CircleCommentsProvider(),
+    ),
     // ChangeNotifierProvider(
     //   create: (context) => SearchPlayerProvider(),
     // ),

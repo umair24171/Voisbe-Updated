@@ -356,7 +356,7 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                 title: 'Successful',
                                                 isUsernameRes: false,
                                                 message:
-                                                    'You will not receive the notifications about the ${userProvider.otherUser!.username} posts.');
+                                                    'You will not receive a notification when ${userProvider.otherUser!.name} is sharing a new post.');
                                           } else {
                                             userProvider.addNotification(
                                                 currentUSer.uid);
@@ -374,7 +374,7 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                 title: 'Successful',
                                                 isUsernameRes: false,
                                                 message:
-                                                    'You will now receive the notifications about the ${userProvider.otherUser!.username} posts.');
+                                                    'You will now receive a notification when ${userProvider.otherUser!.name} is sharing a new post.');
                                           }
                                         },
                                         child: Container(

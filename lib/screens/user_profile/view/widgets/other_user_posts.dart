@@ -219,183 +219,188 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
     log('IndexOfLockPosts $lockPosts');
     var size = MediaQuery.of(context).size;
 
-    return Container(
-      color: userPosts.isEmpty
-          ? null
-          : userPosts.length == 1
-              ? null
-              : whiteColor,
-      child: Column(
-        children: [
-          userPosts.isEmpty
+    return PopScope(
+      onPopInvokedWithResult: (val, va) {
+        stopPlayer();
+      },
+      child: Container(
+        color: userPosts.isEmpty
+            ? null
+            : userPosts.length == 1
+                ? null
+                : whiteColor,
+        child: Column(
+          children: [
+            userPosts.isEmpty
 
-              //  if the posts are empty show this icon
+                //  if the posts are empty show this icon
 
-              ? SizedBox(
-                  height: 125,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        'assets/icons/No posts.svg',
-                        height: 94,
-                        width: 94,
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        'No posts yet',
-                        style: TextStyle(
-                            fontFamily: fontFamily,
-                            fontSize: 14,
-                            color: Color(0xffED6A5A),
-                            fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                )
+                ? SizedBox(
+                    height: 125,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icons/No posts.svg',
+                          height: 94,
+                          width: 94,
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                          'No posts yet',
+                          style: TextStyle(
+                              fontFamily: fontFamily,
+                              fontSize: 14,
+                              color: Color(0xffED6A5A),
+                              fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  )
 
-              //  build the user posts
+                //  build the user posts
 
-              : SizedBox(
-                  height: size.height * 0.2,
-                  // width: double.infinity,
-                  child: RefreshIndicator(
-                    onRefresh: () {
-                      return getUserDataSubscription();
-                    },
-                    child: ListView.builder(
-                      // itemExtent: double.infinity,
-                      // ignore: prefer_const_constructors
-                      padding: EdgeInsets.all(0),
-                      // dragStartBehavior: ,
-                      shrinkWrap: true,
-
-                      scrollDirection: Axis.horizontal,
-
-                      //  only show 2 posts in 1st  row
-
-                      itemCount: userPosts.length >= 2 ? 2 : userPosts.length,
-                      itemBuilder: (context, index) {
-                        NoteModel not = userPosts[index];
-
-                        return GestureDetector(
-                          onTap: () {
-                            //  if the post is for subscriber navigate to subsribe screen
-
-                            if (lockPosts.contains(index)) {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => const SubscribeScreen(
-                                      // note: noteModel,
-                                      )));
-
-                              //  otherwise home screen to show the specific screen
-                            } else {
-                              stopPlayer();
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => HomeScreen(
-                                        note: not,
-                                      )));
-                            }
-                          },
-                          onLongPress: () {
-                            if (!lockPosts.contains(index)) {
-                              stopPlayer();
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => HomeScreen(
-                                        note: not,
-                                      )));
-                            }
-                          },
-                          //  returning the post design and passing the required data
-
-                          child: SinglePostNote(
-                            position: position,
-                            currentIndex: index,
-                            audioPlayer: _audioPlayer,
-                            changeIndex: _currentIndex,
-                            isPlaying: _isPlaying,
-                            onPlayPause: () {
-                              _playAudio(
-                                not.noteUrl,
-                                index,
-                              );
-                            },
-                            isFirstPost: index == 0,
-                            lockPosts: lockPosts,
-                            index: index,
-                            isSecondPost: index == 1 ? true : false,
-                            isThirdPost: index == 2 ? true : false,
-                            isGridViewPost: false,
-                            note: not,
-                            isPinned: not.isPinned,
-                          ),
-                        );
+                : SizedBox(
+                    height: size.height * 0.2,
+                    // width: double.infinity,
+                    child: RefreshIndicator(
+                      onRefresh: () {
+                        return getUserDataSubscription();
                       },
+                      child: ListView.builder(
+                        // itemExtent: double.infinity,
+                        // ignore: prefer_const_constructors
+                        padding: EdgeInsets.all(0),
+                        // dragStartBehavior: ,
+                        shrinkWrap: true,
+
+                        scrollDirection: Axis.horizontal,
+
+                        //  only show 2 posts in 1st  row
+
+                        itemCount: userPosts.length >= 2 ? 2 : userPosts.length,
+                        itemBuilder: (context, index) {
+                          NoteModel not = userPosts[index];
+
+                          return GestureDetector(
+                            onTap: () {
+                              //  if the post is for subscriber navigate to subsribe screen
+
+                              if (lockPosts.contains(index)) {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => const SubscribeScreen(
+                                        // note: noteModel,
+                                        )));
+
+                                //  otherwise home screen to show the specific screen
+                              } else {
+                                stopPlayer();
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => HomeScreen(
+                                          note: not,
+                                        )));
+                              }
+                            },
+                            onLongPress: () {
+                              if (!lockPosts.contains(index)) {
+                                stopPlayer();
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => HomeScreen(
+                                          note: not,
+                                        )));
+                              }
+                            },
+                            //  returning the post design and passing the required data
+
+                            child: SinglePostNote(
+                              position: position,
+                              currentIndex: index,
+                              audioPlayer: _audioPlayer,
+                              changeIndex: _currentIndex,
+                              isPlaying: _isPlaying,
+                              onPlayPause: () {
+                                _playAudio(
+                                  not.noteUrl,
+                                  index,
+                                );
+                              },
+                              isFirstPost: index == 0,
+                              lockPosts: lockPosts,
+                              index: index,
+                              isSecondPost: index == 1 ? true : false,
+                              isThirdPost: index == 2 ? true : false,
+                              isGridViewPost: false,
+                              note: not,
+                              isPinned: not.isPinned,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-          RefreshIndicator(
-            onRefresh: () {
-              return getUserDataSubscription();
-            },
-
-            //  building posts in grid having 3 posts in a row
-
-            child: GridView.builder(
-              //  removing the 1st 2 posts
-
-              itemCount: userPosts.length >= 2 ? userPosts.length - 2 : 0,
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  // crossAxisSpacing: 3,
-                  crossAxisCount: 3,
-                  mainAxisExtent: size.height * 0.2,
-                  mainAxisSpacing: 0),
-              itemBuilder: (context, index) {
-                NoteModel noteModel = userPosts[index + 2];
-                //  NoteModel.fromMap(
-                //     snapshot.data!.docs[index + 3].data());
-                return GestureDetector(
-                  onTap: () {
-                    if (lockPosts.contains(index + 2)) {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const SubscribeScreen(
-                              // note: noteModel,
-                              )));
-                    } else {
-                      stopPlayer();
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => HomeScreen(
-                                note: noteModel,
-                              )));
-                    }
-                  },
-                  child: SinglePostNote(
-                    position: position,
-                    currentIndex: index + 2,
-                    audioPlayer: _audioPlayer,
-                    changeIndex: _currentIndex,
-                    isPlaying: _isPlaying,
-                    onPlayPause: () {
-                      _playAudio(
-                        noteModel.noteUrl,
-                        index + 2,
-                      );
-                    },
-                    lockPosts: lockPosts,
-                    index: index + 2,
-                    isGridViewPost: true,
-                    note: noteModel,
-                    isPinned: noteModel.isPinned,
-                  ),
-                );
+            RefreshIndicator(
+              onRefresh: () {
+                return getUserDataSubscription();
               },
-            ),
-          )
-        ],
+
+              //  building posts in grid having 3 posts in a row
+
+              child: GridView.builder(
+                //  removing the 1st 2 posts
+
+                itemCount: userPosts.length >= 2 ? userPosts.length - 2 : 0,
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    // crossAxisSpacing: 3,
+                    crossAxisCount: 3,
+                    mainAxisExtent: size.height * 0.2,
+                    mainAxisSpacing: 0),
+                itemBuilder: (context, index) {
+                  NoteModel noteModel = userPosts[index + 2];
+                  //  NoteModel.fromMap(
+                  //     snapshot.data!.docs[index + 3].data());
+                  return GestureDetector(
+                    onTap: () {
+                      if (lockPosts.contains(index + 2)) {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => const SubscribeScreen(
+                                // note: noteModel,
+                                )));
+                      } else {
+                        stopPlayer();
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => HomeScreen(
+                                  note: noteModel,
+                                )));
+                      }
+                    },
+                    child: SinglePostNote(
+                      position: position,
+                      currentIndex: index + 2,
+                      audioPlayer: _audioPlayer,
+                      changeIndex: _currentIndex,
+                      isPlaying: _isPlaying,
+                      onPlayPause: () {
+                        _playAudio(
+                          noteModel.noteUrl,
+                          index + 2,
+                        );
+                      },
+                      lockPosts: lockPosts,
+                      index: index + 2,
+                      isGridViewPost: true,
+                      note: noteModel,
+                      isPinned: noteModel.isPinned,
+                    ),
+                  );
+                },
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

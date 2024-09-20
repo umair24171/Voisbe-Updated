@@ -277,13 +277,15 @@ class _CustomListTileState extends State<CustomListTile> {
                                         widget.isPassword && _obscureText
                                             ? true
                                             : false,
-                                    readOnly: _isEditing
-                                        ? false
-                                        : !_isEditing
-                                            ? true
-                                            : false,
+                                    // readOnly: _isEditing
+                                    //     ? false
+                                    //     : !_isEditing
+                                    //         ? true
+                                    //         : false,
                                     onChanged: (value) {
                                       widget.onChanged(value);
+                                      _isEditing = true;
+                                      setState(() {});
                                     },
                                     controller: _textEditingController,
                                     textAlignVertical: TextAlignVertical.top,

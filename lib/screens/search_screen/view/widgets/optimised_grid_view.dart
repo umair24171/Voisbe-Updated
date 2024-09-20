@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
+import 'package:social_notes/screens/home_screen/view/widgets/circle_comments.dart';
 import 'package:social_notes/screens/search_screen/view/widgets/single_search_item.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -33,10 +36,21 @@ class _OptimizedSearchGridState extends State<OptimizedSearchGrid> {
         itemBuilder: (context, index) {
           //  single post item to show in grid
 
-          return SingleSearchItem(
-            index: index,
-            noteModel: widget.postsAfterFilter[index],
-          );
+          return Consumer<CircleCommentsProvider>(
+              builder: (context, circlePro, _) {
+            return SingleSearchItem(
+              isPlaying: circlePro.isPlaying,
+              audioPlayer: circlePro.audioPlayer,
+              changeIndex: circlePro.changeIndex,
+              playPause: () {
+                circlePro.playPause(
+                    widget.postsAfterFilter[index].noteUrl, index);
+              },
+              position: circlePro.position,
+              index: index,
+              noteModel: widget.postsAfterFilter[index],
+            );
+          });
         });
   }
 }

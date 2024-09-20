@@ -14,6 +14,7 @@ import 'package:social_notes/screens/add_note_screen/view/widgets/custom_video_p
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/bottom_provider.dart';
 import 'package:social_notes/screens/custom_bottom_bar.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/view/home_screen.dart';
 import 'package:social_notes/screens/search_screen/view/note_details_screen.dart';
 import 'package:social_notes/screens/search_screen/view/widgets/search_player.dart';
@@ -21,15 +22,24 @@ import 'package:social_notes/screens/user_profile/other_user_profile.dart';
 import 'package:video_player/video_player.dart';
 
 class SingleSearchItem extends StatefulWidget {
-  const SingleSearchItem({
-    super.key,
-    required this.noteModel,
-    // this.controller,
-    required this.index,
-  });
+  SingleSearchItem(
+      {super.key,
+      required this.noteModel,
+      // this.controller,
+      required this.index,
+      required this.changeIndex,
+      required this.audioPlayer,
+      required this.position,
+      required this.playPause,
+      required this.isPlaying});
   final NoteModel noteModel;
   // final VideoPlayerController? controller;
   final int index;
+  AudioPlayer audioPlayer;
+  final Duration position;
+  final int changeIndex;
+  final VoidCallback playPause;
+  final bool isPlaying;
 
   @override
   State<SingleSearchItem> createState() => _SingleSearchItemState();
@@ -38,14 +48,14 @@ class SingleSearchItem extends StatefulWidget {
 class _SingleSearchItemState extends State<SingleSearchItem> {
   //  instance of the audio player
 
-  late AudioPlayer _audioPlayer;
+  // late AudioPlayer _audioPlayer;
 
   //  cached file path of the audio player
 
   String? _cachedFilePath;
-  bool _isPlaying = false;
+  // bool _isPlaying = false;
   double _playbackSpeed = 1.0; // Default playback speed
-  PlayerState? _playerState;
+  // PlayerState? _playerState;
 
   @override
   void initState() {
@@ -58,33 +68,23 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
   // initilizing the audio player  and getting the duration
 
   initPlayer() async {
-    _audioPlayer = AudioPlayer();
-    _audioPlayer.setReleaseMode(ReleaseMode.stop);
-    _audioPlayer.setSourceUrl(widget.noteModel.noteUrl);
-    _playerState = _audioPlayer.state;
+    var _audioPlayer =
+        Provider.of<CircleCommentsProvider>(context, listen: false).audioPlayer;
+    // _audioPlayer = AudioPlayer();
 
     // Check if the file is already cached
-    DefaultCacheManager()
-        .getFileFromCache(widget.noteModel.noteUrl)
-        .then((file) {
-      if (file != null && file.file.existsSync()) {
-        _cachedFilePath = file.file.path;
-      }
+    _audioPlayer.setReleaseMode(ReleaseMode.stop);
+    _audioPlayer.setSourceUrl(widget.noteModel.noteUrl).then((value) {
+      // widget._audioPlayer.getDuration().then(
+      //       (value) => setState(() {
+      //         duration = value!;
+      //         // playPause();
+      //       }),
+      //     );
     });
     _audioPlayer.onDurationChanged.listen((event) {
       setState(() {
         duration = event;
-      });
-    });
-    _audioPlayer.onPositionChanged.listen((event) {
-      setState(() {
-        position = event;
-      });
-    });
-
-    _audioPlayer.onPlayerComplete.listen((state) {
-      setState(() {
-        _isPlaying = false;
       });
     });
   }
@@ -93,42 +93,42 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
+    // _audioPlayer.dispose();
     super.dispose();
   }
 
   // play and pause the player
 
-  void playPause() async {
-    if (_isPlaying) {
-      await _audioPlayer.pause();
-    } else {
-      if (_cachedFilePath != null) {
-        await _audioPlayer
-            .setPlaybackRate(_playbackSpeed); // Set playback speed
-        await _audioPlayer.play(UrlSource(_cachedFilePath!));
-      } else {
-        // Cache the file if not already cached
-        DefaultCacheManager()
-            .downloadFile(widget.noteModel.noteUrl)
-            .then((fileInfo) {
-          if (fileInfo.file.existsSync()) {
-            _cachedFilePath = fileInfo.file.path;
-            _audioPlayer.setPlaybackRate(_playbackSpeed); // Set playback speed
-            _audioPlayer.play(
-              UrlSource(_cachedFilePath!),
-            );
-          }
-        });
-      }
-    }
-    setState(() {
-      _isPlaying = !_isPlaying;
-    });
-  }
+  // void playPause() async {
+  //   if (_isPlaying) {
+  //     await _audioPlayer.pause();
+  //   } else {
+  //     if (_cachedFilePath != null) {
+  //       await _audioPlayer
+  //           .setPlaybackRate(_playbackSpeed); // Set playback speed
+  //       await _audioPlayer.play(UrlSource(_cachedFilePath!));
+  //     } else {
+  //       // Cache the file if not already cached
+  //       DefaultCacheManager()
+  //           .downloadFile(widget.noteModel.noteUrl)
+  //           .then((fileInfo) {
+  //         if (fileInfo.file.existsSync()) {
+  //           _cachedFilePath = fileInfo.file.path;
+  //           _audioPlayer.setPlaybackRate(_playbackSpeed); // Set playback speed
+  //           _audioPlayer.play(
+  //             UrlSource(_cachedFilePath!),
+  //           );
+  //         }
+  //       });
+  //     }
+  //   }
+  //   setState(() {
+  //     _isPlaying = !_isPlaying;
+  //   });
+  // }
 
   Duration duration = Duration.zero;
-  Duration position = Duration.zero;
+  // Duration position = Duration.zero;
 
   @override
   Widget build(BuildContext context) {
@@ -145,6 +145,8 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
             width: size.width * 0.5,
             child: GestureDetector(
                 onTap: () {
+                  Provider.of<CircleCommentsProvider>(context, listen: false)
+                      .pausePlayer();
                   Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -191,6 +193,9 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
                       return InkWell(
                         splashColor: Colors.transparent,
                         onTap: () {
+                          Provider.of<CircleCommentsProvider>(context,
+                                  listen: false)
+                              .pausePlayer();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -226,10 +231,15 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
               CircularPercentIndicator(
                 radius: 35.0,
                 lineWidth: 8.0,
-                percent: position.inSeconds / duration.inSeconds,
+                percent: widget.isPlaying &&
+                        widget.changeIndex == widget.index &&
+                        duration.inSeconds > 0
+                    ? (widget.position.inSeconds / duration.inSeconds)
+                        .clamp(0.0, 1.0)
+                    : 0.0,
                 center: InkWell(
                   splashColor: Colors.transparent,
-                  onTap: playPause,
+                  onTap: widget.playPause,
                   child: Container(
                     // height: 10,
                     // width: 10,
@@ -238,18 +248,22 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
                         color: whiteColor,
                         borderRadius: BorderRadius.circular(30)),
                     child: Icon(
-                      _isPlaying ? Icons.pause : Icons.play_arrow,
+                      widget.isPlaying && widget.changeIndex == widget.index
+                          ? Icons.pause
+                          : Icons.play_arrow,
                       color: Color(widget.noteModel.topicColor.value),
                       size: 20,
                     ),
                   ),
                 ),
                 circularStrokeCap: CircularStrokeCap.round,
-                backgroundColor: _isPlaying
-                    ? const Color(0xFFB8C7CB)
-                    : Color(widget.noteModel.topicColor.value),
+                backgroundColor:
+                    widget.changeIndex == widget.index && widget.isPlaying
+                        ? const Color(0xFFB8C7CB)
+                        : Color(widget.noteModel.topicColor.value),
                 progressColor: Color(widget.noteModel.topicColor.value),
-                animation: _isPlaying,
+                animation:
+                    widget.isPlaying && widget.changeIndex == widget.index,
                 animationDuration: duration.inSeconds,
               ),
 
@@ -294,8 +308,9 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
                       top: 8,
                       child: InkWell(
                         onTap: () {
-                          Provider.of<BottomProvider>(context, listen: false)
-                              .setCurrentIndex(1);
+                          Provider.of<CircleCommentsProvider>(context,
+                                  listen: false)
+                              .pausePlayer();
 
                           Navigator.push(
                               context,

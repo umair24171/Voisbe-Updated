@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -50,24 +51,20 @@ class _SearchScreenState extends State<SearchScreen> {
   // this function is helpful in managing the value of the likes in future without sending the update  through firebase config
 
   Future<void> getLikesThreshold() async {
-    final rem.FirebaseRemoteConfig remoteConfig =
-        rem.FirebaseRemoteConfig.instance;
-
     try {
       // Set a minimum fetch interval (optional, but recommended)
-      await remoteConfig.setConfigSettings(rem.RemoteConfigSettings(
-        fetchTimeout: const Duration(minutes: 1),
-        minimumFetchInterval: Duration.zero,
-      ));
-
-      // Force fetch (bypasses throttling)
-      await remoteConfig.fetchAndActivate();
-
-      likesThreshold = remoteConfig.getInt('likes_threshold');
+      DocumentSnapshot<Map<String, dynamic>> likesDocument =
+          await FirebaseFirestore.instance
+              .collection('likes')
+              .doc('pfYfdfPqLxXsspv6Dse4')
+              .get();
+      var likoo = likesDocument.data();
+      likesThreshold = likoo!['likes_value'];
       log('Likes threshold is $likesThreshold');
+      setState(() {});
     } catch (e) {
       // If fetch fails, use the last activated value
-      likesThreshold = remoteConfig.getInt('likes_threshold');
+      // likesThreshold = remoteConfig.getInt('likes_threshold');
       log('Failed to fetch remote config. Using cached value: $likesThreshold');
     }
   }
@@ -345,8 +342,7 @@ class _SearchScreenState extends State<SearchScreen> {
           onRefresh: () {
             // function to get the newly posts
 
-            return Provider.of<DisplayNotesProvider>(context, listen: false)
-                .getAllNotes(context);
+            return initializeData();
           },
           child: Consumer<ChatProvider>(builder: (context, searchPro, _) {
             return searchPro.isSearching

@@ -24,6 +24,7 @@ import 'package:social_notes/screens/home_screen/controller/share_services.dart'
 import 'package:social_notes/screens/home_screen/controller/video_download_methods.dart';
 import 'package:social_notes/screens/home_screen/model/book_mark_model.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 // import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dart';
 // import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
@@ -107,6 +108,8 @@ class _SingleNotePostState extends State<SingleNotePost> {
     });
   }
 
+  bool isGoing = false;
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -158,7 +161,11 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                 onTap: () {
                                   if (widget.note.userUid !=
                                       FirebaseAuth.instance.currentUser!.uid) {
+                                    Provider.of<CircleCommentsProvider>(context,
+                                            listen: false)
+                                        .pausePlayer();
                                     stopMainPlayer();
+                                    // audioPlayer.stop();
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(builder: (context) {
@@ -1078,6 +1085,7 @@ class _SingleNotePostState extends State<SingleNotePost> {
             currentIndex: widget.currentIndex,
             stopMainPlayer: widget.stopMainPlayer,
             mainAudioPlayer: widget.audioPlayer,
+            // isGoing: isGoing,
 
             noteModel: widget.note,
 

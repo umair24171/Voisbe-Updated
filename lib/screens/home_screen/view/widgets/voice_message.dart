@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 // import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
@@ -177,7 +178,9 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
                 CircularPercentIndicator(
                   radius: circleSize / 2,
                   lineWidth: 6.0, // Reduced line width for better visibility
-                  percent: duration.inSeconds > 0
+                  percent: widget.isPlaying &&
+                          widget.changeIndex == widget.index &&
+                          duration.inSeconds > 0
                       ? (widget.position.inSeconds / duration.inSeconds)
                           .clamp(0.0, 1.0)
                       : 0.0,
@@ -210,6 +213,8 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
           InkWell(
             onTap: () {
               stopMainPlayer();
+              Provider.of<CircleCommentsProvider>(context, listen: false)
+                  .pausePlayer();
               Navigator.push(
                   context,
                   MaterialPageRoute(
