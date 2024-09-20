@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
+import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 // import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
@@ -63,6 +64,14 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
   void initState() {
     super.initState();
     initPlayer();
+  }
+
+  stopMainPlayer() {
+    Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setIsPlaying(false);
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setChangeIndex(-1);
   }
 
   Future<void> initPlayer() async {
@@ -200,6 +209,7 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
           ),
           InkWell(
             onTap: () {
+              stopMainPlayer();
               Navigator.push(
                   context,
                   MaterialPageRoute(

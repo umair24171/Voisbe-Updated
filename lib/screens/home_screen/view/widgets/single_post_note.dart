@@ -91,6 +91,14 @@ class _SingleNotePostState extends State<SingleNotePost> {
     super.initState();
   }
 
+  stopMainPlayer() {
+    Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setIsPlaying(false);
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setChangeIndex(-1);
+  }
+
   playPauseForIndexZero() {
     SchedulerBinding.instance.scheduleFrameCallback((timeStamp) {
       if (widget.pageController.page == 0) {
@@ -150,6 +158,7 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                 onTap: () {
                                   if (widget.note.userUid !=
                                       FirebaseAuth.instance.currentUser!.uid) {
+                                    stopMainPlayer();
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(builder: (context) {
@@ -244,9 +253,9 @@ class _SingleNotePostState extends State<SingleNotePost> {
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: MainPlayer(
-              lockPosts: [],
-              title: '',
-              
+                lockPosts: [],
+                title: '',
+
                 // playCounts: playCounts,
                 listenedWaves: widget.note.mostListenedWaves,
                 postId: widget.note.noteId,

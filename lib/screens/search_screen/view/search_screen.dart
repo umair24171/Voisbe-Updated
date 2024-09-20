@@ -271,6 +271,7 @@ class _SearchScreenState extends State<SearchScreen> {
 // // Assign the displayPosts list to the postsAfterFilter
 //     postsAfterFilter = displayPosts;
     return Scaffold(
+        backgroundColor: whiteColor,
         appBar: AppBar(
           backgroundColor: whiteColor,
           elevation: 0,

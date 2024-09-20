@@ -90,6 +90,14 @@ class _UserPostsState extends State<UserPosts> {
     });
   }
 
+  stopPlayer() {
+    _audioPlayer.stop();
+    setState(() {
+      _currentIndex = -1;
+      _isPlaying = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -182,8 +190,7 @@ class _UserPostsState extends State<UserPosts> {
                       onLongPress: () {
                         //  on long press navigate to home screen or post details screen
 
-                        Provider.of<BottomProvider>(context, listen: false)
-                            .setCurrentIndex(1);
+                        stopPlayer();
                         Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (context) => HomeScreen(
@@ -204,6 +211,7 @@ class _UserPostsState extends State<UserPosts> {
                                 .pinPost(userPosts[index].noteId, !isPinned);
                           }
                         } else {
+                          stopPlayer();
                           Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -264,8 +272,7 @@ class _UserPostsState extends State<UserPosts> {
                   key: key,
                   child: GestureDetector(
                     onLongPress: () {
-                      Provider.of<BottomProvider>(context, listen: false)
-                          .setCurrentIndex(1);
+                      stopPlayer();
                       Navigator.of(context).push(
                         MaterialPageRoute(
                             builder: (context) => HomeScreen(

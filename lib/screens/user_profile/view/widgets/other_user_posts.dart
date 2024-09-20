@@ -205,6 +205,14 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
     });
   }
 
+  stopPlayer() {
+    _audioPlayer.stop();
+    setState(() {
+      _currentIndex = -1;
+      _isPlaying = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     log('otherUserPosts $userPosts');
@@ -284,6 +292,7 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
 
                               //  otherwise home screen to show the specific screen
                             } else {
+                              stopPlayer();
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => HomeScreen(
                                         note: not,
@@ -292,9 +301,7 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
                           },
                           onLongPress: () {
                             if (!lockPosts.contains(index)) {
-                              Provider.of<BottomProvider>(context,
-                                      listen: false)
-                                  .setCurrentIndex(1);
+                              stopPlayer();
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => HomeScreen(
                                         note: not,
@@ -359,6 +366,7 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
                               // note: noteModel,
                               )));
                     } else {
+                      stopPlayer();
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => HomeScreen(
                                 note: noteModel,

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -108,7 +109,8 @@ class _FeedDetailScreenState extends State<FeedDetailScreen> {
                     children: [
                       CircleAvatar(
                         radius: 14,
-                        backgroundImage: NetworkImage(user.photoUrl),
+                        backgroundImage:
+                            CachedNetworkImageProvider(user.photoUrl),
                       ),
                       const SizedBox(
                         width: 8,
@@ -215,8 +217,8 @@ class _FeedDetailScreenState extends State<FeedDetailScreen> {
                 height: MediaQuery.of(context).size.height,
                 width: MediaQuery.of(context).size.width,
                 child: widget.feedModel.note.backgroundType.contains('photo')
-                    ? Image.network(
-                        widget.feedModel.note.backgroundImage,
+                    ? CachedNetworkImage(
+                        imageUrl: widget.feedModel.note.backgroundImage,
                         height: MediaQuery.of(context).size.height,
                         width: MediaQuery.of(context).size.width,
                         fit: BoxFit.cover,
