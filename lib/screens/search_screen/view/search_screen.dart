@@ -84,11 +84,16 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
-    postsAfterFilter = provider.notes.where((note) {
-      if (note.likes.length <= likesThreshold) return false;
+    // Step 1: Filter posts based on likes threshold
+    List<NoteModel> postsWithEnoughLikes = provider.notes.where((note) {
+      return note.likes.length >= likesThreshold;
+    }).toList();
 
+    // Step 2: Apply additional filters to the posts with enough likes
+    postsAfterFilter = postsWithEnoughLikes.where((note) {
       final isSubscribed =
           currentUser.subscribedSoundPacks.contains(note.userUid);
+      if (note.userUid == currentUser.uid) return true;
       if (note.isPostForSubscribers && !isSubscribed) return false;
 
       final user = chatProvider.users
@@ -106,6 +111,42 @@ class _SearchScreenState extends State<SearchScreen> {
 
     setState(() {});
   }
+
+  // void getLikesLogicsAndFilteration() {
+  //   if (!mounted) return;
+
+  //   final provider = Provider.of<DisplayNotesProvider>(context, listen: false);
+  //   final userProvider = Provider.of<UserProvider>(context, listen: false);
+  //   final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+
+  //   final currentUser = userProvider.user;
+  //   if (currentUser == null) {
+  //     log('Current user is null');
+  //     return;
+  //   }
+
+  //   postsAfterFilter = provider.notes.where((note) {
+  //     if (note.likes.length >= likesThreshold) return true;
+
+  //     final isSubscribed =
+  //         currentUser.subscribedSoundPacks.contains(note.userUid);
+  //     if (note.isPostForSubscribers && !isSubscribed) return false;
+
+  //     final user = chatProvider.users
+  //         .firstWhereOrNull((element) => element.uid == note.userUid);
+  //     if (user == null) return false;
+
+  //     if (user.isPrivate &&
+  //         !currentUser.following.contains(note.userUid) &&
+  //         note.userUid != currentUser.uid) {
+  //       return false;
+  //     }
+
+  //     return true;
+  //   }).toList();
+
+  //   setState(() {});
+  // }
 
   // void getLikesLogicsAndFilteration() {
   //   var provider = Provider.of<DisplayNotesProvider>(context, listen: false);

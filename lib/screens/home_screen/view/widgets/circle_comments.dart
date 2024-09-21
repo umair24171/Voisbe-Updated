@@ -339,10 +339,10 @@ class _CircleCommentsState extends State<CircleComments> {
   //   int playedComment,
   // ) async {
   //   DefaultCacheManager cacheManager = DefaultCacheManager();
-  //   var pro = Provider.of<DisplayNotesProvider>(context, listen: false);
-  //   pro.pausePlayer();
-  //   pro.setIsPlaying(false);
-  //   pro.setChangeIndex(-1);
+  // var pro = Provider.of<DisplayNotesProvider>(context, listen: false);
+  // pro.pausePlayer();
+  // pro.setIsPlaying(false);
+  // pro.setChangeIndex(-1);
 
   //   if (_isPlaying && _currentIndex != index) {
   //     await _audioPlayer.stop();
@@ -399,6 +399,7 @@ class _CircleCommentsState extends State<CircleComments> {
     // Cancel the subscription when the widget is disposed
     // _audioPlayer.dispose();
     // _subscription.cancel();
+    // Provider.of<CircleCommentsProvider>(context, listen: false).disposePlayer();
     commentManager.dispose();
     // _controller.dispose();
     super.dispose();
@@ -720,6 +721,12 @@ class _CircleCommentsState extends State<CircleComments> {
                                   commentManager.engageCommentIndex,
                               changeIndex: circlePro.changeIndex,
                               onPlayPause: () {
+                                var pro = Provider.of<DisplayNotesProvider>(
+                                    context,
+                                    listen: false);
+                                pro.pausePlayer();
+                                pro.setIsPlaying(false);
+                                pro.setChangeIndex(-1);
                                 circleProvider.playPause(
                                   comment.comment,
                                   commentManager.commentsList.indexOf(comment),
@@ -757,6 +764,12 @@ class _CircleCommentsState extends State<CircleComments> {
                               audioPlayer: circlePro.audioPlayer,
                               changeIndex: circlePro.changeIndex,
                               onPlayPause: () {
+                                var pro = Provider.of<DisplayNotesProvider>(
+                                    context,
+                                    listen: false);
+                                pro.pausePlayer();
+                                pro.setIsPlaying(false);
+                                pro.setChangeIndex(-1);
                                 circleProvider.playPause(
                                   comment.comment,
                                   commentManager.commentsList.indexOf(comment),

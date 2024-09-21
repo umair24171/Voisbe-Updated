@@ -289,13 +289,14 @@ class BuildSingleChatUser extends StatelessWidget {
                   isChatUserPlayer: true,
                   size: 10,
                   waveColor: whiteColor,
-                  backgroundColor: currentUSer!.following.contains(widget.recId)
-                      ? chat == null
-                          ? greenColor.withOpacity(0.5)
-                          : greenColor
-                      : chat == null
-                          ? const Color(0xffefa69d)
-                          : primaryColor,
+                  backgroundColor:
+                      currentUSer!.closeFriends.contains(widget.recId)
+                          ? chat == null
+                              ? greenColor.withOpacity(0.5)
+                              : greenColor
+                          : chat == null
+                              ? const Color(0xffefa69d)
+                              : primaryColor,
                   noteUrl: widget.chatModel.message!,
                   height: 25,
                   width: MediaQuery.of(context).size.width * 0.4850,

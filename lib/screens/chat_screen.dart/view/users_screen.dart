@@ -521,7 +521,7 @@ class _UsersScreenState extends State<UsersScreen> {
                   var recToken = recentChats[index].senderId == user.uid
                       ? recentChats[index].receiverToken
                       : recentChats[index].senderToken;
-                  var color = user.following.contains(rec)
+                  var color = user.closeFriends.contains(rec)
                       ? isSeen
                           ? greenColor.withOpacity(0.5)
                           : greenColor
