@@ -83,8 +83,11 @@ void _showNotification(
     priority: Priority.high,
     showWhen: false,
   );
-  const NotificationDetails platformChannelSpecifics =
-      NotificationDetails(android: androidPlatformChannelSpecifics);
+  const DarwinNotificationDetails initializationSettingsDarwin =
+      DarwinNotificationDetails();
+    NotificationDetails platformChannelSpecifics = const NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: initializationSettingsDarwin);
 
   await flutterLocalNotificationsPlugin.show(
     0,

@@ -349,8 +349,10 @@ class NoteProvider with ChangeNotifier {
     // Allow the user to pick files
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       allowMultiple: false,
-      type: FileType.audio,
+      type: FileType.custom,
+      allowedExtensions: ['mp3', 'wav', 'flac'],
     );
+
 
     if (result != null) {
       audioFiles = result.paths.map((path) => File(path!)).toList();

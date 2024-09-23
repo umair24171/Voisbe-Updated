@@ -92,7 +92,7 @@ class CircleCommentsProvider with ChangeNotifier {
     }
 
     try {
-      await audioPlayer!.play(UrlSource(url));
+      await audioPlayer.play(UrlSource(url));
       setChangeIndex(index);
       setIsPlaying(true);
 
