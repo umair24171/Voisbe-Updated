@@ -96,11 +96,12 @@ class AuthController {
         if (prefs.getStringList('userAccounts') != null) {
           List<String>? allUsers = prefs.getStringList('userAccounts');
           allUsers == null
-              ? prefs.setStringList('userAccounts', [credential.user!.uid])
-              : prefs.setStringList(
+              ? await prefs
+                  .setStringList('userAccounts', [credential.user!.uid])
+              : await prefs.setStringList(
                   'userAccounts', [credential.user!.uid, ...allUsers]);
         } else {
-          prefs.setStringList('userAccounts', [credential.user!.uid]);
+          await prefs.setStringList('userAccounts', [credential.user!.uid]);
         }
 
         Provider.of<UserProvider>(context, listen: false).setUserNull();
@@ -258,10 +259,13 @@ class AuthController {
 
             if (result) {
               List<String>? allUsers = prefs.getStringList('userAccounts');
-              allUsers == null
-                  ? prefs.setStringList('userAccounts', [credential.user!.uid])
-                  : allUsers.add(credential.user!.uid);
-              prefs.setStringList('userAccounts', allUsers ?? []);
+              if (allUsers == null) {
+                await prefs
+                    .setStringList('userAccounts', [credential.user!.uid]);
+              } else {
+                allUsers.add(credential.user!.uid);
+                await prefs.setStringList('userAccounts', allUsers);
+              }
 
               userPro.setUserLoading(false);
               showDialog(
@@ -290,11 +294,13 @@ class AuthController {
             if (userModel.isOtpVerified) {
               //  if user otp verified then save the account info for the next time account changing feature
               List<String>? allUsers = prefs.getStringList('userAccounts');
-              allUsers == null
-                  ? prefs.setStringList('userAccounts', [credential.user!.uid])
-                  : allUsers.add(credential.user!.uid);
-              prefs.setStringList('userAccounts', allUsers ?? []);
-
+              if (allUsers == null) {
+                await prefs
+                    .setStringList('userAccounts', [credential.user!.uid]);
+              } else {
+                allUsers.add(credential.user!.uid);
+                await prefs.setStringList('userAccounts', allUsers);
+              }
               userPro.setUserLoading(false);
               showWhiteOverlayPopup(context, Icons.check_box, null, null,
                   title: 'Login Successful',
@@ -352,11 +358,13 @@ class AuthController {
 
               if (result) {
                 List<String>? allUsers = prefs.getStringList('userAccounts');
-                allUsers == null
-                    ? prefs
-                        .setStringList('userAccounts', [credential.user!.uid])
-                    : allUsers.add(credential.user!.uid);
-                prefs.setStringList('userAccounts', allUsers ?? []);
+                if (allUsers == null) {
+                  await prefs
+                      .setStringList('userAccounts', [credential.user!.uid]);
+                } else {
+                  allUsers.add(credential.user!.uid);
+                  await prefs.setStringList('userAccounts', allUsers);
+                }
 
                 userPro.setUserLoading(false);
                 showDialog(

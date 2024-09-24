@@ -82,7 +82,7 @@ class RecentChats extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(45),
                                     border: Border.all(
                                         width: 3,
-                                        color: user.following.contains(rec)
+                                        color: user.closeFriends.contains(rec)
                                             ? isSeen
                                                 ? greenColor.withOpacity(0.5)
                                                 : greenColor
