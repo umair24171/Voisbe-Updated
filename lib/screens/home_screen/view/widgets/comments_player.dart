@@ -1,6 +1,11 @@
 // import 'dart:developer';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
@@ -17,6 +22,7 @@ import 'package:social_notes/screens/home_screen/view/widgets/main_player.dart';
 import 'package:uuid/uuid.dart';
 import 'package:waveform_extractor/model/waveform_progress.dart';
 import 'package:waveform_extractor/waveform_extractor.dart';
+import 'package:http/http.dart' as http;
 
 class CommentsPlayer extends StatefulWidget {
   CommentsPlayer(
@@ -135,35 +141,105 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
       // Handle the error appropriately
     }
   }
-  // Future<void> extractWavedata() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   String cacheKey = widget.commentId!;
 
-  //   List<String>? cachedData = prefs.getStringList(cacheKey);
+  Future<void> loadAudioFromUrl(String url) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String cacheKey = widget.commentId ?? '';
 
-  //   if (cachedData != null && cachedData.isNotEmpty) {
-  //     waveForm = cachedData.map((e) => double.tryParse(e) ?? 6.0).toList();
-  //     setState(() {
-  //       waveForm = waveForm.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
-  //     });
-  //   } else {
-  //     final result = await waveformExtractor.extractWaveform(
-  //       widget.noteUrl,
-  //       useCache: true,
-  //       cacheKey: cacheKey,
-  //     );
-  //     List<int> waveForms = result.waveformData;
+      // Try to load cached data
+      String? cachedData = prefs.getString(cacheKey);
 
-  //     setState(() {
-  //       waveForm = waveForms.map((e) => e < 1 ? 6.0 : e.toDouble()).toList();
-  //     });
+      if (cachedData != null) {
+        // Use cached data
+        final decodedData = json.decode(cachedData);
+        // maxDuration = Duration(milliseconds: decodedData['maxDuration']);
+        final samplesData = List<double>.from(decodedData['samples']);
 
-  //     await prefs.setStringList(
-  //         cacheKey, waveForms.map((e) => e.toString()).toList());
-  //   }
-  // }
+        setState(() {
+          waveForm = samplesData;
+        });
+      } else {
+        // Fetch new data
+        await widget.player.setSourceUrl(url);
+        duration = await widget.player.getDuration() ??
+            const Duration(milliseconds: 1000);
 
-  // Duration position = Duration.zero;
+        // Fetch audio data for waveform
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode == 200) {
+          final audioBytes = response.bodyBytes;
+          final samplesData =
+              await compute(generateWaveformSamples, audioBytes);
+
+          // Scale the waveform data
+          final scaledSamples = scaleWaveData(samplesData);
+
+          setState(() {
+            waveForm = scaledSamples;
+          });
+
+          // Cache the data
+          final dataToCache = json.encode({
+            'maxDuration': duration.inMilliseconds,
+            'samples': scaledSamples,
+          });
+          await prefs.setString(cacheKey, dataToCache);
+        } else {
+          print('Failed to load audio data');
+        }
+      }
+
+      widget.player.onPositionChanged.listen((position) {
+        setState(() {
+          position = position;
+        });
+      });
+    } catch (e) {
+      print('Error loading audio: $e');
+    }
+  }
+
+  static List<double> generateWaveformSamples(List<int> audioBytes) {
+    // This is a simplified example. In a real-world scenario, you'd use
+    // a proper audio processing library to generate accurate waveform data.
+    List<double> samples = [];
+    for (int i = 0; i < 1000; i++) {
+      samples.add(audioBytes[i % audioBytes.length].toDouble() / 255);
+    }
+    return samples;
+  }
+
+  List<double> scaleWaveData(List<double> data,
+      {double targetMax = 32, double targetMin = 1}) {
+    if (data.isEmpty) return [];
+
+    double currentMin = data.reduce(min);
+    double currentMax = data.reduce(max);
+
+    // Avoid division by zero
+    if (currentMax == currentMin) {
+      return List.filled(data.length, targetMin);
+    }
+
+    final random = Random();
+
+    // Scale the values
+    return data.map((x) {
+      double scaledValue = ((x - currentMin) / (currentMax - currentMin)) *
+              (targetMax - targetMin) +
+          targetMin;
+
+      // If the scaled value is very close to the minimum (1),
+      // replace it with a random value between 3 and 6
+      if (scaledValue < 1.1) {
+        return 5 + random.nextDouble() * 3; // Random value between 3 and 6
+      }
+
+      return scaledValue;
+    }).toList();
+  }
+
   initPlayer() async {
     widget.player = AudioPlayer();
     widget.player.setReleaseMode(ReleaseMode.stop);
@@ -189,11 +265,7 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
         _cachedFilePath = file.file.path;
       }
     });
-    // widget.player.getCurrentPosition().then(
-    //       (value) => setState(() {
-    //         position = value!;
-    //       }),
-    //     );
+
     widget.player.onPlayerComplete.listen((state) {
       setState(() {
         widget.isPlaying = false;
@@ -233,123 +305,14 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    extractWavedata();
+    // extractWavedata();
+    if (Platform.isAndroid) {
+      extractWavedata();
+    } else {
+      loadAudioFromUrl(widget.noteUrl);
+    }
     initPlayer();
-    // _player = AudioPlayer();
-    //  widget.player.setReleaseMode(ReleaseMode.stop);
-
-    // _init();
-    // widget.player.onPlayerStateChanged.listen((event) {
-    //   if (event.processingState == ProcessingState.completed) {
-    //     setState(() {
-    //       isPlaying = false;
-    //     });
-    //   }
-    // });
-    // widget.player.playingStream.listen((event) {
-    //   if (event == true) {
-    //     setState(() {
-    //       isPlaying = true;
-    //     });
-    //   } else {
-    //     setState(() {
-    //       isPlaying = false;
-    //     });
-    //   }
-    // });
   }
-
-  // Future<void> _init() async {
-  //   widget.player.playbackEventStream.listen((event) {},
-  //       onError: (Object e, StackTrace stackTrace) {
-  //     print('A stream error occurred: $e');
-  //   });
-  //   // Try to load audio from a source and catch any errors.
-  //   try {
-  //     // AAC example: https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.aac
-  //     await widget.player
-  //         .setAudioSource(AudioSource.uri(Uri.parse(widget.noteUrl)))
-  //         .then((value) {
-  //       setState(() {
-  //         duration = value!;
-  //       });
-  //     }); // Load a remote audio file and play.
-  //     widget.player.durationStream.listen((value) {
-  //       setState(() {
-  //         duration = value!;
-  //       });
-  //     });
-  //     widget.player.positionStream.listen((event) {
-  //       setState(() {
-  //         position = event;
-  //       });
-  //     });
-  //     widget.player.processingStateStream.listen((event) {
-  //       if (event == ProcessingState.loading) {
-  //         setState(() {
-  //           isBuffering = true;
-  //         });
-  //       } else {
-  //         setState(() {
-  //           isBuffering = false;
-  //         });
-  //       }
-  //     });
-  //   } on PlayerException catch (e) {
-  //     log("Error loading audio source: $e");
-  //   }
-  // }
-
-  // playAudio() async {
-  //   try {
-  //     setState(() {
-  //       isPlaying = true;
-  //     });
-  //     log("playing");
-  //     final audioSource = LockCachingAudioSource(Uri.parse(widget.noteUrl));
-  //     var da = await widget.player.setAudioSource(audioSource);
-
-  //     await widget.player.play();
-  //     _updatePlayedComment();
-  //   } catch (e) {
-  //     log(e.toString());
-  //   }
-  // }
-
-  // void _playAudio() async {
-  //   if (isPlaying && _currentIndex != widget.currentIndex) {
-  //     await widget.player.stop();
-  //   }
-
-  //   if (_currentIndex == widget.currentIndex && isPlaying) {
-  //     widget.player.pause();
-  //     setState(() {
-  //       isPlaying = false;
-  //     });
-  //   } else {
-  //     await widget.player.play();
-  //     setState(() {
-  //       _currentIndex = widget.currentIndex;
-  //       isPlaying = true;
-  //     });
-  //   }
-  // }
-
-  // stopAudio() async {
-  //   setState(() {
-  //     isPlaying = false;
-  //   });
-  //   await widget.player.stop();
-  // }
-
-  // @override
-  // void dispose() {
-  //   widget.player.dispose();
-  //   duration = Duration.zero;
-  //   // position = Duration.zero;
-
-  //   super.dispose();
-  // }
 
   String getReverseDuration(Duration position, Duration totalDuration) {
     int remainingSeconds = totalDuration.inSeconds - position.inSeconds;

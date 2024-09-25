@@ -1,14 +1,19 @@
 // import 'dart:developer';
+import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
+import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 // import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:flutter/widgets.dart';
 import 'package:simple_waveform_progressbar/simple_waveform_progressbar.dart';
 import 'package:social_notes/resources/colors.dart';
@@ -16,6 +21,7 @@ import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/main_player.dart';
 import 'package:waveform_extractor/waveform_extractor.dart';
+import 'package:http/http.dart' as http;
 
 class RecordingPlayer extends StatefulWidget {
   RecordingPlayer(
@@ -69,6 +75,8 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
   bool isPlaying = false;
   String? _cachedFilePath;
   final waveformExtractor = WaveformExtractor();
+  List<double> samples = [];
+  int totalSamples = 1000;
   List<double> waveForm = [];
   // int? _currentIndex;
   // var _player = AudioPlayer();
@@ -141,6 +149,75 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
     });
   }
 
+  Future<void> loadAudioFromFile(String filePath) async {
+    try {
+      // Read the file
+      File audioFile = File(filePath);
+      if (await audioFile.exists()) {
+        final audioBytes = await audioFile.readAsBytes();
+        final samplesData = await compute(generateWaveformSamples, audioBytes);
+
+        // Scale the waveform data
+        final scaledSamples = scaleWaveData(samplesData);
+
+        setState(() {
+          samples = scaledSamples;
+        });
+
+        // If you need to get the duration, you might need to use a plugin like
+        // just_audio or audioplayers to get this information
+        // For example, with just_audio:
+        // final player = AudioPlayer();
+        // await player.setFilePath(filePath);
+        // maxDuration = await player.duration ?? const Duration(milliseconds: 1000);
+      } else {
+        print('Audio file does not exist');
+      }
+    } catch (e) {
+      print('Error loading audio: $e');
+    }
+  }
+
+  static List<double> generateWaveformSamples(List<int> audioBytes) {
+    // This is a simplified example. In a real-world scenario, you'd use
+    // a proper audio processing library to generate accurate waveform data.
+    List<double> samples = [];
+    for (int i = 0; i < 1000; i++) {
+      samples.add(audioBytes[i % audioBytes.length].toDouble() / 255);
+    }
+    return samples;
+  }
+
+  List<double> scaleWaveData(List<double> data,
+      {double targetMax = 32, double targetMin = 1}) {
+    if (data.isEmpty) return [];
+
+    double currentMin = data.reduce(min);
+    double currentMax = data.reduce(max);
+
+    // Avoid division by zero
+    if (currentMax == currentMin) {
+      return List.filled(data.length, targetMin);
+    }
+
+    final random = Random();
+
+    // Scale the values
+    return data.map((x) {
+      double scaledValue = ((x - currentMin) / (currentMax - currentMin)) *
+              (targetMax - targetMin) +
+          targetMin;
+
+      // If the scaled value is very close to the minimum (1),
+      // replace it with a random value between 3 and 6
+      if (scaledValue < 1.1) {
+        return 5 + random.nextDouble() * 3; // Random value between 3 and 6
+      }
+
+      return scaledValue;
+    }).toList();
+  }
+
   void scrollToPosition(Duration position) {
     final progressPercent = position.inMilliseconds / duration.inMilliseconds;
     final targetScrollOffset =
@@ -157,7 +234,12 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    extractWavedata();
+
+    if (Platform.isAndroid) {
+      extractWavedata();
+    } else {
+      loadAudioFromFile(widget.noteUrl);
+    }
     initPlayer();
     // _player = AudioPlayer();
     //  widget.player.setReleaseMode(ReleaseMode.stop);
@@ -238,7 +320,7 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
         });
       }
     } catch (e) {
-      log(e.toString());
+      print(e.toString());
     }
   }
 
@@ -407,7 +489,7 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
                           duration: duration,
                           position: postiion,
                           style: PaintingStyle.fill,
-                          activeSamples: waveForm,
+                          activeSamples: Platform.isIOS ? samples : waveForm,
                           borderColor: primaryColor.withOpacity(0.5),
                           sampleWidth: 2.5,
                           borderWidth: BorderSide.strokeAlignCenter,

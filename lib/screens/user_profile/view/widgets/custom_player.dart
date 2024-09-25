@@ -1,9 +1,13 @@
 // import 'dart:developer';
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
@@ -21,6 +25,7 @@ import 'package:social_notes/screens/home_screen/view/widgets/main_player.dart';
 import 'package:social_notes/screens/subscribe_screen.dart/view/subscribe_screen.dart';
 import 'package:uuid/uuid.dart';
 import 'package:waveform_extractor/waveform_extractor.dart';
+import 'package:http/http.dart' as http;
 
 class CustomProgressPlayer extends StatefulWidget {
   CustomProgressPlayer(
@@ -116,7 +121,7 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
     } else {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String cacheKey = widget.postId!;
-      log('cacheKey is $cacheKey');
+      print('cacheKey is $cacheKey');
 
       List<String>? cachedData = prefs.getStringList(cacheKey);
 
@@ -152,7 +157,11 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    extractWavedata();
+    if (Platform.isAndroid) {
+      extractWavedata();
+    } else {
+      loadAudioFromUrl(widget.noteUrl);
+    }
     _player = AudioPlayer();
     //  _audioPlayer.setReleaseMode(ReleaseMode.stop);
 
@@ -184,6 +193,105 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
     if (widget.isMainPlayer && widget.stopOtherPlayer != null) {
       widget.stopOtherPlayer!(_player);
     }
+  }
+
+  Future<void> loadAudioFromUrl(String url) async {
+    try {
+      audo.AudioPlayer player = audo.AudioPlayer();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String cacheKey = widget.postId ?? '';
+
+      // Try to load cached data
+      String? cachedData = prefs.getString(cacheKey);
+
+      if (cachedData != null) {
+        // Use cached data
+        final decodedData = json.decode(cachedData);
+        // maxDuration = Duration(milliseconds: decodedData['maxDuration']);
+        final samplesData = List<double>.from(decodedData['samples']);
+
+        setState(() {
+          waveForm = samplesData;
+        });
+      } else {
+        // Fetch new data
+        await player.setSourceUrl(url);
+        duration =
+            await player.getDuration() ?? const Duration(milliseconds: 1000);
+
+        // Fetch audio data for waveform
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode == 200) {
+          final audioBytes = response.bodyBytes;
+          final samplesData =
+              await compute(generateWaveformSamples, audioBytes);
+
+          // Scale the waveform data
+          final scaledSamples = scaleWaveData(samplesData);
+
+          setState(() {
+            waveForm = scaledSamples;
+          });
+
+          // Cache the data
+          final dataToCache = json.encode({
+            'maxDuration': duration.inMilliseconds,
+            'samples': scaledSamples,
+          });
+          await prefs.setString(cacheKey, dataToCache);
+        } else {
+          print('Failed to load audio data');
+        }
+      }
+
+      player.onPositionChanged.listen((position) {
+        setState(() {
+          position = position;
+        });
+      });
+    } catch (e) {
+      print('Error loading audio: $e');
+    }
+  }
+
+  static List<double> generateWaveformSamples(List<int> audioBytes) {
+    // This is a simplified example. In a real-world scenario, you'd use
+    // a proper audio processing library to generate accurate waveform data.
+    List<double> samples = [];
+    for (int i = 0; i < 1000; i++) {
+      samples.add(audioBytes[i % audioBytes.length].toDouble() / 255);
+    }
+    return samples;
+  }
+
+  List<double> scaleWaveData(List<double> data,
+      {double targetMax = 32, double targetMin = 1}) {
+    if (data.isEmpty) return [];
+
+    double currentMin = data.reduce(min);
+    double currentMax = data.reduce(max);
+
+    // Avoid division by zero
+    if (currentMax == currentMin) {
+      return List.filled(data.length, targetMin);
+    }
+
+    final random = Random();
+
+    // Scale the values
+    return data.map((x) {
+      double scaledValue = ((x - currentMin) / (currentMax - currentMin)) *
+              (targetMax - targetMin) +
+          targetMin;
+
+      // If the scaled value is very close to the minimum (1),
+      // replace it with a random value between 3 and 6
+      if (scaledValue < 1.1) {
+        return 5 + random.nextDouble() * 3; // Random value between 3 and 6
+      }
+
+      return scaledValue;
+    }).toList();
   }
 
   Future<void> _init() async {
@@ -235,14 +343,14 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
       setState(() {
         isPlaying = true;
       });
-      log("playing");
+      print("playing");
       final audioSource = LockCachingAudioSource(Uri.parse(widget.noteUrl));
       var da = await _player.setAudioSource(audioSource);
 
       await _player.play();
       _updatePlayedComment();
     } catch (e) {
-      log(e.toString());
+      print(e.toString());
     }
   }
 
@@ -300,7 +408,7 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    log('Waveform: $waveForm');
+    print('Waveform: $waveForm');
     // checkAutoPlay();
     return Padding(
       padding: const EdgeInsets.only(left: 2),
