@@ -353,7 +353,6 @@ class NoteProvider with ChangeNotifier {
       allowedExtensions: ['mp3', 'wav', 'flac'],
     );
 
-
     if (result != null) {
       audioFiles = result.paths.map((path) => File(path!)).toList();
       // File audioFIle=result.p
@@ -746,31 +745,34 @@ class NoteProvider with ChangeNotifier {
   Future record(context) async {
     String? path;
     var id = const Uuid().v4();
-
-    if (await Permission.microphone.request().isGranted) {
-      if (await recorder.hasPermission()) {
-        Directory appDocDir = await getApplicationDocumentsDirectory();
-        String appDocPath = appDocDir.path;
-        path = '$appDocPath/$id.flac';
-        // await _initRecorder();
-        setRecording(true);
-        await recorder.start(
-          path: path,
-          encoder: AudioEncoder.AAC,
-          bitRate: 128000,
-          samplingRate: 44100.0,
-        );
-        _timer = Timer(
-            Duration(
-                hours: Provider.of<UserProvider>(context, listen: false)
-                        .user!
-                        .isVerified
-                    ? 5
-                    : 1), () {
-          stop(context);
-        });
-        // notifyListeners();
+    try {
+      if (await Permission.microphone.request().isGranted) {
+        if (await recorder.hasPermission()) {
+          Directory appDocDir = await getApplicationDocumentsDirectory();
+          String appDocPath = appDocDir.path;
+          path = '$appDocPath/$id.flac';
+          // await _initRecorder();
+          setRecording(true);
+          await recorder.start(
+            path: path,
+            encoder: AudioEncoder.AAC,
+            bitRate: 128000,
+            samplingRate: 44100.0,
+          );
+          _timer = Timer(
+              Duration(
+                  hours: Provider.of<UserProvider>(context, listen: false)
+                          .user!
+                          .isVerified
+                      ? 5
+                      : 1), () {
+            stop(context);
+          });
+          // notifyListeners();
+        }
       }
+    } catch (e) {
+      debugPrint("Error in recording $e");
     }
   }
 

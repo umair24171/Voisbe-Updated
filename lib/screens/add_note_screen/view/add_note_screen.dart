@@ -398,6 +398,8 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                       noteProvider.stop(context);
                                       recorderController.stop();
                                     } else {
+                                      debugPrint('Recording');
+
                                       recorderController.record();
                                       noteProvider.record(context);
                                       // noteProvider.startTimer();
