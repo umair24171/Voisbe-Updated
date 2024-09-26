@@ -302,7 +302,7 @@ class _FeedDetailScreenState extends State<FeedDetailScreen> {
                                   } else if (await noteProvider.recorder
                                       .isRecording()) {
                                     noteProvider.setIsSending(true);
-                                    noteProvider.stop(context);
+                                    noteProvider.stop();
                                   } else if (noteProvider.isSending) {
                                     Provider.of<NoteProvider>(context,
                                             listen: false)

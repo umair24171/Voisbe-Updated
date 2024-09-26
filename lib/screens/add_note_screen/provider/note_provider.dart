@@ -10,6 +10,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:record/record.dart' as rec;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_notes/main.dart';
 import 'package:social_notes/resources/white_overlay_popup.dart';
@@ -303,7 +304,6 @@ class NoteProvider with ChangeNotifier {
 
   setSelectedVideo(String video) {
     selectedVideo = video;
-
     notifyListeners();
   }
 
@@ -418,7 +418,7 @@ class NoteProvider with ChangeNotifier {
   // final StreamController<RecorderState> _recorderStateController =
   //     StreamController.broadcast();
   String directoryPath = '';
-  final FlutterSoundRecord recorder = FlutterSoundRecord();
+  // final FlutterSoundRecord recorder = FlutterSoundRecord();
 
   // getting the path of file to save
 
@@ -632,17 +632,22 @@ class NoteProvider with ChangeNotifier {
     if (await Permission.microphone.request().isGranted) {
       if (await recorder.hasPermission()) {
         // await _initRecorder();
+        setRecording(true);
+        // temporary path
         Directory appDocDir = await getApplicationDocumentsDirectory();
         String appDocPath = appDocDir.path;
-        path = '$appDocPath/$id.flac';
-        // await _initRecorder();
-        setRecording(true);
+        var id = const Uuid().v4();
+        String path = '$appDocPath/$id.m4a';
         await recorder.start(
-          path: path,
-          encoder: AudioEncoder.AAC,
-          bitRate: 128000,
-          samplingRate: 44100.0,
-        );
+            const rec.RecordConfig(
+              androidConfig:
+                  rec.AndroidRecordConfig(muteAudio: true, useLegacy: true),
+              autoGain: true,
+              echoCancel: true,
+              encoder: rec.AudioEncoder.aacLc,
+              noiseSuppress: true,
+            ),
+            path: path);
         // notifyListeners();
       }
     }
@@ -666,17 +671,22 @@ class NoteProvider with ChangeNotifier {
     if (await Permission.microphone.request().isGranted) {
       if (await recorder.hasPermission()) {
         // await _initRecorder();
+        setRecording(true);
+        // temporary path
         Directory appDocDir = await getApplicationDocumentsDirectory();
         String appDocPath = appDocDir.path;
-        path = '$appDocPath/$id.flac';
-        // await _initRecorder();
-        setRecording(true);
+        var id = const Uuid().v4();
+        String path = '$appDocPath/$id.m4a';
         await recorder.start(
-          path: path,
-          encoder: AudioEncoder.AAC,
-          bitRate: 128000,
-          samplingRate: 44100.0,
-        );
+            const rec.RecordConfig(
+              androidConfig:
+                  rec.AndroidRecordConfig(muteAudio: true, useLegacy: true),
+              autoGain: true,
+              echoCancel: true,
+              encoder: rec.AudioEncoder.aacLc,
+              noiseSuppress: true,
+            ),
+            path: path);
         // notifyListeners();
       }
     }
@@ -741,39 +751,96 @@ class NoteProvider with ChangeNotifier {
   // }
 
 //  function to record during the add note post
+  // Future record(context) async {
+  //   String? path;
+  //   var id = const Uuid().v4();
+  //   try {
+  //     // Check for recorder permission
+  //     bool hasPermission = await recorder.hasPermission();
+  //     debugPrint("Recorder permission: $hasPermission");
 
-  Future record(context) async {
-    String? path;
-    var id = const Uuid().v4();
-    try {
-      if (await Permission.microphone.request().isGranted) {
-        if (await recorder.hasPermission()) {
-          Directory appDocDir = await getApplicationDocumentsDirectory();
-          String appDocPath = appDocDir.path;
-          path = '$appDocPath/$id.flac';
-          // await _initRecorder();
-          setRecording(true);
-          await recorder.start(
-            path: path,
-            encoder: AudioEncoder.AAC,
-            bitRate: 128000,
-            samplingRate: 44100.0,
-          );
-          _timer = Timer(
-              Duration(
-                  hours: Provider.of<UserProvider>(context, listen: false)
-                          .user!
-                          .isVerified
-                      ? 5
-                      : 1), () {
-            stop(context);
-          });
-          // notifyListeners();
-        }
-      }
-    } catch (e) {
-      debugPrint("Error in recording $e");
+  //     if (await Permission.microphone.request().isGranted == false) {
+  //       return;
+  //     }
+
+  //     if (hasPermission) {
+  //       debugPrint("Recorder permission granted");
+  //       Directory appDocDir = await getApplicationDocumentsDirectory();
+  //       String appDocPath = appDocDir.path;
+  //       path = '$appDocPath/$id.m4a'; // Using .m4a format for AAC encoding
+
+  //       debugPrint("Recording path: $path");
+
+  //       // Start recording
+  //       setRecording(true);
+  //       await recorder.start(
+  //         path: path,
+  //         encoder:
+  //             AudioEncoder.AAC_HE, // Adjust encoder as per your requirement
+  //         bitRate: 128000,
+  //         samplingRate: 44100.0,
+  //       );
+
+  //       // Set timer based on user verification status
+  //       _timer = Timer(
+  //           Duration(
+  //               hours: Provider.of<UserProvider>(context, listen: false)
+  //                       .user!
+  //                       .isVerified
+  //                   ? 5
+  //                   : 1), () {
+  //         stop(context);
+  //       });
+  //     } else {
+  //       debugPrint("Recorder permission not granted");
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Error in recording: $e");
+  //   }
+  // }
+
+  final recorder = rec.AudioRecorder();
+
+// recorder
+  Future<void> record(context) async {
+    setRecording(true);
+    if (await recorder.hasPermission()) {
+      // temporary path
+      Directory appDocDir = await getApplicationDocumentsDirectory();
+      String appDocPath = appDocDir.path;
+      var id = const Uuid().v4();
+      String path = '$appDocPath/$id.m4a';
+      await recorder.start(
+          const rec.RecordConfig(
+            androidConfig:
+                rec.AndroidRecordConfig(muteAudio: true, useLegacy: true),
+            autoGain: true,
+            echoCancel: true,
+            encoder: rec.AudioEncoder.aacLc,
+            noiseSuppress: true,
+          ),
+          path: path);
+
+      // Set timer based on user verification status
+      _timer = Timer(
+          Duration(
+              hours: Provider.of<UserProvider>(context, listen: false)
+                      .user!
+                      .isVerified
+                  ? 5
+                  : 1), () {
+        stop();
+      });
+    } else {
+      Permission.audio.request();
+      Permission.microphone.request();
     }
+  }
+
+  stop() async {
+    setRecording(false);
+    final path = await recorder.stop();
+    setVoiceNote(File(path!));
   }
 
   bool isChecking = false;
@@ -785,12 +852,12 @@ class NoteProvider with ChangeNotifier {
 
   //  stopping the recording of the add note post recording and saving into the variable
 
-  Future stop(context) async {
-    setRecording(false);
-    final path = await recorder.stop();
+  // Future stop(context) async {
+  //   setRecording(false);
+  //   final path = await recorder.stop();
 
-    setVoiceNote(File(path!));
-  }
+  //   setVoiceNote(File(path!));
+  // }
 
   //  canceling the reply
 

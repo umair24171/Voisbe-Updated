@@ -476,7 +476,7 @@ class _CircleCommentsState extends State<CircleComments> {
                                   } else if (await noteProvider.recorder
                                       .isRecording()) {
                                     noteProvider.setIsSending(true);
-                                    noteProvider.stop(context);
+                                    noteProvider.stop( );
                                     recorderController.stop();
                                   } else if (noteProvider.isSending) {
                                     Provider.of<NoteProvider>(context,

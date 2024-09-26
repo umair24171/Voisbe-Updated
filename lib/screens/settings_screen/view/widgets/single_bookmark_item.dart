@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -96,7 +98,7 @@ class _SingleBookMarkItemState extends State<SingleBookMarkItem> {
             _cachedFilePath = fileInfo.file.path;
             _audioPlayer.setPlaybackRate(_playbackSpeed); // Set playback speed
             _audioPlayer.play(
-              UrlSource(_cachedFilePath!),
+              Platform.isAndroid ? UrlSource(_cachedFilePath!) : UrlSource(widget.note.noteUrl),
             );
           }
         });

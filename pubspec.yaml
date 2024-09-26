@@ -150,6 +150,7 @@ dependencies:
   collection: ^1.18.0
   android_path_provider: ^0.3.0
   audio_session: ^0.1.21
+  record: ^5.1.2
   # media_scanner_scan_file: ^0.0.4
   # cropper_and_trimmer:
   #   path: ./local_packages/cropper_and_trimmer

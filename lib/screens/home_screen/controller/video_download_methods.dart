@@ -99,10 +99,13 @@ class VideoDownloadMethods {
         progressController.stream.asBroadcastStream());
 
     try {
-      if (!await _requestPermissions()) {
+     if(Platform.isAndroid){
+       bool permission = await _requestPermissions();
+      if (!permission) {
         print('Required permissions not granted');
         return;
       }
+     }
 
       int totalSteps = 3; // Base steps: audio, processing, saving
       if (hasBackgroundVideo || hasBackgroundPhoto) totalSteps++;

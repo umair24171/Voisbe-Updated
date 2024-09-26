@@ -538,7 +538,7 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
               const Expanded(child: SizedBox()),
               Padding(
                 padding: EdgeInsets.symmetric(
-                    horizontal: userProvider!.isVerified ? 0 : 20,
+                    horizontal: userProvider!.isVerified ? 10 : 20,
                     vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -546,9 +546,6 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                     ElevatedButton.icon(
                       style: ButtonStyle(
                         backgroundColor: WidgetStatePropertyAll(blackColor),
-                        fixedSize: const WidgetStatePropertyAll(
-                          Size(100, 10),
-                        ),
                       ),
                       onPressed: () {
                         // go back to the prevoius screen
@@ -570,53 +567,51 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                       ),
                     ),
                     if (userProvider.isVerified)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2),
-                        child: Container(
-                          width: 152,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 0, horizontal: 7),
-                          decoration: BoxDecoration(
-                            color: whiteColor,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: forSubscribers
-                                ? MainAxisAlignment.start
-                                : MainAxisAlignment.spaceBetween,
-                            children: [
-                              //  toggle to show if the user is verified and if subscripton is enable
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: whiteColor,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                //  toggle to show if the user is verified and if subscripton is enable
 
-                              Text(
-                                forSubscribers ? 'Subscribers' : 'Public',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: fontFamily,
-                                    color: blackColor),
-                              ),
+                                Text(
+                                  forSubscribers ? '  Subscribers' : '  Public',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontFamily: fontFamily,
+                                      color: blackColor),
+                                ),
 
-                              // switch to enable or disable the toggle only show up if the user has enabled the subscription
+                                // switch to enable or disable the toggle only show up if the user has enabled the subscription
 
-                              Switch(
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  activeColor: const Color(0xffA562CB),
-                                  value: forSubscribers,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      forSubscribers = value;
-                                    });
-                                  }),
-                            ],
+                                Switch(
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    activeColor: const Color(0xffA562CB),
+                                    value: forSubscribers,
+                                    trackOutlineColor:
+                                        MaterialStateProperty.all(
+                                            Colors.transparent),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        forSubscribers = value;
+                                      });
+                                    }),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     Consumer<UserProvider>(builder: (context, loadingPro, _) {
                       return ElevatedButton.icon(
                         style: ButtonStyle(
-                            fixedSize: const WidgetStatePropertyAll(
-                              Size(100, 10),
-                            ),
+                          
                             backgroundColor:
                                 WidgetStatePropertyAll(whiteColor)),
                         onPressed: () async {

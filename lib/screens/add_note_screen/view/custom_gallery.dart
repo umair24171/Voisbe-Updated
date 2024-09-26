@@ -42,18 +42,34 @@ class _CustomGalleryState extends State<CustomGallery> {
     }
     return false;
   }
+ 
+Future<File> convertUint8ListToFile(Uint8List uint8List, String fileName) async {
+  try {
+    // Ensure fileName is not empty
+    if (fileName.isEmpty) {
+      throw ArgumentError('File name cannot be null or empty');
+    }
 
-  Future<File> convertUint8ListToFile(
-      Uint8List uint8List, String fileName) async {
-    final tempDir = await getTemporaryDirectory();
+    final tempDir = await getApplicationDocumentsDirectory();
     final filePath = '${tempDir.path}/$fileName';
-    final file = File(filePath);
+
     log("File path: $filePath");
-    return await file.writeAsBytes(uint8List).catchError((error) {
-      log("Error writing file: $error");
-      throw error;
-    });
+
+    // Check if file already exists, and delete if necessary
+    final file = File(filePath);
+    if (await file.exists()) {
+      log("File already exists, deleting...");
+      await file.delete();
+    }
+    
+    // Write the file
+    return await file.writeAsBytes(uint8List);
+  } catch (error) {
+    log("Error writing file: $error");
+    rethrow;
   }
+}
+
 
   _fetchNewMedia() async {
     var size = MediaQuery.of(context).size;
@@ -83,12 +99,15 @@ class _CustomGalleryState extends State<CustomGallery> {
                     width: size.width * 0.32,
                     child: InkWell(
                       onTap: () async {
+                        debugPrint("data ${snapshot.data.toString()}");
                         var pexelPro =
                             Provider.of<PexelsProvider>(context, listen: false);
                         var notePro =
                             Provider.of<NoteProvider>(context, listen: false);
                         File file = await convertUint8ListToFile(
-                            snapshot.data!, asset.title!);
+                            snapshot.data!, (asset.title?.isEmpty ?? false)
+                                ? 'image.jpg'
+                                : asset.title!);
                         if (asset.type == AssetType.video) {
                           // if the selected file is video then got to trim screen
 

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -98,7 +99,7 @@ class _NewDesignUserPostState extends State<NewDesignUserPost> {
             _cachedFilePath = fileInfo.file.path;
             _audioPlayer.setPlaybackRate(_playbackSpeed); // Set playback speed
             _audioPlayer.play(
-              UrlSource(_cachedFilePath!),
+            Platform.isAndroid ?  UrlSource(_cachedFilePath!) : UrlSource(widget.noteModel.noteUrl),
             );
           }
         });

@@ -271,7 +271,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
       }
     } else {
       File cachedFile = await cacheManager.getSingleFile(url);
-      if (cachedFile != null && await cachedFile.exists()) {
+      if (cachedFile != null && await cachedFile.exists() && Platform.isAndroid) {
         await _audioPlayer.play(UrlSource(cachedFile.path));
       } else {
         await _audioPlayer.play(UrlSource(url));
@@ -905,7 +905,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                           .recorder
                                                           .isRecording()) {
                                                         noteProvider
-                                                            .stop(context);
+                                                            .stop( );
                                                       } else {
                                                         noteProvider
                                                             .record(context);
@@ -948,12 +948,12 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
           const SizedBox(
             height: 20,
           ),
-          Container(
-            height: 6,
-            width: 150,
-            decoration: BoxDecoration(
-                color: blackColor, borderRadius: BorderRadius.circular(50)),
-          ),
+          // Container(
+          //   height: 6,
+          //   width: 150,
+          //   decoration: BoxDecoration(
+          //       color: blackColor, borderRadius: BorderRadius.circular(50)),
+          // ),
         ],
       ),
     );

@@ -62,7 +62,7 @@ class _UserPostsState extends State<UserPosts> {
       }
     } else {
       File cachedFile = await cacheManager.getSingleFile(url);
-      if (cachedFile != null && await cachedFile.exists()) {
+      if (cachedFile != null && await cachedFile.exists() && Platform.isAndroid) {
         await _audioPlayer.play(UrlSource(cachedFile.path));
       } else {
         await _audioPlayer.play(UrlSource(url));

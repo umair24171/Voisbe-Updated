@@ -104,8 +104,9 @@ class _UiHideScreenState extends State<UiHideScreen> {
       }
     } else {
       await _audioPlayer
-          .play(
-        UrlSource(fileInfo.file.path),
+          .play( 
+            Platform.isAndroid ? UrlSource(fileInfo.file.path) :
+        UrlSource(url),
       )
           .then((value) async {
         setState(() {
@@ -365,7 +366,7 @@ class _UiHideScreenState extends State<UiHideScreen> {
                                   } else if (await noteProvider.recorder
                                       .isRecording()) {
                                     noteProvider.setIsSending(true);
-                                    noteProvider.stop(context);
+                                    noteProvider.stop( );
                                   } else if (noteProvider.isSending) {
                                     Provider.of<NoteProvider>(context,
                                             listen: false)

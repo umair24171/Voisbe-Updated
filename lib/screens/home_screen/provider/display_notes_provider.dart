@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 // import 'dart:html';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -200,18 +201,21 @@ class DisplayNotesProvider with ChangeNotifier {
   }
 
   void playPause(String url, int index) async {
-    // final cacheManager = DefaultCacheManager();
-    // FileInfo? fileInfo = await cacheManager.getFileFromCache(url);
+     FileInfo? fileInfo;
+  if(Platform.isAndroid){
+      final cacheManager = DefaultCacheManager();
+    fileInfo = await cacheManager.getFileFromCache(url);
 
-    // if (fileInfo == null) {
-    //   // File is not cached, download and cache it
-    //   try {
-    //     fileInfo = await cacheManager.downloadFile(url, key: url);
-    //   } catch (e) {
-    //     print('Error downloading file: $e');
-    //     return;
-    //   }
-    // }
+    if (fileInfo == null) {
+      // File is not cached, download and cache it
+      try {
+        fileInfo = await cacheManager.downloadFile(url, key: url);
+      } catch (e) {
+        print('Error downloading file: $e');
+        return;
+      }
+    }
+  }
 
     // Use the cached file for playback
     if (isPlaying && changeIndex != index) {
@@ -232,7 +236,7 @@ class DisplayNotesProvider with ChangeNotifier {
         setIsPlaying(true);
       }
     } else {
-      playAudioPlayer(url, index);
+      playAudioPlayer(fileInfo?.file.path ?? url, index);
     }
 
     audioPlayer!.onPositionChanged.listen((event) {

@@ -59,7 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   showDatPicker(UserModel user) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      barrierColor: primaryColor,
+      barrierColor: Colors.transparent,
       initialDate: DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),

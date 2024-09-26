@@ -395,7 +395,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                   if (noteProvider.audioFiles.isEmpty) {
                                     if (await noteProvider.recorder
                                         .isRecording()) {
-                                      noteProvider.stop(context);
+                                      noteProvider.stop();
                                       recorderController.stop();
                                     } else {
                                       debugPrint('Recording');

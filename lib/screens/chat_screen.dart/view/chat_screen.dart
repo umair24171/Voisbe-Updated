@@ -185,7 +185,7 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     } else {
       File cachedFile = await cacheManager.getSingleFile(url);
-      if (cachedFile != null && await cachedFile.exists()) {
+      if (cachedFile != null && await cachedFile.exists() && Platform.isAndroid) {
         await _audioPlayer.play(UrlSource(cachedFile.path));
       } else {
         await _audioPlayer.play(UrlSource(url));
@@ -754,7 +754,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                     // }
                                                     if (await note.recorder
                                                         .isRecording()) {
-                                                      note.stop(context);
+                                                      note.stop( );
                                                     } else {
                                                       note.record(context);
                                                     }
