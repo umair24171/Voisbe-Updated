@@ -14,6 +14,7 @@ import 'package:social_notes/screens/chat_screen.dart/controller/chat_controller
 import 'package:social_notes/screens/chat_screen.dart/model/chat_model.dart';
 import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dart';
 import 'package:social_notes/screens/chat_screen.dart/view/chat_screen.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -50,6 +51,15 @@ class _SharePostSheetState extends State<SharePostSheet> {
         });
       },
     );
+  }
+
+  stopMainPlayer() {
+    Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setIsPlaying(false);
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setChangeIndex(-1);
+    Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
   }
 
   @override
@@ -116,6 +126,7 @@ class _SharePostSheetState extends State<SharePostSheet> {
                 //     UserModel.fromMap(snapshot.data!.docs[index].data());
                 return GestureDetector(
                   onTap: () {
+                    stopMainPlayer();
                     String chatId = const Uuid().v4();
 
                     ChatModel chat = ChatModel(

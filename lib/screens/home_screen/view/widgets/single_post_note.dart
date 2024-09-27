@@ -1032,6 +1032,10 @@ class _SingleNotePostState extends State<SingleNotePost> {
 
                 GestureDetector(
                   onTap: () async {
+                    stopMainPlayer();
+                    Provider.of<CircleCommentsProvider>(context, listen: false)
+                        .pausePlayer();
+
                     await showModalBottomSheet(
                         useSafeArea: true,
                         enableDrag: true,

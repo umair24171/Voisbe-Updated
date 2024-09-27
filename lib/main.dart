@@ -47,6 +47,7 @@ import 'package:social_notes/screens/profile_screen/profile_screen.dart';
 import 'package:social_notes/screens/profile_screen/provider.dart/update_profile_provider.dart';
 import 'package:social_notes/screens/search_screen/view/provider/search_screen_provider.dart';
 import 'package:social_notes/screens/settings_screen/controllers/settings_provider.dart';
+import 'package:social_notes/screens/stirpe_screen.dart';
 import 'package:social_notes/screens/stripe_controller.dart';
 import 'package:social_notes/screens/subscribe_screen.dart/view/subscribe_screen.dart';
 import 'package:social_notes/screens/upload_sounds/provider/sound_provider.dart';
@@ -85,7 +86,7 @@ void _showNotification(
   );
   const DarwinNotificationDetails initializationSettingsDarwin =
       DarwinNotificationDetails();
-    NotificationDetails platformChannelSpecifics = const NotificationDetails(
+  NotificationDetails platformChannelSpecifics = const NotificationDetails(
       android: androidPlatformChannelSpecifics,
       iOS: initializationSettingsDarwin);
 
@@ -229,6 +230,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+
     // SpotifyClass().getToken(context);
     // SpotifyClass().getRefreshToken();
     // getALlPostsANdUpdate();
@@ -317,20 +319,20 @@ class _MyAppState extends State<MyApp> {
             seedColor: Colors.deepPurple, background: whiteColor),
         useMaterial3: true,
       ),
-      home:
-          // MyHomePage(),
-          //  const Home(),
-          //  AudioTesting(),
-          //  CustomProgressPlayer(
-          //   height: 80,
-          //   width: 150,
-          //   noteUrl:
-          //       'https://firebasestorage.googleapis.com/v0/b/voisbe.appspot.com/o/voices%2Fd18e8809-8ae9-429a-a72c-601a775c97e5?alt=media&token=b3afd27c-2f2f-4f5d-8dbc-3e746b7c72bf',
-          //   mainHeight: 150,
-          //   mainWidth: 300,
-          // ),
-          // AuthScreen(),
-          const SplashScreen(),
+      home: const SplashScreen(),
+      // MyHomePage(),
+      //  const Home(),
+      //  AudioTesting(),
+      //  CustomProgressPlayer(
+      //   height: 80,
+      //   width: 150,
+      //   noteUrl:
+      //       'https://firebasestorage.googleapis.com/v0/b/voisbe.appspot.com/o/voices%2Fd18e8809-8ae9-429a-a72c-601a775c97e5?alt=media&token=b3afd27c-2f2f-4f5d-8dbc-3e746b7c72bf',
+      //   mainHeight: 150,
+      //   mainWidth: 300,
+      // ),
+      // AuthScreen(),
+      // CheckoutPage(),
       routes: {
         ProfileScreen.routeName: (context) => ProfileScreen(),
         HomeScreen.routeName: (context) => HomeScreen(),

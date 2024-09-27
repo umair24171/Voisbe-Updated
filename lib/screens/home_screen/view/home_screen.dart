@@ -18,6 +18,7 @@ import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dar
 import 'package:social_notes/screens/chat_screen.dart/view/users_screen.dart';
 
 import 'package:social_notes/screens/home_screen/model/feed_detail_model.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/video_player_manager.dart';
@@ -1153,10 +1154,20 @@ class _CustomNotificationIconState extends State<CustomNotificationIcon> {
     super.initState();
   }
 
+  stopMainPlayer() {
+    Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setIsPlaying(false);
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setChangeIndex(-1);
+    Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
+  }
+
   @override
   Widget build(BuildContext context) {
     return IconButton(
         onPressed: () {
+          stopMainPlayer();
           Navigator.push(context, MaterialPageRoute(
             builder: (context) {
               return const NotificationScreen();
