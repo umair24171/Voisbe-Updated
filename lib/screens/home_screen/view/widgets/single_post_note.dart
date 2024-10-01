@@ -262,7 +262,6 @@ class _SingleNotePostState extends State<SingleNotePost> {
             child: MainPlayer(
                 lockPosts: [],
                 title: '',
-
                 // playCounts: playCounts,
                 listenedWaves: widget.note.mostListenedWaves,
                 postId: widget.note.noteId,

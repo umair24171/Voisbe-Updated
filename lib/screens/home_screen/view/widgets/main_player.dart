@@ -1076,10 +1076,8 @@ class _MainPlayerState extends State<MainPlayer> {
         final decodedData = json.decode(cachedData);
         maxDuration = Duration(milliseconds: decodedData['maxDuration']);
         final samplesData = List<double>.from(decodedData['samples']);
-
-        setState(() {
-          samples = samplesData;
-        });
+         _safeSetState(() {samples = samplesData;});
+        
       } else {
         // Fetch new data
         await widget.audioPlayer.setSourceUrl(url);
@@ -1095,10 +1093,8 @@ class _MainPlayerState extends State<MainPlayer> {
 
           // Scale the waveform data
           final scaledSamples = scaleWaveData(samplesData);
-
-          setState(() {
-            samples = scaledSamples;
-          });
+ _safeSetState(() {samples = scaledSamples;});
+          
 
           // Cache the data
           final dataToCache = json.encode({
@@ -1112,9 +1108,8 @@ class _MainPlayerState extends State<MainPlayer> {
       }
 
       widget.audioPlayer.onPositionChanged.listen((position) {
-        setState(() {
-          elapsedDuration = position;
-        });
+         _safeSetState(() {elapsedDuration = position;});
+       
       });
     } catch (e) {
       print('Error loading audio: $e');
@@ -1717,8 +1712,7 @@ class _MainPlayerState extends State<MainPlayer> {
                         if (widget.waveColor == null)
                           InkWell(
                             onTap: () {
-                              setState(() {
-                                if (_playbackSpeed == 1.0) {
+                               _safeSetState(() { if (_playbackSpeed == 1.0) {
                                   _playbackSpeed = 1.5;
                                 } else if (_playbackSpeed == 1.5) {
                                   _playbackSpeed = 2.0;
@@ -1729,8 +1723,8 @@ class _MainPlayerState extends State<MainPlayer> {
                                 if (widget.isPlaying) {
                                   widget.audioPlayer
                                       .setPlaybackRate(_playbackSpeed);
-                                }
-                              });
+                                }});
+                             
                             },
                             child: Consumer<FilterProvider>(
                                 builder: (context, filterPro, _) {
