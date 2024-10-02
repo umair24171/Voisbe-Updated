@@ -243,14 +243,16 @@ class _ChatPlayerState extends State<ChatPlayer> {
   }
 
   void scrollToPosition(Duration position) {
-    final progressPercent = position.inMilliseconds / duration.inMilliseconds;
-    final targetScrollOffset =
-        progressPercent * waveForm.length * widget.width - widget.width / 2;
-    _scrollController.animateTo(
-      targetScrollOffset,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-    );
+    if (waveForm.isNotEmpty && _scrollController.hasClients) {
+      final progressPercent = position.inMilliseconds / duration.inMilliseconds;
+      final targetScrollOffset =
+          progressPercent * waveForm.length * widget.width - widget.width / 2;
+      _scrollController.animateTo(
+        targetScrollOffset,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
@@ -355,13 +357,13 @@ class _ChatPlayerState extends State<ChatPlayer> {
                           final seekPosition =
                               Duration(milliseconds: position.toInt());
                           widget.player.seek(seekPosition);
-                          scrollToPosition(seekPosition);
+                          // scrollToPosition(seekPosition);
                         },
                         child: CustomPaint(
                           size: Size(widget.width, widget.height),
                           painter: RectangleActiveWaveformPainter(
-                            onSeek: (p0) {
-                              widget.player.seek(p0);
+                            onSeek: (details) {
+                              widget.player.seek(details);
                             },
                             activeColor:
                                 widget.changeIndex == widget.currentIndex &&

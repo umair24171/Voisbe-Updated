@@ -233,7 +233,18 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                 color: Colors.white.withOpacity(0.1), // Transparent color
               ),
             ),
-
+ Positioned.fill(
+  top: 0,
+  bottom: 0,
+   child: Container(
+                        child: Image.asset(
+                          'assets/icons/profilepage_backgroundgradient 1.png',
+                          fit: BoxFit.cover,
+                          height: size.height,
+                          width: size.width,
+                        ),
+                      ),
+ ),
             //  refresh function
 
             RefreshIndicator(
@@ -260,14 +271,7 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
                     //  background gradient pic
 
-                    Container(
-                      child: Image.asset(
-                        'assets/icons/profilepage_backgroundgradient 1.png',
-                        fit: BoxFit.cover,
-                        height: size.height,
-                        width: size.width,
-                      ),
-                    ),
+                   
                     Column(
                       children: [
                         Padding(

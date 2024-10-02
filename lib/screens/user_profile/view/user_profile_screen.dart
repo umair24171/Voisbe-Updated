@@ -389,7 +389,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
 
                 //  refresh the posts
-
+                Positioned.fill(
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    child: Image.asset(
+                      'assets/icons/profilepage_backgroundgradient 1.png',
+                      fit: BoxFit.cover,
+                      height: size.height,
+                      width: size.width,
+                    ),
+                  ),
+                ),
                 RefreshIndicator(
                   backgroundColor: whiteColor,
                   color: primaryColor,
@@ -400,14 +411,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       children: [
                         //  background gradient pic of the screen
 
-                        Container(
-                          child: Image.asset(
-                            'assets/icons/profilepage_backgroundgradient 1.png',
-                            fit: BoxFit.cover,
-                            height: size.height,
-                            width: size.width,
-                          ),
-                        ),
                         Column(
                           children: [
                             Padding(

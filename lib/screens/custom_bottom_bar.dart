@@ -33,6 +33,8 @@ import 'package:social_notes/screens/search_screen/view/search_screen.dart';
 // import 'package:social_notes/screens/upload_sounds/provider/sound_provider.dart';
 import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
 import 'package:social_notes/screens/user_profile/view/user_profile_screen.dart';
+
+import '../resources/review_pop_up.dart';
 // import 'package:service';
 // import 'package:social_notes/screens/user_profile/view/widgets/custom_player.dart';
 
@@ -91,9 +93,10 @@ class _BottomBarState extends State<BottomBar> {
 
         DeepLinkPostService().initDynamicLinks(context);
         DeepLinkPostService().initDynamicLinksForProfile(context);
+        openReviewDialoge(context);
       },
     );
-
+    
     super.initState();
   }
 

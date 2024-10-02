@@ -92,8 +92,14 @@ class _HomeScreenState extends State<HomeScreen>
           .get()
           .then((value) {
         widget.note = NoteModel.fromMap(value.data()!);
-        setState(() {});
+        _safeSetState(() {});
       });
+    }
+  }
+
+    void _safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
     }
   }
 
@@ -107,9 +113,7 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
     _pageController = PageController();
-
     //  calling it in init before the screen builds
-
     _initializeHomeScreen();
   }
 
