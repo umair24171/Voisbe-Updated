@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:developer';
+import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 // import 'package:social_notes/resources/show_snack.dart';
@@ -14,10 +17,125 @@ import 'package:social_notes/screens/stripe_controller.dart';
 import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 // import 'package:social_notes/screens/custom_bottom_bar.dart';
+import 'package:http/http.dart' as http;
 
-class SubscribeScreen extends StatelessWidget {
-  const SubscribeScreen({super.key});
+class SubscribeScreen extends StatefulWidget {
+  const SubscribeScreen({super.key, required this.price});
   static const routeName = '/subscribe-screen';
+  final double price;
+
+  @override
+  State<SubscribeScreen> createState() => _SubscribeScreenState();
+}
+
+class _SubscribeScreenState extends State<SubscribeScreen> {
+  static const String backendUrl = 'https://api-yqekgrov4a-uc.a.run.app';
+  String? paymentIntentClientSecret;
+  bool isLoading = false;
+  Future<void> fetchPaymentIntent(double price) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final url = Uri.parse('$backendUrl/create-payment-intent');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'price': widget.price}),
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        setState(() {
+          paymentIntentClientSecret = json['clientSecret'];
+          isLoading = false;
+        });
+      } else {
+        print('Server responded with status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        throw Exception('Failed to fetch payment intent');
+      }
+    } catch (e) {
+      print('Error fetching payment intent: $e');
+      setState(() {
+        isLoading = false;
+      });
+      showWhiteOverlayPopup(context, Icons.subscriptions_outlined, null, null,
+          title: 'Error loading page',
+          message: 'Failed to fetch payment intent: $e.',
+          isUsernameRes: false);
+    }
+  }
+
+  Future<void> pay(UserModel otherUser, UserModel currentUser) async {
+    // var currentUser=Provider.of<UserProvider>(context,listen: false).user;
+    if (paymentIntentClientSecret == null) return;
+
+    try {
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: paymentIntentClientSecret!,
+          merchantDisplayName: 'Voisbe',
+        ),
+      );
+
+      await Stripe.instance.presentPaymentSheet();
+
+      var pro = Provider.of<UserProvider>(context, listen: false);
+      // if (!otherUser.otherUser!.subscribedUsers
+      //     .contains(currentUser.uid)) {
+      pro.setUserLoading(true);
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(otherUser!.uid)
+          .update({
+        'subscribedUsers': FieldValue.arrayUnion([currentUser!.uid])
+      }).then((value) async {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid)
+            .update({
+          'subscribedSoundPacks': FieldValue.arrayUnion([otherUser.uid])
+        });
+      }).then((value) {
+        pro.setUserLoading(false);
+        currentUser.subscribedSoundPacks.add(otherUser.uid);
+        showWhiteOverlayPopup(context, Icons.subscriptions_outlined, null, null,
+            title: 'Subscription Successful',
+            message:
+                'You have successfully subscribed to ${otherUser.username}.',
+            isUsernameRes: false);
+      }).onError((error, stackTrace) {
+        pro.setUserLoading(false);
+        log('Error: $error');
+      });
+
+      // showWhiteOverlayPopup(context, Icons.subscriptions_outlined, null, null,
+      //     title: 'Subscription Successful',
+      //     message: 'You have successfully subscribed to ${otherUser.username}.',
+      //     isUsernameRes: false);
+    } catch (e) {
+      if (e is StripeException) {
+        Provider.of<UserProvider>(context, listen: false).setUserLoading(false);
+        // showWhiteOverlayPopup(context, Icons.error, null, null,
+        //     title: 'Error', message: e.toString(), isUsernameRes: false);
+      } else {
+        Provider.of<UserProvider>(context, listen: false).setUserLoading(false);
+        showWhiteOverlayPopup(context, Icons.subscriptions_outlined, null, null,
+            title: 'Payment Failed',
+            message: 'An unexpected error occurred.',
+            isUsernameRes: false);
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    log('price is ${widget.price}');
+    fetchPaymentIntent(widget.price);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -249,91 +367,62 @@ class SubscribeScreen extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.all(12),
                     child: GestureDetector(
-                      onTap: () async {
-                        //  logic if the id exist then remove the current user as a subsriber otherwise add a subsriber
+                      onTap: paymentIntentClientSecret == null
+                          ? null
+                          : () async {
+                              //  logic if the id exist then remove the current user as a subsriber otherwise add a subsriber
 
-                        if (!otherUser.otherUser!.subscribedUsers
-                            .contains(currentUser!.uid)) {
-                          log('function running');
-                          Provider.of<PaymentController>(context, listen: false)
-                              .makePayment(
-                                  amount: otherUser.otherUser!.price
-                                      .toInt()
-                                      .toString(),
-                                  currency: 'usd',
-                                  addSubFunction: () async {
-                                    var pro = Provider.of<UserProvider>(context,
-                                        listen: false);
-                                    // if (!otherUser.otherUser!.subscribedUsers
-                                    //     .contains(currentUser.uid)) {
-                                    pro.setUserLoading(true);
-                                    await FirebaseFirestore.instance
-                                        .collection('users')
-                                        .doc(otherUser.otherUser!.uid)
-                                        .update({
-                                      'subscribedUsers': FieldValue.arrayUnion(
-                                          [currentUser.uid])
-                                    }).then((value) async {
-                                      await FirebaseFirestore.instance
-                                          .collection('users')
-                                          .doc(currentUser.uid)
-                                          .update({
-                                        'subscribedSoundPacks':
-                                            FieldValue.arrayUnion(
-                                                [otherUser.otherUser!.uid])
-                                      });
-                                    }).then((value) {
-                                      pro.setUserLoading(false);
-                                      currentUser.subscribedSoundPacks
-                                          .add(otherUser.otherUser!.uid);
-                                      showWhiteOverlayPopup(
-                                          context,
-                                          Icons.subscriptions_outlined,
-                                          null,
-                                          null,
-                                          title: 'Subscription Successful',
-                                          message:
-                                              'You have successfully subscribed to ${otherUser.otherUser!.username}.',
-                                          isUsernameRes: false);
-                                    }).onError((error, stackTrace) {
-                                      pro.setUserLoading(false);
-                                      log('Error: $error');
-                                    });
+                              if (!otherUser.otherUser!.subscribedUsers
+                                  .contains(currentUser!.uid)) {
+                                log('function running');
+
+                                await pay(otherUser.otherUser!, currentUser);
+
+                                // Provider.of<PaymentController>(context,
+                                //         listen: false)
+                                //     .makePayment(
+                                //         amount: otherUser.otherUser!.price
+                                //             .toInt()
+                                //             .toString(),
+                                //         currency: 'usd',
+                                //         addSubFunction: () async {
+
+                                //         });
+                              } else {
+                                var pro = Provider.of<UserProvider>(context,
+                                    listen: false);
+                                pro.setUserLoading(true);
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(otherUser.otherUser!.uid)
+                                    .update({
+                                  'subscribedUsers':
+                                      FieldValue.arrayRemove([currentUser.uid])
+                                }).then((value) async {
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(currentUser.uid)
+                                      .update({
+                                    'subscribedSoundPacks':
+                                        FieldValue.arrayRemove(
+                                            [otherUser.otherUser!.uid])
                                   });
-                        } else {
-                          var pro =
-                              Provider.of<UserProvider>(context, listen: false);
-                          pro.setUserLoading(true);
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(otherUser.otherUser!.uid)
-                              .update({
-                            'subscribedUsers':
-                                FieldValue.arrayRemove([currentUser.uid])
-                          }).then((value) async {
-                            await FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(currentUser.uid)
-                                .update({
-                              'subscribedSoundPacks': FieldValue.arrayRemove(
-                                  [otherUser.otherUser!.uid])
-                            });
-                          }).then((value) {
-                            pro.setUserLoading(false);
-                            currentUser.subscribedSoundPacks
-                                .add(otherUser.otherUser!.uid);
-                            showWhiteOverlayPopup(context,
-                                Icons.subscriptions_outlined, null, null,
-                                title: 'Successful',
-                                message:
-                                    'You have successfully unsubscribed to ${otherUser.otherUser!.username}.',
-                                isUsernameRes: false);
-                          }).onError((error, stackTrace) {
-                            pro.setUserLoading(false);
-                            log('Error: $error');
-                          });
-                        }
-                      },
+                                }).then((value) {
+                                  pro.setUserLoading(false);
+                                  currentUser.subscribedSoundPacks
+                                      .add(otherUser.otherUser!.uid);
+                                  showWhiteOverlayPopup(context,
+                                      Icons.subscriptions_outlined, null, null,
+                                      title: 'Successful',
+                                      message:
+                                          'You have successfully unsubscribed to ${otherUser.otherUser!.username}.',
+                                      isUsernameRes: false);
+                                }).onError((error, stackTrace) {
+                                  pro.setUserLoading(false);
+                                  log('Error: $error');
+                                });
+                              }
+                            },
                       child: Consumer<UserProvider>(
                           builder: (context, loadProvider, _) {
                         return Container(
@@ -345,49 +434,57 @@ class SubscribeScreen extends StatelessWidget {
 
                           //  showing the loader while the user is being subscribing
 
-                          child: loadProvider.userLoading
+                          child: isLoading
                               ? SpinKitThreeBounce(
                                   color: blackColor,
                                   size: 13,
                                 )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.star_border,
-                                        color: blackColor, size: 22),
-                                    const SizedBox(
-                                      width: 6,
+                              : loadProvider.userLoading
+                                  ? SpinKitThreeBounce(
+                                      color: blackColor,
+                                      size: 13,
+                                    )
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.star_border,
+                                            color: blackColor, size: 22),
+                                        const SizedBox(
+                                          width: 6,
+                                        ),
+
+                                        //  getting the real time text if the user is subscribed or not
+
+                                        StreamBuilder(
+                                            stream: FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(otherUser.otherUser!.uid)
+                                                .snapshots(),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData) {
+                                                UserModel subUser =
+                                                    UserModel.fromMap(
+                                                        snapshot.data!.data()!);
+                                                return Text(
+                                                  subUser.subscribedUsers
+                                                          .contains(
+                                                              currentUser!.uid)
+                                                      ? 'Unsubscribe'
+                                                      : 'Subscribe',
+                                                  style: TextStyle(
+                                                      color: blackColor,
+                                                      fontFamily: fontFamily,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontSize: 12),
+                                                );
+                                              } else {
+                                                return const Text('');
+                                              }
+                                            }),
+                                      ],
                                     ),
-
-                                    //  getting the real time text if the user is subscribed or not
-
-                                    StreamBuilder(
-                                        stream: FirebaseFirestore.instance
-                                            .collection('users')
-                                            .doc(otherUser.otherUser!.uid)
-                                            .snapshots(),
-                                        builder: (context, snapshot) {
-                                          if (snapshot.hasData) {
-                                            UserModel subUser =
-                                                UserModel.fromMap(
-                                                    snapshot.data!.data()!);
-                                            return Text(
-                                              subUser.subscribedUsers.contains(
-                                                      currentUser!.uid)
-                                                  ? 'Unsubscribe'
-                                                  : 'Subscribe',
-                                              style: TextStyle(
-                                                  color: blackColor,
-                                                  fontFamily: fontFamily,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 12),
-                                            );
-                                          } else {
-                                            return const Text('');
-                                          }
-                                        }),
-                                  ],
-                                ),
                         );
                       }),
                     ),

@@ -228,13 +228,13 @@ class PayFieldWidget extends StatelessWidget {
         height: maxLine == 6 ? mdHeight * .2 : mdHeight * .06,
         child: TextFormField(
           controller: controller,
-          inputFormatters: [
-            isSwiftCOde
-                ? LengthLimitingTextInputFormatter(9)
-                : isAccountNum
-                    ? LengthLimitingTextInputFormatter(13)
-                    : LengthLimitingTextInputFormatter(60)
-          ],
+          // inputFormatters: [
+          //   isSwiftCOde
+          //       ? LengthLimitingTextInputFormatter(9)
+          //       : isAccountNum
+          //           ? LengthLimitingTextInputFormatter(10000)
+          //           : LengthLimitingTextInputFormatter(60)
+          // ],
           keyboardType: keyboardType,
           maxLines: maxLine,
           style: TextStyle(fontFamily: khulaRegular, color: Colors.black),

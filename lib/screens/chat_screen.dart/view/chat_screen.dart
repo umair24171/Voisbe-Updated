@@ -30,6 +30,8 @@ import 'package:social_notes/screens/chat_screen.dart/model/chat_model.dart';
 import 'package:social_notes/screens/chat_screen.dart/model/recent_chat_model.dart';
 import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dart';
 import 'package:social_notes/screens/chat_screen.dart/view/widgets/custom_message_note.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
+import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
 import 'package:uuid/uuid.dart';
 import 'package:voice_message_package/voice_message_package.dart';
@@ -157,6 +159,14 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  stopMainPlayer() {
+    Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setIsPlaying(false);
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setChangeIndex(-1);
+  }
+
   //  playing the audio chat one at a time
 
   void _playAudio(
@@ -164,6 +174,8 @@ class _ChatScreenState extends State<ChatScreen> {
     int index,
   ) async {
     DefaultCacheManager cacheManager = DefaultCacheManager();
+    stopMainPlayer();
+    Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
 
     if (_isPlaying && _currentIndex != index) {
       await _audioPlayer.stop();
@@ -185,7 +197,9 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     } else {
       File cachedFile = await cacheManager.getSingleFile(url);
-      if (cachedFile != null && await cachedFile.exists() && Platform.isAndroid) {
+      if (cachedFile != null &&
+          await cachedFile.exists() &&
+          Platform.isAndroid) {
         await _audioPlayer.play(UrlSource(cachedFile.path));
       } else {
         await _audioPlayer.play(UrlSource(url));
@@ -754,7 +768,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                     // }
                                                     if (await note.recorder
                                                         .isRecording()) {
-                                                      note.stop( );
+                                                      note.stop();
                                                     } else {
                                                       note.record(context);
                                                     }

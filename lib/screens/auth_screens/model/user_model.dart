@@ -146,7 +146,7 @@ class UserModel {
         closeFriends: List.from((map['closeFriends'] as List)),
         name: map['name'] as String,
         link: map['link'] as String,
-        price: map['price'] as double,
+        price: double.parse(map['price'].toString()),
         soundPacks: List.from(
           (map['soundPacks'] as List),
         ),

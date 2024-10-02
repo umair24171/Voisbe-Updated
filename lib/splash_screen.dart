@@ -38,7 +38,9 @@ class _SplashScreenState extends State<SplashScreen> {
         width: double.infinity,
         child: Image.asset(
           'assets/images/splashscreen.jpg',
-          fit: BoxFit.fill,
+          fit: BoxFit.cover,
+          height: MediaQuery.of(context).size.height,
+          width: double.infinity,
           // alignment: Alignment.center,
         ),
       ),

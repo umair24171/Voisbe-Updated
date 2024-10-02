@@ -23,8 +23,10 @@ import 'package:social_notes/screens/subscribe_screen.dart/view/subscribe_screen
 import 'package:social_notes/screens/user_profile/view/widgets/single_post_note.dart';
 
 class OtherUserPosts extends StatefulWidget {
-  const OtherUserPosts({super.key, required this.id});
+  const OtherUserPosts({super.key, required this.id, required this.price});
   final String id;
+
+  final double price;
 
   @override
   State<OtherUserPosts> createState() => _OtherUserPostsState();
@@ -69,7 +71,9 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
       }
     } else {
       File cachedFile = await cacheManager.getSingleFile(url);
-      if (cachedFile != null && await cachedFile.exists() && Platform.isAndroid) {
+      if (cachedFile != null &&
+          await cachedFile.exists() &&
+          Platform.isAndroid) {
         await _audioPlayer.play(UrlSource(cachedFile.path));
       } else {
         await _audioPlayer.play(UrlSource(url));
@@ -290,8 +294,9 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
 
                               if (lockPosts.contains(index)) {
                                 Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => const SubscribeScreen(
-                                        // note: noteModel,
+                                    builder: (context) => SubscribeScreen(
+                                          price: widget.price,
+                                          // note: noteModel,
                                         )));
 
                                 //  otherwise home screen to show the specific screen
@@ -366,8 +371,9 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
                     onTap: () {
                       if (lockPosts.contains(index + 2)) {
                         Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => const SubscribeScreen(
-                                // note: noteModel,
+                            builder: (context) => SubscribeScreen(
+                                  price: widget.price,
+                                  // note: noteModel,
                                 )));
                       } else {
                         stopPlayer();

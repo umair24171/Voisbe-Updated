@@ -360,26 +360,32 @@ class _SinglePostNoteState extends State<SinglePostNote> {
 
                           //  if any of the post is lock post show icon lock and naviagte to subscribe screen
 
-                          ? InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => SubscribeScreen(),
-                                    ));
-                              },
-                              child: Container(
-                                  // height: 10,
-                                  // width: 10,
-                                  padding: const EdgeInsets.all(18),
-                                  decoration: BoxDecoration(
-                                      color: whiteColor,
-                                      borderRadius: BorderRadius.circular(30)),
-                                  child: SvgPicture.asset(
-                                    'assets/icons/Lock.svg',
-                                    color: primaryColor,
-                                  )),
-                            )
+                          ? Consumer<UserProfileProvider>(
+                              builder: (context, userPro, _) {
+                              return InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => SubscribeScreen(
+                                          price: userPro.otherUser!.price,
+                                        ),
+                                      ));
+                                },
+                                child: Container(
+                                    // height: 10,
+                                    // width: 10,
+                                    padding: const EdgeInsets.all(18),
+                                    decoration: BoxDecoration(
+                                        color: whiteColor,
+                                        borderRadius:
+                                            BorderRadius.circular(30)),
+                                    child: SvgPicture.asset(
+                                      'assets/icons/Lock.svg',
+                                      color: primaryColor,
+                                    )),
+                              );
+                            })
 
                           //  otherwise show the play pause button
 

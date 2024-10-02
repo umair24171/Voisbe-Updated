@@ -24,6 +24,7 @@ import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
 import 'package:social_notes/screens/home_screen/model/sub_comment_model.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/single_comment_note.dart';
@@ -243,6 +244,14 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
 
   // playing the audio function
 
+  stopMainPlayer() {
+    Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setIsPlaying(false);
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setChangeIndex(-1);
+  }
+
   void _playAudio(
     String url,
     int index,
@@ -250,7 +259,8 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
     int playedComment,
   ) async {
     DefaultCacheManager cacheManager = DefaultCacheManager();
-
+    stopMainPlayer();
+    Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
     if (_isPlaying && _currentIndex != index) {
       await _audioPlayer.stop();
     }
@@ -271,7 +281,9 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
       }
     } else {
       File cachedFile = await cacheManager.getSingleFile(url);
-      if (cachedFile != null && await cachedFile.exists() && Platform.isAndroid) {
+      if (cachedFile != null &&
+          await cachedFile.exists() &&
+          Platform.isAndroid) {
         await _audioPlayer.play(UrlSource(cachedFile.path));
       } else {
         await _audioPlayer.play(UrlSource(url));
@@ -904,8 +916,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                       if (await noteProvider
                                                           .recorder
                                                           .isRecording()) {
-                                                        noteProvider
-                                                            .stop( );
+                                                        noteProvider.stop();
                                                       } else {
                                                         noteProvider
                                                             .record(context);

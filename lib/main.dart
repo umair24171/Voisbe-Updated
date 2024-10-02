@@ -319,7 +319,7 @@ class _MyAppState extends State<MyApp> {
             seedColor: Colors.deepPurple, background: whiteColor),
         useMaterial3: true,
       ),
-      home: const SplashScreen(),
+      home: SplashScreen(),
       // MyHomePage(),
       //  const Home(),
       //  AudioTesting(),
@@ -336,7 +336,9 @@ class _MyAppState extends State<MyApp> {
       routes: {
         ProfileScreen.routeName: (context) => ProfileScreen(),
         HomeScreen.routeName: (context) => HomeScreen(),
-        SubscribeScreen.routeName: (context) => const SubscribeScreen(),
+        SubscribeScreen.routeName: (context) => SubscribeScreen(
+              price: 0.0,
+            ),
         '/chat': (context) => const UsersScreen(),
         '/notifications': (context) => const NotificationScreen(),
         // AddHashtagsScreen.routeName: (context) => AddHashtagsScreen(),

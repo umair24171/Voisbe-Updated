@@ -928,6 +928,7 @@ import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/most_listened_waves.dart';
 import 'package:social_notes/screens/subscribe_screen.dart/view/subscribe_screen.dart';
+import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
 // import 'package:uuid/uuid.dart';
 // import 'package:wave/config.dart';
 // import 'package:wave/wave.dart';
@@ -964,6 +965,7 @@ class MainPlayer extends StatefulWidget {
     required this.listenedWaves,
     required this.changeIndex,
     required this.position,
+    // required this.price,
     required this.lockPosts,
     required this.title,
     this.isProfilePlayer = false,
@@ -1000,6 +1002,7 @@ class MainPlayer extends StatefulWidget {
   List<int> lockPosts;
   bool isProfilePlayer;
   final String title;
+  // double price;
 
   @override
   State<MainPlayer> createState() => _MainPlayerState();
@@ -1332,25 +1335,30 @@ class _MainPlayerState extends State<MainPlayer> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: widget.lockPosts.contains(0)
-                          ? GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => SubscribeScreen(),
-                                    ));
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: whiteColor,
-                                  borderRadius: BorderRadius.circular(50),
+                          ? Consumer<UserProfileProvider>(
+                              builder: (context, userPro, _) {
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => SubscribeScreen(
+                                          price: userPro.otherUser!.price,
+                                        ),
+                                      ));
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: whiteColor,
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  // onPressed: playPause,
+                                  child:
+                                      SvgPicture.asset('assets/icons/Lock.svg'),
                                 ),
-                                // onPressed: playPause,
-                                child:
-                                    SvgPicture.asset('assets/icons/Lock.svg'),
-                              ),
-                            )
+                              );
+                            })
                           : InkWell(
                               splashColor: Colors.transparent,
                               onTap: widget.playPause,

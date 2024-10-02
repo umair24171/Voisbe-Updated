@@ -9,7 +9,8 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-  static const String backendUrl = 'http://192.168.18.236:3000';
+  // static const String backendUrl = 'http://192.168.18.236:3000';
+  static const String backendUrl = 'https://api-yqekgrov4a-uc.a.run.app';
   String? paymentIntentClientSecret;
   bool isLoading = false;
 

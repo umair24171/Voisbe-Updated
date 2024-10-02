@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/notifications_screen/model/comment_notofication_model.dart';
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
@@ -19,6 +20,7 @@ class LikeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var userProvider = Provider.of<UserProvider>(context, listen: false).user;
+
     // var otherUser =
     //     Provider.of<UserProfileProvider>(context, listen: false).otherUser;
     return Scaffold(
@@ -56,6 +58,18 @@ class LikeScreen extends StatelessWidget {
                         UserModel.fromMap(snapshot.data!.docs[index].data());
                     return ListTile(
                       onTap: () {
+                        Provider.of<DisplayNotesProvider>(context,
+                                listen: false)
+                            .pausePlayer();
+                        Provider.of<DisplayNotesProvider>(context,
+                                listen: false)
+                            .setIsPlaying(false);
+                        Provider.of<DisplayNotesProvider>(context,
+                                listen: false)
+                            .setChangeIndex(-1);
+                        Provider.of<CircleCommentsProvider>(context,
+                                listen: false)
+                            .pausePlayer();
                         Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -107,7 +121,7 @@ class LikeScreen extends StatelessWidget {
                                   UserModel followUSer =
                                       UserModel.fromMap(snapshot.data!.data()!);
                                   bool isContains = followUSer.followers
-                                      .contains(userProvider!.uid);
+                                      .contains(userProvider.uid);
                                   String text = '';
                                   if (followUSer.isPrivate) {
                                     if (followUSer.followReq
@@ -152,7 +166,7 @@ class LikeScreen extends StatelessWidget {
                                                 width: 1)),
                                       ),
                                       onPressed: () {
-                                        String notiID = Uuid().v4();
+                                        String notiID = const Uuid().v4();
                                         CommentNotoficationModel notiModel =
                                             CommentNotoficationModel(
                                                 notificationId: notiID,
@@ -183,13 +197,13 @@ class LikeScreen extends StatelessWidget {
                                             fontWeight: FontWeight.w700),
                                       ));
                                 } else {
-                                  return SizedBox();
+                                  return const SizedBox();
                                 }
                               }),
                     );
                   });
             } else {
-              return SizedBox();
+              return const SizedBox();
             }
           }),
     );

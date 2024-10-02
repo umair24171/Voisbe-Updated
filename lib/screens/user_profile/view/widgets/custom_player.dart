@@ -19,10 +19,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:flutter/widgets.dart';
 import 'package:simple_waveform_progressbar/simple_waveform_progressbar.dart';
 import 'package:social_notes/resources/colors.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
+import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/main_player.dart';
 import 'package:social_notes/screens/subscribe_screen.dart/view/subscribe_screen.dart';
+import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:waveform_extractor/waveform_extractor.dart';
 import 'package:http/http.dart' as http;
@@ -335,8 +338,18 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
     }
   }
 
+  stopMainPlayer() {
+    Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setIsPlaying(false);
+    Provider.of<DisplayNotesProvider>(context, listen: false)
+        .setChangeIndex(-1);
+  }
+
   playAudio() async {
     try {
+      stopMainPlayer();
+      Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
       if (widget.isSubCommentPlayer) {
         widget.stopMainPlayer();
       }
@@ -451,31 +464,36 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: widget.lockPosts.contains(0)
-                            ? GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => SubscribeScreen(),
-                                      ));
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    border: widget.isProfilePlayer
-                                        ? Border.all(
-                                            color: whiteColor, width: 5)
-                                        : null,
-                                    color: whiteColor,
-                                    borderRadius: BorderRadius.circular(50),
+                            ? Consumer<UserProfileProvider>(
+                                builder: (context, userPro, _) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => SubscribeScreen(
+                                            price: userPro.otherUser!.price,
+                                          ),
+                                        ));
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      border: widget.isProfilePlayer
+                                          ? Border.all(
+                                              color: whiteColor, width: 5)
+                                          : null,
+                                      color: whiteColor,
+                                      borderRadius: BorderRadius.circular(50),
+                                    ),
+                                    // onPressed: playPause,
+                                    child: SvgPicture.asset(
+                                      'assets/icons/Lock.svg',
+                                      color: primaryColor,
+                                    ),
                                   ),
-                                  // onPressed: playPause,
-                                  child: SvgPicture.asset(
-                                    'assets/icons/Lock.svg',
-                                    color: primaryColor,
-                                  ),
-                                ),
-                              )
+                                );
+                              })
                             : InkWell(
                                 splashColor: Colors.transparent,
                                 onTap: isPlaying ? stopAudio : playAudio,
@@ -536,25 +554,30 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: widget.lockPosts.contains(0)
-                            ? GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => SubscribeScreen(),
-                                      ));
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: whiteColor,
-                                    borderRadius: BorderRadius.circular(50),
+                            ? Consumer<UserProfileProvider>(
+                                builder: (context, userPro, _) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => SubscribeScreen(
+                                            price: userPro.otherUser!.price,
+                                          ),
+                                        ));
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: whiteColor,
+                                      borderRadius: BorderRadius.circular(50),
+                                    ),
+                                    // onPressed: playPause,
+                                    child: SvgPicture.asset(
+                                        'assets/icons/Lock.svg'),
                                   ),
-                                  // onPressed: playPause,
-                                  child:
-                                      SvgPicture.asset('assets/icons/Lock.svg'),
-                                ),
-                              )
+                                );
+                              })
                             : InkWell(
                                 splashColor: Colors.transparent,
                                 onTap: isPlaying ? stopAudio : playAudio,

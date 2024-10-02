@@ -418,8 +418,16 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                         userProvider.otherUser!.isVerified
                                     ? InkWell(
                                         onTap: () {
-                                          navPush(SubscribeScreen.routeName,
-                                              context);
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    SubscribeScreen(
+                                                        price: userProvider
+                                                            .otherUser!.price),
+                                              ));
+                                          // navPush(SubscribeScreen.routeName,
+                                          //     context);
                                         },
                                         child: StreamBuilder(
                                             stream: FirebaseFirestore.instance
@@ -1323,7 +1331,12 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
                               //  shwowing all user posts
 
-                              : OtherUserPosts(id: widget.userId);
+                              : OtherUserPosts(
+                                  id: widget.userId,
+                                  price: userPro.otherUser == null
+                                      ? 0.0
+                                      : userPro.otherUser!.price,
+                                );
                         }),
                       ],
                     ),
