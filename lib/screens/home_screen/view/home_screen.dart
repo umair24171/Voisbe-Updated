@@ -268,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 ),
                                 context: context,
                                 position:
-                                    const RelativeRect.fromLTRB(0, 80, 0, 0),
+                                    const RelativeRect.fromLTRB(0, 120, 0, 0),
                                 items: [
                                   if (!filPro.selectedFilter
                                       .contains('Close Friends'))

@@ -3,6 +3,7 @@
 
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,7 +19,9 @@ import 'package:flutter_notification_channel/notification_importance.dart';
 import 'package:flutter_notification_channel/notification_visibility.dart'
     as notiVi;
 import 'package:provider/provider.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:social_notes/firebase_options.dart';
+import 'package:social_notes/resources/app_constants.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/add_note_screen/controllers/add_note_controller.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
@@ -147,6 +150,10 @@ void main() async {
 
   Stripe.publishableKey = 'pk_live_VQmRjrzGsFLF6U2yE0bXdThg';
   await Stripe.instance.applySettings();
+  if (Platform.isIOS) {
+    await Purchases.configure(
+        PurchasesConfiguration(AppConstants().purchaseApiKeyIos));
+  }
   flutterNotificationChannel();
   _initializeNotifications();
   runApp(MultiProvider(providers: [

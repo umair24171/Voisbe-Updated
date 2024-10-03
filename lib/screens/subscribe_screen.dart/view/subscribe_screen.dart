@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:firebase_core/firebase_core.dart';
@@ -8,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:provider/provider.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:social_notes/resources/app_constants.dart';
 import 'package:social_notes/resources/colors.dart';
 // import 'package:social_notes/resources/show_snack.dart';
 import 'package:social_notes/resources/white_overlay_popup.dart';
@@ -127,6 +130,53 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
             message: 'An unexpected error occurred.',
             isUsernameRes: false);
       }
+    }
+  }
+
+  // ios pay function
+  Future<void> payIos(UserModel otherUser, UserModel currentUser) async {
+    try {
+      if (otherUser.price == 4) {
+        await Purchases.purchaseProduct(AppConstants().userSubscriptionKey4);
+      } else if (otherUser.price == 10) {
+        await Purchases.purchaseProduct(AppConstants().userSubscriptionKey10);
+      } else if (otherUser.price == 20) {
+        await Purchases.purchaseProduct(AppConstants().userSubscriptionKey20);
+      } else if (otherUser.price == 50) {
+        await Purchases.purchaseProduct(AppConstants().userSubscriptionKey50);
+      } else if (otherUser.price == 100) {
+        await Purchases.purchaseProduct(AppConstants().userSubscriptionKey100);
+      }
+      var pro = Provider.of<UserProvider>(context, listen: false);
+      // if (!otherUser.otherUser!.subscribedUsers
+      //     .contains(currentUser.uid)) {
+      pro.setUserLoading(true);
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(otherUser!.uid)
+          .update({
+        'subscribedUsers': FieldValue.arrayUnion([currentUser!.uid])
+      }).then((value) async {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid)
+            .update({
+          'subscribedSoundPacks': FieldValue.arrayUnion([otherUser.uid])
+        });
+      }).then((value) {
+        pro.setUserLoading(false);
+        currentUser.subscribedSoundPacks.add(otherUser.uid);
+        showWhiteOverlayPopup(context, Icons.subscriptions_outlined, null, null,
+            title: 'Subscription Successful',
+            message:
+                'You have successfully subscribed to ${otherUser.username}.',
+            isUsernameRes: false);
+      }).onError((error, stackTrace) {
+        pro.setUserLoading(false);
+        log('Error: $error');
+      });
+    } catch (e) {
+      log('Error: $e');
     }
   }
 
@@ -376,7 +426,12 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
                                   .contains(currentUser!.uid)) {
                                 log('function running');
 
-                                await pay(otherUser.otherUser!, currentUser);
+                                if (Platform.isIOS) {
+                                  await payIos(
+                                      otherUser.otherUser!, currentUser);
+                                } else {
+                                  await pay(otherUser.otherUser!, currentUser);
+                                }
 
                                 // Provider.of<PaymentController>(context,
                                 //         listen: false)

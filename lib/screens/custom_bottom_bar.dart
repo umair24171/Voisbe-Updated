@@ -2,32 +2,24 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 // import 'package:flutter/widgets.dart';
 import 'package:social_notes/resources/colors.dart';
-import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
 import 'package:social_notes/screens/add_note_screen/view/add_note_screen.dart';
-import 'package:social_notes/screens/add_note_screen/view/personalize_ask.dart';
-import 'package:social_notes/screens/add_note_screen/view/personalize_language.dart';
 import 'package:social_notes/screens/auth_screens/controller/notifications_methods.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
-import 'package:social_notes/screens/bottom_provider.dart';
 import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dart';
 // import 'package:social_notes/screens/chat_screen.dart/view/chat_screen.dart';
 import 'package:social_notes/screens/chat_screen.dart/view/users_screen.dart';
 import 'package:social_notes/screens/home_screen/controller/share_services.dart';
 import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
-import 'package:social_notes/screens/home_screen/view/feed_detail_screen.dart';
 // import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 // import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/view/home_screen.dart';
-import 'package:social_notes/screens/notifications_screen/controller/notification_provider.dart';
-import 'package:social_notes/screens/search_screen/view/note_details_screen.dart';
 // import 'package:social_notes/screens/profile_screen/profile_screen.dart';
 import 'package:social_notes/screens/search_screen/view/search_screen.dart';
 // import 'package:social_notes/screens/upload_sounds/provider/sound_provider.dart';
@@ -93,10 +85,15 @@ class _BottomBarState extends State<BottomBar> {
 
         DeepLinkPostService().initDynamicLinks(context);
         DeepLinkPostService().initDynamicLinksForProfile(context);
-        openReviewDialoge(context);
+        Future.delayed(
+          const Duration(seconds: 120),
+          () {
+            openReviewDialog(context);
+          },
+        );
       },
     );
-    
+
     super.initState();
   }
 

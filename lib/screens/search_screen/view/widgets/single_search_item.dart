@@ -304,7 +304,7 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
                     ),
                   ),
                   Positioned(
-                      left: size.width * 0.29,
+                      left: size.width * 0.32,
                       top: 8,
                       child: InkWell(
                         onTap: () {

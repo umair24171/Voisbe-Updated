@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:in_app_review/in_app_review.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_notes/resources/colors.dart';
+import 'package:in_app_review/in_app_review.dart';
 
 class RatingPopup extends StatefulWidget {
   final Function(int) onRatingSubmitted;
@@ -100,25 +103,44 @@ class _RatingPopupState extends State<RatingPopup> {
   }
 }
 
-openReviewDialoge(context) async {
+openReviewDialog(context) async {
   final InAppReview inAppReview = InAppReview.instance;
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   bool isRated = prefs.getBool('isRated') ?? false;
-  if(isRated) return;
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      elevation: 0,
-      contentPadding: const EdgeInsets.all(0),
-      backgroundColor: whiteColor,
-      content: RatingPopup(
-        onRatingSubmitted: (p0) {
-          if (p0 >= 3) {
-            prefs.setBool('isRated', true);
-            inAppReview.requestReview();
-          } else {}
-        },
+  if (isRated) return;  
+
+  String? installDateStr = prefs.getString('installDate');
+  DateTime installDate;
+
+  if (installDateStr == null) {
+    installDate = DateTime.now();
+    prefs.setString(
+        'installDate', DateFormat('yyyy-MM-dd').format(installDate));
+  } else {
+    installDate = DateFormat('yyyy-MM-dd').parse(installDateStr);
+  }
+
+  DateTime currentDate = DateTime.now();
+  int daysPassed = currentDate.difference(installDate).inDays;
+
+  int randomDelay = Random().nextInt(2) + 2;
+
+  if (daysPassed >= randomDelay) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        elevation: 0,
+        contentPadding: const EdgeInsets.all(0),
+        backgroundColor: whiteColor,
+        content: RatingPopup(
+          onRatingSubmitted: (rating) {
+            if (rating >= 3) {
+              prefs.setBool('isRated', true); // Mark as rated
+              inAppReview.requestReview(); // Trigger the in-app review request
+            }
+          },
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
