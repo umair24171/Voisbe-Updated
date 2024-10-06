@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -103,11 +104,106 @@ class _RatingPopupState extends State<RatingPopup> {
   }
 }
 
+class AndroidRatingPopup extends StatefulWidget {
+  final Function(int) onRatingSubmitted;
+
+  const AndroidRatingPopup({Key? key, required this.onRatingSubmitted})
+      : super(key: key);
+
+  @override
+  _AndroidRatingPopupState createState() => _AndroidRatingPopupState();
+}
+
+class _AndroidRatingPopupState extends State<AndroidRatingPopup> {
+  int _rating = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Text(
+            'Rate Your Experience',
+            style: TextStyle(
+                fontFamily: khulaRegular,
+                fontWeight: FontWeight.w700,
+                fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Text(
+          'How would you rate our app?',
+          style:
+              TextStyle(fontFamily: khulaRegular, fontWeight: FontWeight.w600),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(5, (index) {
+            return IconButton(
+              icon: Icon(
+                _rating > index ? Icons.star : Icons.star_border,
+                color: primaryColor,
+                size: 36,
+              ),
+              onPressed: () => setState(() => _rating = index + 1),
+            );
+          }),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          _rating > 0 ? '$_rating / 5' : 'Tap a star to rate',
+          style:
+              TextStyle(fontFamily: khulaRegular, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 10),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                child: Text('CANCEL'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              SizedBox(
+                width: 5,
+              ),
+              ElevatedButton(
+                child: Text(
+                  'SUBMIT',
+                  style: TextStyle(
+                      fontFamily: khulaRegular,
+                      fontWeight: FontWeight.w700,
+                      color: whiteColor),
+                ),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor, elevation: 0
+                    // p: Colors.white,
+                    ),
+                onPressed: _rating > 0
+                    ? () {
+                        widget.onRatingSubmitted(_rating);
+                        Navigator.of(context).pop();
+                      }
+                    : null,
+              ),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+}
+
 openReviewDialog(context) async {
   final InAppReview inAppReview = InAppReview.instance;
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   bool isRated = prefs.getBool('isRated') ?? false;
-  if (isRated) return;  
+  if (isRated) return;
 
   String? installDateStr = prefs.getString('installDate');
   DateTime installDate;
@@ -132,14 +228,25 @@ openReviewDialog(context) async {
         elevation: 0,
         contentPadding: const EdgeInsets.all(0),
         backgroundColor: whiteColor,
-        content: RatingPopup(
-          onRatingSubmitted: (rating) {
-            if (rating >= 3) {
-              prefs.setBool('isRated', true); // Mark as rated
-              inAppReview.requestReview(); // Trigger the in-app review request
-            }
-          },
-        ),
+        content: Platform.isAndroid
+            ? AndroidRatingPopup(
+                onRatingSubmitted: (rating) {
+                  if (rating >= 3) {
+                    prefs.setBool('isRated', true); // Mark as rated
+                    inAppReview
+                        .requestReview(); // Trigger the in-app review request
+                  }
+                },
+              )
+            : RatingPopup(
+                onRatingSubmitted: (rating) {
+                  if (rating >= 3) {
+                    prefs.setBool('isRated', true); // Mark as rated
+                    inAppReview
+                        .requestReview(); // Trigger the in-app review request
+                  }
+                },
+              ),
       ),
     );
   }

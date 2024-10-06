@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/resources/navigation.dart';
+import 'package:social_notes/resources/review_pop_up.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/auth_screens/view/auth_screen.dart';
@@ -223,21 +224,21 @@ class SettingsScreen extends StatelessWidget {
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
-                // showDialog(
-                //   context: context,
-                //   builder: (context) => AlertDialog(
-                //     elevation: 0,
-                //     contentPadding: const EdgeInsets.all(0),
-                //     backgroundColor: whiteColor,
-                //     content: RatingPopup(
-                //       onRatingSubmitted: (p0) {},
-                //     ),
-                //   ),
-                // );
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const CloseFriendsScreen()));
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    elevation: 0,
+                    contentPadding: const EdgeInsets.all(0),
+                    backgroundColor: whiteColor,
+                    content: AndroidRatingPopup(
+                      onRatingSubmitted: (p0) {},
+                    ),
+                  ),
+                );
+                // Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //         builder: (context) => const CloseFriendsScreen()));
               },
               child: const CustomListTile(
                 icon: 'assets/icons/Group.svg',

@@ -72,7 +72,7 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
   }
 
   Future<void> pay(UserModel otherUser, UserModel currentUser) async {
-    // var currentUser=Provider.of<UserProvider>(context,listen: false).user;
+    var currentUser=Provider.of<UserProvider>(context,listen: false).user;
     if (paymentIntentClientSecret == null) return;
 
     try {
@@ -93,17 +93,19 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
           .collection('users')
           .doc(otherUser.uid)
           .update({
-        'subscribedUsers': FieldValue.arrayUnion([currentUser.uid])
+        'subscribedUsers': FieldValue.arrayUnion([currentUser!.uid])
       }).then((value) async {
         await FirebaseFirestore.instance
             .collection('users')
-            .doc(currentUser.uid)
+            .doc(currentUser!.uid)
             .update({
           'subscribedSoundPacks': FieldValue.arrayUnion([otherUser.uid])
         });
       }).then((value) {
         pro.setUserLoading(false);
-        currentUser.subscribedSoundPacks.add(otherUser.uid);
+        // currentUser.subscribedSoundPacks.add(otherUser.uid);
+        Provider.of<UserProfileProvider>(context, listen: false)
+            .addSubscription(currentUser.uid);
         showWhiteOverlayPopup(context, Icons.subscriptions_outlined, null, null,
             title: 'Subscription Successful',
             message:
@@ -175,7 +177,6 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
 
     if (productKey != null) {
       await Purchases.purchaseProduct(productKey).then((value) async {
-        
         await _updateSubscription(otherUser, currentUser);
         _onSubscriptionSuccess(otherUser, currentUser);
       }).catchError((error) {
@@ -200,6 +201,8 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
         .update({
       'subscribedSoundPacks': FieldValue.arrayUnion([otherUser.uid])
     });
+     Provider.of<UserProfileProvider>(context, listen: false)
+            .addSubscription(currentUser.uid);
   }
 
   void _onSubscriptionSuccess(UserModel otherUser, UserModel currentUser) {
@@ -457,67 +460,64 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
                   return Padding(
                     padding: const EdgeInsets.all(12),
                     child: GestureDetector(
-                      onTap: paymentIntentClientSecret == null
-                          ? null
-                          : () async {
-                              //  logic if the id exist then remove the current user as a subsriber otherwise add a subsriber
+                      onTap: paymentIntentClientSecret==null?null :() async {
+                        //  logic if the id exist then remove the current user as a subsriber otherwise add a subsriber
 
-                              if (!otherUser.otherUser!.subscribedUsers
-                                  .contains(currentUser!.uid)) {
-                                log('function running');
+                        if (!otherUser.otherUser!.subscribedUsers
+                            .contains(currentUser!.uid)) {
+                          log('function running');
 
-                                if (Platform.isIOS) {
-                                  await payIos(
-                                      otherUser.otherUser!, currentUser);
-                                } else {
-                                  await pay(otherUser.otherUser!, currentUser);
-                                }
+                          if (Platform.isIOS) {
+                            await payIos(otherUser.otherUser!, currentUser);
+                          } else {
+                            await pay(otherUser.otherUser!, currentUser);
+                          }
 
-                                // Provider.of<PaymentController>(context,
-                                //         listen: false)
-                                //     .makePayment(
-                                //         amount: otherUser.otherUser!.price
-                                //             .toInt()
-                                //             .toString(),
-                                //         currency: 'usd',
-                                //         addSubFunction: () async {
+                          // Provider.of<PaymentController>(context,
+                          //         listen: false)
+                          //     .makePayment(
+                          //         amount: otherUser.otherUser!.price
+                          //             .toInt()
+                          //             .toString(),
+                          //         currency: 'usd',
+                          //         addSubFunction: () async {
 
-                                //         });
-                              } else {
-                                var pro = Provider.of<UserProvider>(context,
-                                    listen: false);
-                                pro.setUserLoading(true);
-                                await FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(otherUser.otherUser!.uid)
-                                    .update({
-                                  'subscribedUsers':
-                                      FieldValue.arrayRemove([currentUser.uid])
-                                }).then((value) async {
-                                  await FirebaseFirestore.instance
-                                      .collection('users')
-                                      .doc(currentUser.uid)
-                                      .update({
-                                    'subscribedSoundPacks':
-                                        FieldValue.arrayRemove(
-                                            [otherUser.otherUser!.uid])
-                                  });
-                                }).then((value) {
-                                  pro.setUserLoading(false);
-                                  currentUser.subscribedSoundPacks
-                                      .add(otherUser.otherUser!.uid);
-                                  showWhiteOverlayPopup(context,
-                                      Icons.subscriptions_outlined, null, null,
-                                      title: 'Successful',
-                                      message:
-                                          'You have successfully unsubscribed to ${otherUser.otherUser!.username}.',
-                                      isUsernameRes: false);
-                                }).onError((error, stackTrace) {
-                                  pro.setUserLoading(false);
-                                  log('Error: $error');
-                                });
-                              }
-                            },
+                          //         });
+                        } else {
+                          var pro =
+                              Provider.of<UserProvider>(context, listen: false);
+                          pro.setUserLoading(true);
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(otherUser.otherUser!.uid)
+                              .update({
+                            'subscribedUsers':
+                                FieldValue.arrayRemove([currentUser.uid])
+                          }).then((value) async {
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(currentUser.uid)
+                                .update({
+                              'subscribedSoundPacks': FieldValue.arrayRemove(
+                                  [otherUser.otherUser!.uid])
+                            });
+                          }).then((value) {
+                            pro.setUserLoading(false);
+                            otherUser.removeSubscription(currentUser.uid);
+                            // currentUser.subscribedSoundPacks
+                            //     .remove(otherUser.otherUser!.uid);
+                            showWhiteOverlayPopup(context,
+                                Icons.subscriptions_outlined, null, null,
+                                title: 'Successful',
+                                message:
+                                    'You have successfully unsubscribed to ${otherUser.otherUser!.username}.',
+                                isUsernameRes: false);
+                          }).onError((error, stackTrace) {
+                            pro.setUserLoading(false);
+                            log('Error: $error');
+                          });
+                        }
+                      },
                       child: Consumer<UserProvider>(
                           builder: (context, loadProvider, _) {
                         return Container(

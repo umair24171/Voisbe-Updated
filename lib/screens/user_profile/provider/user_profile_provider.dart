@@ -26,6 +26,16 @@ class UserProfileProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  addSubscription(String userId) {
+    otherUser!.subscribedUsers.add(userId);
+    notifyListeners();
+  }
+
+  removeSubscription(String userId) {
+    otherUser!.subscribedUsers.remove(userId);
+    notifyListeners();
+  }
+
   //  removing the enabled notification
 
   removeNotification(String userId) {

@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-    void _safeSetState(VoidCallback fn) {
+  void _safeSetState(VoidCallback fn) {
     if (mounted) {
       setState(fn);
     }
@@ -180,12 +180,13 @@ class _HomeScreenState extends State<HomeScreen>
 
 // stopping main player while adding the reply
 
-  stopMainPlayer() {
+  stopMainPlayer() async {
     Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
     Provider.of<DisplayNotesProvider>(context, listen: false)
         .setIsPlaying(false);
     Provider.of<DisplayNotesProvider>(context, listen: false)
         .setChangeIndex(-1);
+    Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
   }
 
 // disposing the player when no longer needs it
