@@ -91,9 +91,9 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
       pro.setUserLoading(true);
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(otherUser!.uid)
+          .doc(otherUser.uid)
           .update({
-        'subscribedUsers': FieldValue.arrayUnion([currentUser!.uid])
+        'subscribedUsers': FieldValue.arrayUnion([currentUser.uid])
       }).then((value) async {
         await FirebaseFirestore.instance
             .collection('users')
@@ -135,49 +135,89 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
 
   // ios pay function
   Future<void> payIos(UserModel otherUser, UserModel currentUser) async {
+    var pro = Provider.of<UserProvider>(context, listen: false);
+
     try {
-      if (otherUser.price == 4) {
-        await Purchases.purchaseProduct(AppConstants().userSubscriptionKey4);
-      } else if (otherUser.price == 10) {
-        await Purchases.purchaseProduct(AppConstants().userSubscriptionKey10);
-      } else if (otherUser.price == 20) {
-        await Purchases.purchaseProduct(AppConstants().userSubscriptionKey20);
-      } else if (otherUser.price == 50) {
-        await Purchases.purchaseProduct(AppConstants().userSubscriptionKey50);
-      } else if (otherUser.price == 100) {
-        await Purchases.purchaseProduct(AppConstants().userSubscriptionKey100);
-      }
-      var pro = Provider.of<UserProvider>(context, listen: false);
-      // if (!otherUser.otherUser!.subscribedUsers
-      //     .contains(currentUser.uid)) {
       pro.setUserLoading(true);
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(otherUser!.uid)
-          .update({
-        'subscribedUsers': FieldValue.arrayUnion([currentUser!.uid])
-      }).then((value) async {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(currentUser.uid)
-            .update({
-          'subscribedSoundPacks': FieldValue.arrayUnion([otherUser.uid])
-        });
-      }).then((value) {
-        pro.setUserLoading(false);
-        currentUser.subscribedSoundPacks.add(otherUser.uid);
-        showWhiteOverlayPopup(context, Icons.subscriptions_outlined, null, null,
-            title: 'Subscription Successful',
-            message:
-                'You have successfully subscribed to ${otherUser.username}.',
-            isUsernameRes: false);
-      }).onError((error, stackTrace) {
-        pro.setUserLoading(false);
-        log('Error: $error');
-      });
-    } catch (e) {
-      log('Error: $e');
+
+      await _purchaseBasedOnPrice(
+          otherUser.price.toInt(), otherUser, currentUser);
+    } catch (e, stackTrace) {
+      log('Error during subscription: $e\n$stackTrace');
+      pro.setUserLoading(false);
     }
+  }
+
+// Helper function to handle purchases based on price
+  Future<void> _purchaseBasedOnPrice(
+      int price, UserModel otherUser, UserModel currentUser) async {
+    String? productKey;
+
+    switch (price) {
+      case 4:
+        productKey = AppConstants().userSubscriptionKey4;
+        break;
+      case 10:
+        productKey = AppConstants().userSubscriptionKey10;
+        break;
+      case 20:
+        productKey = AppConstants().userSubscriptionKey20;
+        break;
+      case 50:
+        productKey = AppConstants().userSubscriptionKey50;
+        break;
+      case 100:
+        productKey = AppConstants().userSubscriptionKey100;
+        break;
+      default:
+        throw 'Invalid price';
+    }
+
+    if (productKey != null) {
+      await Purchases.purchaseProduct(productKey).then((value) async {
+        
+        await _updateSubscription(otherUser, currentUser);
+        _onSubscriptionSuccess(otherUser, currentUser);
+      }).catchError((error) {
+        log('Error during purchase: $error');
+      });
+    }
+  }
+
+  Future<void> _updateSubscription(
+      UserModel otherUser, UserModel currentUser) async {
+    log('other user is ${otherUser.uid}');
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(otherUser.uid)
+        .update({
+      'subscribedUsers': FieldValue.arrayUnion([currentUser.uid])
+    });
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser.uid)
+        .update({
+      'subscribedSoundPacks': FieldValue.arrayUnion([otherUser.uid])
+    });
+  }
+
+  void _onSubscriptionSuccess(UserModel otherUser, UserModel currentUser) {
+    var pro = Provider.of<UserProvider>(context, listen: false);
+
+    currentUser.subscribedSoundPacks.add(otherUser.uid);
+
+    pro.setUserLoading(false);
+
+    showWhiteOverlayPopup(
+      context,
+      Icons.subscriptions_outlined,
+      null,
+      null,
+      title: 'Subscription Successful',
+      message: 'You have successfully subscribed to ${otherUser.username}.',
+      isUsernameRes: false,
+    );
   }
 
   @override
@@ -196,20 +236,20 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
     //  getting the current user
     var currentUser = Provider.of<UserProvider>(context, listen: false).user;
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // the background of the screen
+      body: Stack(
+        children: [
+          // the background of the screen
 
-            Container(
-              height: MediaQuery.of(context).size.height,
-              decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0xffee856d), Color(0xffed6a5a)])),
-            ),
-            Column(
+          Container(
+            height: MediaQuery.of(context).size.height,
+            decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xffee856d), Color(0xffed6a5a)])),
+          ),
+          SafeArea(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Padding(
@@ -584,8 +624,8 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       // bottomNavigationBar: BottomBar(),
     );

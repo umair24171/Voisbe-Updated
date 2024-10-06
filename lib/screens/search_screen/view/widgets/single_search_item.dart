@@ -278,19 +278,62 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
                       decoration: BoxDecoration(
                           color: Color(widget.noteModel.topicColor.value),
                           borderRadius: BorderRadius.circular(18)),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 6, horizontal: 8),
-                      child: GradientText(
-                        widget.noteModel.topic,
-                        style: const TextStyle(fontSize: 11),
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.white,
-                            Colors.white.withAlpha(0),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                      padding: const EdgeInsets.only(
+                           left: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: size.width * 0.26,
+                            height: 20,
+                            child: GradientText(
+                              widget.noteModel.topic,
+                              style: const TextStyle(fontSize: 11,overflow: TextOverflow.fade),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white,
+                                  Colors.white.withAlpha(0),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                          ),
+                           InkWell(
+                             onTap: () {
+                               Provider.of<CircleCommentsProvider>(context,
+                                       listen: false)
+                                   .pausePlayer();
+                           
+                               Navigator.push(
+                                   context,
+                                   MaterialPageRoute(
+                                       builder: (context) => HomeScreen(
+                                             note: widget.noteModel,
+                                             // currentIndex: widget.index,
+                                             // screenChange: 1,
+                                           )));
+                             },
+                             child: Container(
+                               padding: const EdgeInsets.symmetric(
+                                   vertical: 6, horizontal: 10),
+                               decoration: BoxDecoration(
+                                   color: whiteColor.withOpacity(1),
+                                   borderRadius: BorderRadius.circular(18)),
+                           
+                               //  view post details screen
+                           
+                               child: Text(
+                                 'View Post',
+                                 style: TextStyle(
+                                     fontFamily: fontFamily,
+                                     fontSize: 11,
+                                     color:
+                                         Color(widget.noteModel.topicColor.value)),
+                               ),
+                             ),
+                           )
+                        ],
                       ),
                       // Text(
                       //   widget.noteModel.topic,
@@ -303,43 +346,7 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
                       // )
                     ),
                   ),
-                  Positioned(
-                      left: size.width * 0.32,
-                      top: 8,
-                      child: InkWell(
-                        onTap: () {
-                          Provider.of<CircleCommentsProvider>(context,
-                                  listen: false)
-                              .pausePlayer();
-
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => HomeScreen(
-                                        note: widget.noteModel,
-                                        // currentIndex: widget.index,
-                                        // screenChange: 1,
-                                      )));
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 6, horizontal: 10),
-                          decoration: BoxDecoration(
-                              color: whiteColor.withOpacity(1),
-                              borderRadius: BorderRadius.circular(18)),
-
-                          //  view post details screen
-
-                          child: Text(
-                            'View Post',
-                            style: TextStyle(
-                                fontFamily: fontFamily,
-                                fontSize: 11,
-                                color:
-                                    Color(widget.noteModel.topicColor.value)),
-                          ),
-                        ),
-                      ))
+                 
                 ],
               )
             ],

@@ -469,7 +469,7 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
                         final seekPosition =
                             Duration(milliseconds: position.toInt());
                         player.seek(seekPosition);
-                        scrollToPosition(seekPosition);
+                        // scrollToPosition(seekPosition);
                       },
                       child: CustomPaint(
                         size: Size(widget.width, widget.height),

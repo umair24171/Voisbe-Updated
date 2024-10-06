@@ -623,33 +623,28 @@ class NoteProvider with ChangeNotifier {
   //  function to record the reply
 
   commentRecord() async {
-    String? path;
-    var id = const Uuid().v4();
-    Directory appDocDir = await getApplicationDocumentsDirectory();
-    String appDocPath = appDocDir.path;
-    path = '$appDocPath/$id.flac';
-
-    if (await Permission.microphone.request().isGranted) {
-      if (await recorder.hasPermission()) {
-        // await _initRecorder();
-        setRecording(true);
-        // temporary path
-        Directory appDocDir = await getApplicationDocumentsDirectory();
-        String appDocPath = appDocDir.path;
-        var id = const Uuid().v4();
-        String path = '$appDocPath/$id.m4a';
-        await recorder.start(
-            const rec.RecordConfig(
-              androidConfig:
-                  rec.AndroidRecordConfig(muteAudio: true, useLegacy: true),
-              autoGain: true,
-              echoCancel: true,
-              encoder: rec.AudioEncoder.aacLc,
-              noiseSuppress: true,
-            ),
-            path: path);
-        // notifyListeners();
-      }
+    if (await recorder.hasPermission()) {
+      // await _initRecorder();
+      setRecording(true);
+      // temporary path
+      Directory appDocDir = await getApplicationDocumentsDirectory();
+      String appDocPath = appDocDir.path;
+      var id = const Uuid().v4();
+      String path = '$appDocPath/$id.m4a';
+      await recorder.start(
+          const rec.RecordConfig(
+            androidConfig:
+                rec.AndroidRecordConfig(muteAudio: true, useLegacy: true),
+            autoGain: true,
+            echoCancel: true,
+            encoder: rec.AudioEncoder.aacLc,
+            noiseSuppress: true,
+          ),
+          path: path);
+      // notifyListeners();
+    } else {
+      Permission.audio.request();
+      Permission.microphone.request();
     }
   }
 
@@ -665,30 +660,28 @@ class NoteProvider with ChangeNotifier {
   // recording the subcomment
 
   subCommentRecord() async {
-    String? path;
-    var id = const Uuid().v4();
-
-    if (await Permission.microphone.request().isGranted) {
-      if (await recorder.hasPermission()) {
-        // await _initRecorder();
-        setRecording(true);
-        // temporary path
-        Directory appDocDir = await getApplicationDocumentsDirectory();
-        String appDocPath = appDocDir.path;
-        var id = const Uuid().v4();
-        String path = '$appDocPath/$id.m4a';
-        await recorder.start(
-            const rec.RecordConfig(
-              androidConfig:
-                  rec.AndroidRecordConfig(muteAudio: true, useLegacy: true),
-              autoGain: true,
-              echoCancel: true,
-              encoder: rec.AudioEncoder.aacLc,
-              noiseSuppress: true,
-            ),
-            path: path);
-        // notifyListeners();
-      }
+    if (await recorder.hasPermission()) {
+      // await _initRecorder();
+      setRecording(true);
+      // temporary path
+      Directory appDocDir = await getApplicationDocumentsDirectory();
+      String appDocPath = appDocDir.path;
+      var id = const Uuid().v4();
+      String path = '$appDocPath/$id.m4a';
+      await recorder.start(
+          const rec.RecordConfig(
+            androidConfig:
+                rec.AndroidRecordConfig(muteAudio: true, useLegacy: true),
+            autoGain: true,
+            echoCancel: true,
+            encoder: rec.AudioEncoder.aacLc,
+            noiseSuppress: true,
+          ),
+          path: path);
+      // notifyListeners();
+    } else {
+      Permission.audio.request();
+      Permission.microphone.request();
     }
   }
 

@@ -289,16 +289,16 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
   }
 
   void scrollToPosition(Duration position) {
-    if (waveForm.isNotEmpty && _scrollController.hasClients) {
-      final progressPercent = position.inMilliseconds / duration.inMilliseconds;
-      final targetScrollOffset =
-          progressPercent * waveForm.length * widget.width - widget.width / 2;
-      _scrollController.animateTo(
-        targetScrollOffset,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    }
+    // if (waveForm.isNotEmpty && _scrollController.hasClients) {
+    //   final progressPercent = position.inMilliseconds / duration.inMilliseconds;
+    //   final targetScrollOffset =
+    //       progressPercent * waveForm.length * widget.width - widget.width / 2;
+    //   _scrollController.animateTo(
+    //     targetScrollOffset,
+    //     duration: const Duration(milliseconds: 500),
+    //     curve: Curves.easeInOut,
+    //   );
+    // }
   }
 
   @override
@@ -475,14 +475,14 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
                           final seekPosition =
                               Duration(milliseconds: position.toInt());
                           widget.player.seek(seekPosition);
-                          scrollToPosition(seekPosition);
+                          // scrollToPosition(seekPosition);
                         },
                         child: CustomPaint(
                           size: Size(widget.width, widget.height),
                           painter: RectangleActiveWaveformPainter(
                             onSeek: (p0) {
                               widget.player.seek(p0);
-                              scrollToPosition(p0);
+                              // scrollToPosition(p0);
                             },
                             activeColor:
                                 widget.currentIndex == widget.changeIndex &&

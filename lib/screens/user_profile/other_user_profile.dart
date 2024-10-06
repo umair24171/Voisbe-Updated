@@ -227,24 +227,21 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
             //  blur filter above that
 
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            Container(
+              color: Colors.white.withOpacity(0.1), // Transparent color
+            ),
+            Positioned.fill(
+              top: 0,
+              bottom: 0,
               child: Container(
-                color: Colors.white.withOpacity(0.1), // Transparent color
+                child: Image.asset(
+                  'assets/icons/profilepage_backgroundgradient 1.png',
+                  fit: BoxFit.cover,
+                  height: size.height,
+                  width: size.width,
+                ),
               ),
             ),
- Positioned.fill(
-  top: 0,
-  bottom: 0,
-   child: Container(
-                        child: Image.asset(
-                          'assets/icons/profilepage_backgroundgradient 1.png',
-                          fit: BoxFit.cover,
-                          height: size.height,
-                          width: size.width,
-                        ),
-                      ),
- ),
             //  refresh function
 
             RefreshIndicator(
@@ -271,7 +268,6 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
                     //  background gradient pic
 
-                   
                     Column(
                       children: [
                         Padding(
