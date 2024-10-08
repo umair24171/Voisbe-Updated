@@ -18,7 +18,9 @@ import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
 import 'package:social_notes/screens/home_screen/model/sub_comment_model.dart';
+import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/comments_provider.dart';
+import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/comments_player.dart';
 
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
@@ -67,41 +69,12 @@ class SingleCommentNote extends StatefulWidget {
 }
 
 class _SingleCommentNoteState extends State<SingleCommentNote> {
-  // late final audi.RecorderController recorderController;
-  // // Future<String> getOutputPath() async {
-  // //   final directory = await getExternalStorageDirectory();
-  // //   final outputPath = '${directory?.path}/output_audio.wav';
-  // //   return outputPath;
-  // // }
-
-  // void _initialiseControllers() {
-  //   recorderController = audi.RecorderController()
-  //     ..androidEncoder = audi.AndroidEncoder.aac
-  //     ..androidOutputFormat = audi.AndroidOutputFormat.mpeg4
-  //     ..iosEncoder = audi.IosEncoder.kAudioFormatMPEG4AAC
-  //     ..sampleRate = 44100;
-  // }
-
-  // @override
-  // void initState() {
-  //   _initialiseControllers();
-  //   super.initState();
-  // }
-
-  // @override
-  // void dispose() {
-  //   recorderController.dispose();
-  //   super.dispose();
-  // }
-
   @override
   Widget build(BuildContext context) {
     var currentUser = Provider.of<UserProvider>(context, listen: false).user;
     bool canDismiss = widget.commentModel.userId == currentUser!.uid ||
         widget.postUserId == currentUser.uid;
-    // var userProvider = Provider.of<UserProvider>(context, listen: false).user;
-    // var subCommentProvider =
-    // Provider.of<DisplayNotesProvider>(context, listen: false);
+
     return canDismiss
         ? Slidable(
             direction: Axis.horizontal,
@@ -115,33 +88,6 @@ class _SingleCommentNoteState extends State<SingleCommentNote> {
                       await commentManager.deleteComment(
                         widget.commentModel.commentid,
                       );
-                      // if (canDismiss) {
-                      //   await FirebaseFirestore.instance
-                      //       .collection('notes')
-                      //       .doc(widget.commentModel.postId)
-                      //       .collection('comments')
-                      //       .doc(widget.commentModel.commentid)
-                      //       .delete();
-                      // } else {
-                      //   var currentUser =
-                      //       Provider.of<UserProvider>(context, listen: false).user;
-                      //   SharedPreferences prefs =
-                      //       await SharedPreferences.getInstance();
-
-                      //   if (prefs.getStringList(currentUser!.uid) != null) {
-                      //     List<String>? commentIds =
-                      //         prefs.getStringList(currentUser.uid);
-                      //     commentIds == null
-                      //         ? prefs.setStringList(
-                      //             currentUser.uid, [widget.commentModel.commentid])
-                      //         : commentIds.add(widget.commentModel.commentid);
-                      //     prefs.setStringList(currentUser.uid, commentIds!);
-                      //   } else {
-                      //     prefs.setStringList(
-                      //         currentUser.uid, [widget.commentModel.commentid]);
-                      //   }
-                      //   widget.getStreamComments();
-                      // }
                     },
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
@@ -171,6 +117,7 @@ class BuildCommentContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var currentUser = Provider.of<UserProvider>(context, listen: false).user;
     return Column(
       children: [
         Padding(
@@ -304,41 +251,22 @@ class BuildCommentContent extends StatelessWidget {
                               .setIsReplying(true);
                           Provider.of<NoteProvider>(context, listen: false)
                               .setCommentModel(widget.commentModel);
-                          // try {
-                          //   if (noteProvider.isRecording) {
-                          //     recorderController.reset();
 
-                          //     String? path =
-                          //         await recorderController.stop(false);
-
-                          //     if (path != null) {
-                          //       noteProvider.setCommentNoteFile(File(path));
-                          //       debugPrint(path);
-                          //       debugPrint(
-                          //           "Recorded file size: ${File(path).lengthSync()}");
-                          //     }
-                          //   } else {
-                          //     var id = const Uuid().v4();
-                          //     Directory appDocDir =
-                          //         await getApplicationDocumentsDirectory();
-                          //     String appDocPath = appDocDir.path;
-                          //     String? path = '$appDocPath/$id.flac';
-                          //     await recorderController.record(
-                          //         path: path); // Path is optional
-                          //   }
-                          // } catch (e) {
-                          //   debugPrint(e.toString());
-                          // } finally {
-                          //   noteProvider
-                          //       .setRecording(!noteProvider.isRecording);
-                          //   // setState(() {
-                          //   //   isRecording =
-                          //   //       !isRecording;
-                          //   // });
-                          // }
                           if (await noteProvider.recorder.isRecording()) {
                             noteProvider.commentStop();
                           } else {
+                            Provider.of<DisplayNotesProvider>(context,
+                                    listen: false)
+                                .pausePlayer();
+                            Provider.of<DisplayNotesProvider>(context,
+                                    listen: false)
+                                .setIsPlaying(false);
+                            Provider.of<DisplayNotesProvider>(context,
+                                    listen: false)
+                                .setChangeIndex(-1);
+                            Provider.of<CircleCommentsProvider>(context,
+                                    listen: false)
+                                .pausePlayer();
                             noteProvider.commentRecord();
                           }
                           // Set cancel reply to false
@@ -407,6 +335,9 @@ class BuildCommentContent extends StatelessWidget {
             ],
           ),
         ),
+
+        //  reply comments
+
         StreamBuilder(
           stream: FirebaseFirestore.instance
               .collection('notes')
@@ -425,238 +356,574 @@ class BuildCommentContent extends StatelessWidget {
                 itemBuilder: (context, index) {
                   SubCommentModel subCommentModel = SubCommentModel.fromMap(
                       snapshot.data!.docs[index].data());
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 40, bottom: 10),
-                    child: Row(
-                      // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => OtherUserProfile(
-                                          userId: subCommentModel.userId,
-                                        )));
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: StreamBuilder(
-                                stream: FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(subCommentModel.userId)
-                                    .snapshots(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData) {
-                                    UserModel subCommentPic = UserModel.fromMap(
-                                        snapshot.data!.data()!);
-                                    return CircleAvatar(
-                                      backgroundImage: NetworkImage(
-                                        subCommentPic.photoUrl,
-                                      ),
-                                      radius: 17,
-                                    );
-                                  } else {
-                                    return const Text('');
-                                  }
-                                }),
+                  bool canDismiss =
+                      subCommentModel.userId == currentUser!.uid ||
+                          widget.postUserId == currentUser.uid;
+
+                  return canDismiss
+                      ? Slidable(
+                          direction: Axis.horizontal,
+                          endActionPane: ActionPane(
+                            motion: const ScrollMotion(),
+                            children: [
+                              SlidableAction(
+                                  padding: const EdgeInsets.all(0),
+                                  onPressed: (context) async {
+                                    await FirebaseFirestore.instance
+                                        .collection('notes')
+                                        .doc(widget.commentModel.postId)
+                                        .collection('comments')
+                                        .doc(widget.commentModel.commentid)
+                                        .collection('subComments')
+                                        .doc(subCommentModel.subCommentId)
+                                        .delete();
+                                    // final commentManager =
+                                    //     widget.commentManager;
+                                    // await commentManager.deleteComment(
+                                    //   widget.commentModel.commentid,
+                                    // );
+                                  },
+                                  backgroundColor: primaryColor,
+                                  foregroundColor: Colors.white,
+                                  flex: 4,
+                                  borderRadius: const BorderRadius.only(
+                                    bottomLeft: Radius.circular(0),
+                                    topLeft: Radius.circular(0),
+                                  ),
+                                  autoClose: true,
+                                  icon: Icons.delete,
+                                  label: "Delete"),
+                            ],
                           ),
-                        ),
-                        // const SizedBox(
-                        //   width: 5,
-                        // ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 3),
-                          child: Column(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.only(left: 40, bottom: 10),
+                            child: Row(
+                              // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                OtherUserProfile(
+                                                  userId:
+                                                      subCommentModel.userId,
+                                                )));
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 10),
+                                    child: StreamBuilder(
+                                        stream: FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(subCommentModel.userId)
+                                            .snapshots(),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.hasData) {
+                                            UserModel subCommentPic =
+                                                UserModel.fromMap(
+                                                    snapshot.data!.data()!);
+                                            return CircleAvatar(
+                                              backgroundImage: NetworkImage(
+                                                subCommentPic.photoUrl,
+                                              ),
+                                              radius: 17,
+                                            );
+                                          } else {
+                                            return const Text('');
+                                          }
+                                        }),
+                                  ),
+                                ),
+                                // const SizedBox(
+                                //   width: 5,
+                                // ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 3),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          StreamBuilder(
+                                              stream: FirebaseFirestore.instance
+                                                  .collection('users')
+                                                  .doc(subCommentModel.userId)
+                                                  .snapshots(),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.hasData) {
+                                                  UserModel verifiedUser =
+                                                      UserModel.fromMap(snapshot
+                                                          .data!
+                                                          .data()!);
+                                                  return InkWell(
+                                                    onTap: () {
+                                                      Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                OtherUserProfile(
+                                                                    userId:
+                                                                        verifiedUser
+                                                                            .uid),
+                                                          ));
+                                                    },
+                                                    child: Row(
+                                                      children: [
+                                                        Text(
+                                                          verifiedUser.name,
+                                                          style: TextStyle(
+                                                              fontFamily:
+                                                                  fontFamily,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600),
+                                                        ),
+                                                        if (verifiedUser
+                                                            .isVerified)
+                                                          verifiedIcon()
+                                                      ],
+                                                    ),
+                                                  );
+                                                } else {
+                                                  return const Text('');
+                                                }
+                                              }),
+                                          const SizedBox(
+                                            width: 3,
+                                          ),
+                                          StreamBuilder(
+                                              stream: FirebaseFirestore.instance
+                                                  .collection('users')
+                                                  .doc(subCommentModel
+                                                      .replyingTo)
+                                                  .snapshots(),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.hasData) {
+                                                  UserModel replyingUser =
+                                                      UserModel.fromMap(snapshot
+                                                          .data!
+                                                          .data()!);
+                                                  return InkWell(
+                                                    onTap: () {
+                                                      Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                OtherUserProfile(
+                                                                    userId:
+                                                                        replyingUser
+                                                                            .uid),
+                                                          ));
+                                                    },
+                                                    child: Row(
+                                                      children: [
+                                                        Text(
+                                                          '@${replyingUser.name}',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.grey,
+                                                              fontFamily:
+                                                                  fontFamily,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600),
+                                                        ),
+                                                        if (replyingUser
+                                                            .isVerified)
+                                                          verifiedIcon(),
+                                                      ],
+                                                    ),
+                                                  );
+                                                } else {
+                                                  return const Text('');
+                                                }
+                                              }),
+                                          const SizedBox(
+                                            width: 3,
+                                          ),
+                                          Text(
+                                            timeago.format(
+                                                subCommentModel.createdAt),
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                overflow: TextOverflow.ellipsis,
+                                                fontFamily: fontFamily,
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 12,
+                                                color: Colors.grey[600]),
+                                          ),
+                                        ],
+                                      ),
+                                      CustomProgressPlayer(
+                                          lockPosts: [],
+                                          stopMainPlayer: widget.stopMainPlayer,
+                                          isSubCommentPlayer: true,
+                                          isComment: true,
+                                          commentId:
+                                              subCommentModel.subCommentId,
+                                          postId: subCommentModel.postId,
+                                          playedCounter:
+                                              widget.commentModel.playedComment,
+                                          size: 10,
+                                          waveColor: whiteColor,
+                                          backgroundColor: primaryColor,
+                                          noteUrl: subCommentModel.comment,
+                                          height: 20,
+                                          width: 150,
+                                          mainWidth: 250,
+                                          mainHeight: 42),
+                                      Consumer<NoteProvider>(
+                                          builder: (context, noteProvider, _) {
+                                        return InkWell(
+                                          splashColor: Colors.transparent,
+                                          onTap: () async {
+                                            Provider.of<NoteProvider>(context,
+                                                    listen: false)
+                                                .setSubCOmmentReplying(true);
+
+                                            Provider.of<NoteProvider>(context,
+                                                    listen: false)
+                                                .setSubComment(subCommentModel);
+                                            if (await noteProvider.recorder
+                                                .isRecording()) {
+                                              noteProvider.subCommentStop();
+                                            } else {
+                                              Provider.of<DisplayNotesProvider>(
+                                                      context,
+                                                      listen: false)
+                                                  .pausePlayer();
+                                              Provider.of<DisplayNotesProvider>(
+                                                      context,
+                                                      listen: false)
+                                                  .setIsPlaying(false);
+                                              Provider.of<DisplayNotesProvider>(
+                                                      context,
+                                                      listen: false)
+                                                  .setChangeIndex(-1);
+                                              Provider.of<CircleCommentsProvider>(
+                                                      context,
+                                                      listen: false)
+                                                  .pausePlayer();
+                                              noteProvider.subCommentRecord();
+                                            }
+                                            // try {
+                                            //   if (noteProvider.isRecording) {
+                                            //     recorderController.reset();
+
+                                            //     String? path = await recorderController
+                                            //         .stop(false);
+
+                                            //     if (path != null) {
+                                            //       noteProvider.setSubCommentNoteFile(
+                                            //           File(path));
+                                            //       debugPrint(path);
+                                            //       debugPrint(
+                                            //           "Recorded file size: ${File(path).lengthSync()}");
+                                            //     }
+                                            //   } else {
+                                            //     var id = const Uuid().v4();
+                                            //     Directory appDocDir =
+                                            //         await getApplicationDocumentsDirectory();
+                                            //     String appDocPath = appDocDir.path;
+                                            //     String? path = '$appDocPath/$id.flac';
+                                            //     await recorderController.record(
+                                            //         path: path); // Path is optional
+                                            //   }
+                                            // } catch (e) {
+                                            //   debugPrint(e.toString());
+                                            // } finally {
+                                            //   noteProvider.setRecording(
+                                            //       !noteProvider.isRecording);
+                                            //   // setState(() {
+                                            //   //   isRecording =
+                                            //   //       !isRecording;
+                                            //   // });
+                                            // }
+
+                                            // Set cancel reply to false
+                                          },
+                                          child: Text(
+                                            'Reply',
+                                            style: TextStyle(
+                                                color: Colors.black38,
+                                                fontFamily: fontFamily,
+                                                fontSize: 14),
+                                          ),
+                                        );
+                                      })
+                                    ],
+                                  ),
+                                ),
+                                // SizedBox(
+                                //   width: 40,
+                                // )
+                              ],
+                            ),
+                          ),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.only(left: 40, bottom: 10),
+                          child: Row(
+                            // mainAxisAlignment: MainAxisAlignment.spaceAround,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  StreamBuilder(
+                              InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              OtherUserProfile(
+                                                userId: subCommentModel.userId,
+                                              )));
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: StreamBuilder(
                                       stream: FirebaseFirestore.instance
                                           .collection('users')
                                           .doc(subCommentModel.userId)
                                           .snapshots(),
                                       builder: (context, snapshot) {
                                         if (snapshot.hasData) {
-                                          UserModel verifiedUser =
+                                          UserModel subCommentPic =
                                               UserModel.fromMap(
                                                   snapshot.data!.data()!);
-                                          return InkWell(
-                                            onTap: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        OtherUserProfile(
-                                                            userId: verifiedUser
-                                                                .uid),
-                                                  ));
-                                            },
-                                            child: Row(
-                                              children: [
-                                                Text(
-                                                  verifiedUser.name,
-                                                  style: TextStyle(
-                                                      fontFamily: fontFamily,
-                                                      fontWeight:
-                                                          FontWeight.w600),
-                                                ),
-                                                if (verifiedUser.isVerified)
-                                                  verifiedIcon()
-                                              ],
+                                          return CircleAvatar(
+                                            backgroundImage: NetworkImage(
+                                              subCommentPic.photoUrl,
                                             ),
+                                            radius: 17,
                                           );
                                         } else {
                                           return const Text('');
                                         }
                                       }),
-                                  const SizedBox(
-                                    width: 3,
-                                  ),
-                                  StreamBuilder(
-                                      stream: FirebaseFirestore.instance
-                                          .collection('users')
-                                          .doc(subCommentModel.replyingTo)
-                                          .snapshots(),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.hasData) {
-                                          UserModel replyingUser =
-                                              UserModel.fromMap(
-                                                  snapshot.data!.data()!);
-                                          return InkWell(
-                                            onTap: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        OtherUserProfile(
-                                                            userId: replyingUser
-                                                                .uid),
-                                                  ));
-                                            },
-                                            child: Row(
-                                              children: [
-                                                Text(
-                                                  '@${replyingUser.name}',
-                                                  style: TextStyle(
-                                                      color: Colors.grey,
-                                                      fontFamily: fontFamily,
-                                                      fontWeight:
-                                                          FontWeight.w600),
-                                                ),
-                                                if (replyingUser.isVerified)
-                                                  verifiedIcon(),
-                                              ],
-                                            ),
-                                          );
-                                        } else {
-                                          return const Text('');
-                                        }
-                                      }),
-                                  const SizedBox(
-                                    width: 3,
-                                  ),
-                                  Text(
-                                    timeago.format(subCommentModel.createdAt),
-                                    style: TextStyle(
-                                        fontFamily: fontFamily,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 12,
-                                        color: Colors.grey[600]),
-                                  ),
-                                ],
+                                ),
                               ),
-                              CustomProgressPlayer(
-                                  lockPosts: [],
-                                  stopMainPlayer: widget.stopMainPlayer,
-                                  isSubCommentPlayer: true,
-                                  isComment: true,
-                                  commentId: subCommentModel.subCommentId,
-                                  postId: subCommentModel.postId,
-                                  playedCounter:
-                                      widget.commentModel.playedComment,
-                                  size: 10,
-                                  waveColor: whiteColor,
-                                  backgroundColor: primaryColor,
-                                  noteUrl: subCommentModel.comment,
-                                  height: 20,
-                                  width: 150,
-                                  mainWidth: 250,
-                                  mainHeight: 42),
-                              Consumer<NoteProvider>(
-                                  builder: (context, noteProvider, _) {
-                                return InkWell(
-                                  splashColor: Colors.transparent,
-                                  onTap: () async {
-                                    Provider.of<NoteProvider>(context,
-                                            listen: false)
-                                        .setSubCOmmentReplying(true);
+                              // const SizedBox(
+                              //   width: 5,
+                              // ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        StreamBuilder(
+                                            stream: FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(subCommentModel.userId)
+                                                .snapshots(),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData) {
+                                                UserModel verifiedUser =
+                                                    UserModel.fromMap(
+                                                        snapshot.data!.data()!);
+                                                return InkWell(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              OtherUserProfile(
+                                                                  userId:
+                                                                      verifiedUser
+                                                                          .uid),
+                                                        ));
+                                                  },
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        verifiedUser.name,
+                                                        style: TextStyle(
+                                                            fontFamily:
+                                                                fontFamily,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600),
+                                                      ),
+                                                      if (verifiedUser
+                                                          .isVerified)
+                                                        verifiedIcon()
+                                                    ],
+                                                  ),
+                                                );
+                                              } else {
+                                                return const Text('');
+                                              }
+                                            }),
+                                        const SizedBox(
+                                          width: 3,
+                                        ),
+                                        StreamBuilder(
+                                            stream: FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(subCommentModel.replyingTo)
+                                                .snapshots(),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData) {
+                                                UserModel replyingUser =
+                                                    UserModel.fromMap(
+                                                        snapshot.data!.data()!);
+                                                return InkWell(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              OtherUserProfile(
+                                                                  userId:
+                                                                      replyingUser
+                                                                          .uid),
+                                                        ));
+                                                  },
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        '@${replyingUser.name}',
+                                                        style: TextStyle(
+                                                            color: Colors.grey,
+                                                            fontFamily:
+                                                                fontFamily,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600),
+                                                      ),
+                                                      if (replyingUser
+                                                          .isVerified)
+                                                        verifiedIcon(),
+                                                    ],
+                                                  ),
+                                                );
+                                              } else {
+                                                return const Text('');
+                                              }
+                                            }),
+                                        const SizedBox(
+                                          width: 3,
+                                        ),
+                                        Text(
+                                          timeago.format(
+                                              subCommentModel.createdAt),
+                                          style: TextStyle(
+                                              fontFamily: fontFamily,
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 12,
+                                              color: Colors.grey[600]),
+                                        ),
+                                      ],
+                                    ),
+                                    CustomProgressPlayer(
+                                        lockPosts: [],
+                                        stopMainPlayer: widget.stopMainPlayer,
+                                        isSubCommentPlayer: true,
+                                        isComment: true,
+                                        commentId: subCommentModel.subCommentId,
+                                        postId: subCommentModel.postId,
+                                        playedCounter:
+                                            widget.commentModel.playedComment,
+                                        size: 10,
+                                        waveColor: whiteColor,
+                                        backgroundColor: primaryColor,
+                                        noteUrl: subCommentModel.comment,
+                                        height: 20,
+                                        width: 150,
+                                        mainWidth: 250,
+                                        mainHeight: 42),
+                                    Consumer<NoteProvider>(
+                                        builder: (context, noteProvider, _) {
+                                      return InkWell(
+                                        splashColor: Colors.transparent,
+                                        onTap: () async {
+                                          Provider.of<NoteProvider>(context,
+                                                  listen: false)
+                                              .setSubCOmmentReplying(true);
 
-                                    Provider.of<NoteProvider>(context,
-                                            listen: false)
-                                        .setSubComment(subCommentModel);
-                                    if (await noteProvider.recorder
-                                        .isRecording()) {
-                                      noteProvider.subCommentStop();
-                                    } else {
-                                      noteProvider.subCommentRecord();
-                                    }
-                                    // try {
-                                    //   if (noteProvider.isRecording) {
-                                    //     recorderController.reset();
+                                          Provider.of<NoteProvider>(context,
+                                                  listen: false)
+                                              .setSubComment(subCommentModel);
+                                          if (await noteProvider.recorder
+                                              .isRecording()) {
+                                            noteProvider.subCommentStop();
+                                          } else {
+                                            Provider.of<DisplayNotesProvider>(
+                                                    context,
+                                                    listen: false)
+                                                .pausePlayer();
+                                            Provider.of<DisplayNotesProvider>(
+                                                    context,
+                                                    listen: false)
+                                                .setIsPlaying(false);
+                                            Provider.of<DisplayNotesProvider>(
+                                                    context,
+                                                    listen: false)
+                                                .setChangeIndex(-1);
+                                            Provider.of<CircleCommentsProvider>(
+                                                    context,
+                                                    listen: false)
+                                                .pausePlayer();
+                                            noteProvider.subCommentRecord();
+                                          }
+                                          // try {
+                                          //   if (noteProvider.isRecording) {
+                                          //     recorderController.reset();
 
-                                    //     String? path = await recorderController
-                                    //         .stop(false);
+                                          //     String? path = await recorderController
+                                          //         .stop(false);
 
-                                    //     if (path != null) {
-                                    //       noteProvider.setSubCommentNoteFile(
-                                    //           File(path));
-                                    //       debugPrint(path);
-                                    //       debugPrint(
-                                    //           "Recorded file size: ${File(path).lengthSync()}");
-                                    //     }
-                                    //   } else {
-                                    //     var id = const Uuid().v4();
-                                    //     Directory appDocDir =
-                                    //         await getApplicationDocumentsDirectory();
-                                    //     String appDocPath = appDocDir.path;
-                                    //     String? path = '$appDocPath/$id.flac';
-                                    //     await recorderController.record(
-                                    //         path: path); // Path is optional
-                                    //   }
-                                    // } catch (e) {
-                                    //   debugPrint(e.toString());
-                                    // } finally {
-                                    //   noteProvider.setRecording(
-                                    //       !noteProvider.isRecording);
-                                    //   // setState(() {
-                                    //   //   isRecording =
-                                    //   //       !isRecording;
-                                    //   // });
-                                    // }
+                                          //     if (path != null) {
+                                          //       noteProvider.setSubCommentNoteFile(
+                                          //           File(path));
+                                          //       debugPrint(path);
+                                          //       debugPrint(
+                                          //           "Recorded file size: ${File(path).lengthSync()}");
+                                          //     }
+                                          //   } else {
+                                          //     var id = const Uuid().v4();
+                                          //     Directory appDocDir =
+                                          //         await getApplicationDocumentsDirectory();
+                                          //     String appDocPath = appDocDir.path;
+                                          //     String? path = '$appDocPath/$id.flac';
+                                          //     await recorderController.record(
+                                          //         path: path); // Path is optional
+                                          //   }
+                                          // } catch (e) {
+                                          //   debugPrint(e.toString());
+                                          // } finally {
+                                          //   noteProvider.setRecording(
+                                          //       !noteProvider.isRecording);
+                                          //   // setState(() {
+                                          //   //   isRecording =
+                                          //   //       !isRecording;
+                                          //   // });
+                                          // }
 
-                                    // Set cancel reply to false
-                                  },
-                                  child: Text(
-                                    'Reply',
-                                    style: TextStyle(
-                                        color: Colors.black38,
-                                        fontFamily: fontFamily,
-                                        fontSize: 14),
-                                  ),
-                                );
-                              })
+                                          // Set cancel reply to false
+                                        },
+                                        child: Text(
+                                          'Reply',
+                                          style: TextStyle(
+                                              color: Colors.black38,
+                                              fontFamily: fontFamily,
+                                              fontSize: 14),
+                                        ),
+                                      );
+                                    })
+                                  ],
+                                ),
+                              ),
+                              // SizedBox(
+                              //   width: 40,
+                              // )
                             ],
                           ),
-                        ),
-                        // SizedBox(
-                        //   width: 40,
-                        // )
-                      ],
-                    ),
-                  );
+                        );
                 },
               );
             } else {

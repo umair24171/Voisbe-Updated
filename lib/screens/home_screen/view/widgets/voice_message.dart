@@ -78,22 +78,18 @@ class _CircleVoiceNotesState extends State<CircleVoiceNotes> {
   Future<void> initPlayer() async {
     widget.audioPlayer = AudioPlayer();
     widget.audioPlayer.setReleaseMode(ReleaseMode.stop);
-    await widget.audioPlayer.setSourceUrl(widget.commentModel.comment);
-    _playerState = widget.audioPlayer.state;
-
-    // Check if the file is already cached
-    final fileInfo = await DefaultCacheManager()
-        .getFileFromCache(widget.commentModel.comment);
-    if (fileInfo != null && fileInfo.file.existsSync()) {
-      _cachedFilePath = fileInfo.file.path;
-    }
-
+    widget.audioPlayer.setSourceUrl(widget.commentModel.comment).then((value) {
+      // widget.player.getDuration().then(
+      //       (value) => setState(() {
+      //         duration = value!;
+      //         // playPause();
+      //       }),
+      //     );
+    });
     widget.audioPlayer.onDurationChanged.listen((event) {
-      if (mounted) {
-        setState(() {
-          duration = event;
-        });
-      }
+      setState(() {
+        duration = event;
+      });
     });
   }
 

@@ -276,79 +276,145 @@ class _SingleSearchItemState extends State<SingleSearchItem> {
                     child: Container(
                       width: size.width * 0.45,
                       decoration: BoxDecoration(
-                          color: Color(widget.noteModel.topicColor.value),
-                          borderRadius: BorderRadius.circular(18)),
-                      padding: const EdgeInsets.only(
-                           left: 8),
+                        color: Color(widget.noteModel.topicColor.value),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      padding: const EdgeInsets.only(left: 8, right: 0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          SizedBox(
-                            width: size.width * 0.26,
-                            height: 20,
-                            child: GradientText(
-                              widget.noteModel.topic,
-                              style: const TextStyle(fontSize: 11,overflow: TextOverflow.fade),
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white,
-                                  Colors.white.withAlpha(0),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
+                          Expanded(
+                            child: SizedBox(
+                              height: 20,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 1.5),
+                                child: GradientText(
+                                  widget.noteModel.topic,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.white,
+                                      Colors.white.withAlpha(0),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                           InkWell(
-                             onTap: () {
-                               Provider.of<CircleCommentsProvider>(context,
-                                       listen: false)
-                                   .pausePlayer();
-                           
-                               Navigator.push(
-                                   context,
-                                   MaterialPageRoute(
-                                       builder: (context) => HomeScreen(
-                                             note: widget.noteModel,
-                                             // currentIndex: widget.index,
-                                             // screenChange: 1,
-                                           )));
-                             },
-                             child: Container(
-                               padding: const EdgeInsets.symmetric(
-                                   vertical: 6, horizontal: 10),
-                               decoration: BoxDecoration(
-                                   color: whiteColor.withOpacity(1),
-                                   borderRadius: BorderRadius.circular(18)),
-                           
-                               //  view post details screen
-                           
-                               child: Text(
-                                 'View Post',
-                                 style: TextStyle(
-                                     fontFamily: fontFamily,
-                                     fontSize: 11,
-                                     color:
-                                         Color(widget.noteModel.topicColor.value)),
-                               ),
-                             ),
-                           )
+                          InkWell(
+                            onTap: () {
+                              Provider.of<CircleCommentsProvider>(context,
+                                      listen: false)
+                                  .pausePlayer();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => HomeScreen(
+                                    note: widget.noteModel,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 6, horizontal: 10),
+                              decoration: BoxDecoration(
+                                color: whiteColor.withOpacity(1),
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Text(
+                                'View Post',
+                                style: TextStyle(
+                                  fontFamily: fontFamily,
+                                  fontSize: 11,
+                                  color:
+                                      Color(widget.noteModel.topicColor.value),
+                                ),
+                              ),
+                            ),
+                          )
                         ],
                       ),
-                      // Text(
-                      //   widget.noteModel.topic,
-                      //   overflow: TextOverflow.ellipsis,
-                      //   // textAlign: a,
-                      //   style: TextStyle(
-                      //       fontFamily: fontFamily,
-                      //       fontSize: 11,
-                      //       color: whiteColor),
-                      // )
                     ),
                   ),
-                 
                 ],
               )
+
+              // Stack(
+              //   children: [
+              //     Padding(
+              //       padding: const EdgeInsets.all(8.0),
+              //       child: Container(
+              //         width: size.width * 0.45,
+              //         decoration: BoxDecoration(
+              //             color: Color(widget.noteModel.topicColor.value),
+              //             borderRadius: BorderRadius.circular(18)),
+              //         padding: const EdgeInsets.only(left: 8),
+              //         child: Row(
+              //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //           children: [
+              //             SizedBox(
+              //               width: size.width * 0.22,
+              //               height: 20,
+              //               child: GradientText(
+              //                 widget.noteModel.topic,
+              //                 style: const TextStyle(
+              //                     fontSize: 11, overflow: TextOverflow.fade),
+              //                 gradient: LinearGradient(
+              //                   colors: [
+              //                     Colors.white,
+              //                     Colors.white.withAlpha(0),
+              //                   ],
+              //                   begin: Alignment.topLeft,
+              //                   end: Alignment.bottomRight,
+              //                 ),
+              //               ),
+              //             ),
+              //             InkWell(
+              //               onTap: () {
+              //                 Provider.of<CircleCommentsProvider>(context,
+              //                         listen: false)
+              //                     .pausePlayer();
+
+              //                 Navigator.push(
+              //                     context,
+              //                     MaterialPageRoute(
+              //                         builder: (context) => HomeScreen(
+              //                               note: widget.noteModel,
+              //                               // currentIndex: widget.index,
+              //                               // screenChange: 1,
+              //                             )));
+              //               },
+              //               child: Container(
+              //                 padding: const EdgeInsets.symmetric(
+              //                     vertical: 6, horizontal: 10),
+              //                 decoration: BoxDecoration(
+              //                     color: whiteColor.withOpacity(1),
+              //                     borderRadius: BorderRadius.circular(18)),
+
+              //                 //  view post details screen
+
+              //                 child: Text(
+              //                   'View Post',
+              //                   style: TextStyle(
+              //                       fontFamily: fontFamily,
+              //                       fontSize: 11,
+              //                       color: Color(
+              //                           widget.noteModel.topicColor.value)),
+              //                 ),
+              //               ),
+              //             )
+              //           ],
+              //         ),
+              //       ),
+              //     ),
+              //   ],
+              // )
             ],
           )
         ],

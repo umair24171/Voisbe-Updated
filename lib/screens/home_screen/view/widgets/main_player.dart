@@ -1079,8 +1079,9 @@ class _MainPlayerState extends State<MainPlayer> {
         final decodedData = json.decode(cachedData);
         maxDuration = Duration(milliseconds: decodedData['maxDuration']);
         final samplesData = List<double>.from(decodedData['samples']);
-         _safeSetState(() {samples = samplesData;});
-        
+        _safeSetState(() {
+          samples = samplesData;
+        });
       } else {
         // Fetch new data
         await widget.audioPlayer.setSourceUrl(url);
@@ -1096,8 +1097,9 @@ class _MainPlayerState extends State<MainPlayer> {
 
           // Scale the waveform data
           final scaledSamples = scaleWaveData(samplesData);
- _safeSetState(() {samples = scaledSamples;});
-          
+          _safeSetState(() {
+            samples = scaledSamples;
+          });
 
           // Cache the data
           final dataToCache = json.encode({
@@ -1111,8 +1113,9 @@ class _MainPlayerState extends State<MainPlayer> {
       }
 
       widget.audioPlayer.onPositionChanged.listen((position) {
-         _safeSetState(() {elapsedDuration = position;});
-       
+        _safeSetState(() {
+          elapsedDuration = position;
+        });
       });
     } catch (e) {
       print('Error loading audio: $e');
@@ -1386,7 +1389,7 @@ class _MainPlayerState extends State<MainPlayer> {
                         splashColor: Colors.transparent,
                         onTap: () {
                           widget.playPause();
-                          scrollToPosition(widget.position);
+                          // scrollToPosition(widget.position);
                         },
                         child: Consumer<FilterProvider>(
                             builder: (context, filterPro, _) {
@@ -1436,20 +1439,6 @@ class _MainPlayerState extends State<MainPlayer> {
                               final seekPosition =
                                   Duration(milliseconds: position.toInt());
                               widget.audioPlayer.seek(seekPosition);
-                              // int index = (position /
-                              //         widget.duration.inMilliseconds *
-                              //         waveHeights.length)
-                              //     .floor();
-                              // if (index >= 0 && index < waveHeights.length) {
-                              //   setState(() {
-                              //     waveHeights[index] = min(
-                              //         waveHeights[index] + 0.5,
-                              //         9.0); // Increment by 0.5, max of 9.0
-                              //   });
-
-                              //   // Update Firestore
-                              //   updateFirestore(waveHeights);
-                              // }
                             },
                             onHorizontalDragEnd: (details) {
                               final position = details.localPosition.dx /
@@ -1458,22 +1447,6 @@ class _MainPlayerState extends State<MainPlayer> {
                               final seekPosition =
                                   Duration(milliseconds: position.toInt());
                               widget.audioPlayer.seek(seekPosition);
-                              // int index = (position /
-                              //         widget.duration.inMilliseconds *
-                              //         waveHeights.length)
-                              //     .floor();
-                              // if (index >= 0 && index < waveHeights.length) {
-                              //   setState(() {
-                              //     waveHeights[index] = min(
-                              //         waveHeights[index] + 0.1,
-                              //         9.0); // Smaller increment for continuous update
-                              //   });
-
-                              //   // Update Firestore less frequently to avoid too many writes
-                              //   if (index % 5 == 0) {
-                              //     updateFirestore(waveHeights);
-                              //   }
-                              // }
                             },
                             onTapUp: (details) {
                               final position = details.localPosition.dx /
@@ -1482,23 +1455,7 @@ class _MainPlayerState extends State<MainPlayer> {
                               final seekPosition =
                                   Duration(milliseconds: position.toInt());
                               widget.audioPlayer.seek(seekPosition);
-                              scrollToPosition(seekPosition);
-                              // int index = (position /
-                              //         widget.duration.inMilliseconds *
-                              //         waveHeights.length)
-                              //     .floor();
-                              // if (index >= 0 && index < waveHeights.length) {
-                              //   setState(() {
-                              //     waveHeights[index] = min(
-                              //         waveHeights[index] + 0.1,
-                              //         9.0); // Smaller increment for continuous update
-                              //   });
-
-                              //   // Update Firestore less frequently to avoid too many writes
-                              //   if (index % 5 == 0) {
-                              //     updateFirestore(waveHeights);
-                              //   }
-                              // }
+                              // scrollToPosition(seekPosition);
                             },
                             child: CustomPaint(
                               size: Size(widget.width, widget.height),
@@ -1537,30 +1494,6 @@ class _MainPlayerState extends State<MainPlayer> {
                       );
                     })
                   else
-                    // Container(
-                    //   height: widget.height,
-                    //   width: widget.width,
-                    //   child: audo.SquigglyWaveform(
-                    //     // absolute: true,
-                    //     strokeWidth: 4,
-                    //     // absolute: true,
-                    //     // strokeWidth: 2,
-                    //     // borderWidth: 1,
-
-                    //     maxDuration: maxDuration,
-                    //     invert: true,
-                    //     // activeBorderColor: primaryColor,
-                    //     // isRoundedRectangle: true,
-                    //     // inactiveBorderColor: primaryColor.withOpacity(0.5),
-                    //     elapsedDuration: elapsedDuration,
-                    //     samples: samples,
-                    //     height: widget.height,
-                    //     width: widget.width,
-                    //     showActiveWaveform: true,
-                    //     activeColor: primaryColor,
-                    //     inactiveColor: primaryColor.withOpacity(0.5),
-                    //   ),
-                    // ),
                     Consumer<FilterProvider>(builder: (context, filterPro, _) {
                       return SizedBox(
                         height: widget.height,
@@ -1576,20 +1509,6 @@ class _MainPlayerState extends State<MainPlayer> {
                               final seekPosition =
                                   Duration(milliseconds: position.toInt());
                               widget.audioPlayer.seek(seekPosition);
-                              // int index = (position /
-                              //         widget.duration.inMilliseconds *
-                              //         waveHeights.length)
-                              //     .floor();
-                              // if (index >= 0 && index < waveHeights.length) {
-                              //   setState(() {
-                              //     waveHeights[index] = min(
-                              //         waveHeights[index] + 0.5,
-                              //         9.0); // Increment by 0.5, max of 9.0
-                              //   });
-
-                              //   // Update Firestore
-                              //   updateFirestore(waveHeights);
-                              // }
                             },
                             onHorizontalDragEnd: (details) {
                               final position = details.localPosition.dx /
@@ -1598,22 +1517,6 @@ class _MainPlayerState extends State<MainPlayer> {
                               final seekPosition =
                                   Duration(milliseconds: position.toInt());
                               widget.audioPlayer.seek(seekPosition);
-                              // int index = (position /
-                              //         widget.duration.inMilliseconds *
-                              //         waveHeights.length)
-                              //     .floor();
-                              // if (index >= 0 && index < waveHeights.length) {
-                              //   setState(() {
-                              //     waveHeights[index] = min(
-                              //         waveHeights[index] + 0.1,
-                              //         9.0); // Smaller increment for continuous update
-                              //   });
-
-                              //   // Update Firestore less frequently to avoid too many writes
-                              //   if (index % 5 == 0) {
-                              //     updateFirestore(waveHeights);
-                              //   }
-                              // }
                             },
                             onTapUp: (details) {
                               final position = details.localPosition.dx /
@@ -1622,23 +1525,7 @@ class _MainPlayerState extends State<MainPlayer> {
                               final seekPosition =
                                   Duration(milliseconds: position.toInt());
                               widget.audioPlayer.seek(seekPosition);
-                              scrollToPosition(seekPosition);
-                              // int index = (position /
-                              //         widget.duration.inMilliseconds *
-                              //         waveHeights.length)
-                              //     .floor();
-                              // if (index >= 0 && index < waveHeights.length) {
-                              //   setState(() {
-                              //     waveHeights[index] = min(
-                              //         waveHeights[index] + 0.1,
-                              //         9.0); // Smaller increment for continuous update
-                              //   });
-
-                              //   // Update Firestore less frequently to avoid too many writes
-                              //   if (index % 5 == 0) {
-                              //     updateFirestore(waveHeights);
-                              //   }
-                              // }
+                              // scrollToPosition(seekPosition);
                             },
                             child: CustomPaint(
                               size: Size(widget.width, widget.height),
@@ -1720,7 +1607,8 @@ class _MainPlayerState extends State<MainPlayer> {
                         if (widget.waveColor == null)
                           InkWell(
                             onTap: () {
-                               _safeSetState(() { if (_playbackSpeed == 1.0) {
+                              _safeSetState(() {
+                                if (_playbackSpeed == 1.0) {
                                   _playbackSpeed = 1.5;
                                 } else if (_playbackSpeed == 1.5) {
                                   _playbackSpeed = 2.0;
@@ -1731,8 +1619,8 @@ class _MainPlayerState extends State<MainPlayer> {
                                 if (widget.isPlaying) {
                                   widget.audioPlayer
                                       .setPlaybackRate(_playbackSpeed);
-                                }});
-                             
+                                }
+                              });
                             },
                             child: Consumer<FilterProvider>(
                                 builder: (context, filterPro, _) {
@@ -1761,34 +1649,6 @@ class _MainPlayerState extends State<MainPlayer> {
                   })
                 ],
               ),
-              // Positioned(
-              //   top: 41,
-              //   left: 75,
-              //   child: StreamBuilder(
-              //       stream: FirebaseFirestore.instance
-              //           .collection('notes')
-              //           .doc(widget.postId)
-              //           .snapshots(),
-              //       builder: (context, snapshot) {
-              //         if (snapshot.hasData) {
-              //           NoteModel note =
-              //               NoteModel.fromMap(snapshot.data!.data()!);
-              //           return CustomPaint(
-              //             child: MostListenedWaves(
-              //               samples: note.mostListenedWaves,
-              //               height: widget.height - 7,
-              //               width: widget.width,
-              //               showActiveWaveform: true,
-              //               strokeWidth: 10,
-              //               activeColor: primaryColor.withOpacity(0.5),
-              //               inactiveColor: primaryColor.withOpacity(0.5),
-              //             ),
-              //           );
-              //         } else {
-              //           return const Text('');
-              //         }
-              //       }),
-              // )
             ],
           ),
         ),

@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -268,8 +269,8 @@ class _HomeScreenState extends State<HomeScreen>
                                   borderRadius: BorderRadius.circular(18),
                                 ),
                                 context: context,
-                                position:
-                                    const RelativeRect.fromLTRB(0, 120, 0, 0),
+                                position: RelativeRect.fromLTRB(
+                                    0, Platform.isIOS ? 120 : 80, 0, 0),
                                 items: [
                                   if (!filPro.selectedFilter
                                       .contains('Close Friends'))

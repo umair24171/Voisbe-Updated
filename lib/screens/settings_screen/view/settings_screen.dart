@@ -224,21 +224,21 @@ class SettingsScreen extends StatelessWidget {
             InkWell(
               splashColor: Colors.transparent,
               onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    elevation: 0,
-                    contentPadding: const EdgeInsets.all(0),
-                    backgroundColor: whiteColor,
-                    content: AndroidRatingPopup(
-                      onRatingSubmitted: (p0) {},
-                    ),
-                  ),
-                );
-                // Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //         builder: (context) => const CloseFriendsScreen()));
+                // showDialog(
+                //   context: context,
+                //   builder: (context) => AlertDialog(
+                //     elevation: 0,
+                //     contentPadding: const EdgeInsets.all(0),
+                //     backgroundColor: whiteColor,
+                //     content: AndroidRatingPopup(
+                //       onRatingSubmitted: (p0) {},
+                //     ),
+                //   ),
+                // );
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const CloseFriendsScreen()));
               },
               child: const CustomListTile(
                 icon: 'assets/icons/Group.svg',

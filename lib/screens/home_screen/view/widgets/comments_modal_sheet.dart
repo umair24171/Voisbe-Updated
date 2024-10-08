@@ -603,6 +603,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                       noteProvider.removeSubCommentModel();
                                       noteProvider.setIsReplying(false);
                                       noteProvider.setSubCOmmentReplying(false);
+                                      noteProvider.setRecording(false);
                                       // noteProvider.setIsLoading(false);
                                     },
                                     child: const Icon(Icons.close),
@@ -696,6 +697,8 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                         .setIsLoading(false);
                                                     noteProvider
                                                         .setIsLoading(false);
+                                                    noteProvider
+                                                        .setRecording(false);
                                                   });
                                                   // }
                                                 },
@@ -710,6 +713,8 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                           noteProvider.removeSubCommentNote();
                                           noteProvider.removeSubCommentModel();
                                           noteProvider.setIsReplying(false);
+                                          noteProvider.setRecording(false);
+
                                           noteProvider
                                               .setSubCOmmentReplying(false);
                                         },
@@ -812,6 +817,9 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                         noteProvider
                                                             .setSubCOmmentReplying(
                                                                 false);
+                                                        noteProvider
+                                                            .setRecording(
+                                                                false);
                                                       });
                                                       // }
                                                     },
@@ -821,6 +829,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                         Expanded(
                                           child: IconButton(
                                             onPressed: () {
+                                              noteProvider.setRecording(false);
                                               noteProvider.removeVoiceNote();
                                               noteProvider.removeCommentNote();
                                               noteProvider.removeCommentModel();
@@ -828,6 +837,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                   .removeSubCommentNote();
                                               noteProvider
                                                   .removeSubCommentModel();
+
                                               noteProvider.setIsReplying(false);
                                               noteProvider
                                                   .setSubCOmmentReplying(false);
@@ -862,6 +872,11 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                       noteProvider
                                                           .commentStop();
                                                     } else {
+                                                      stopMainPlayer();
+                                                      Provider.of<CircleCommentsProvider>(
+                                                              context,
+                                                              listen: false)
+                                                          .pausePlayer();
                                                       noteProvider
                                                           .commentRecord(); // Path is optional
                                                     }
@@ -896,6 +911,11 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                         noteProvider
                                                             .subCommentStop();
                                                       } else {
+                                                        stopMainPlayer();
+                                                        Provider.of<CircleCommentsProvider>(
+                                                                context,
+                                                                listen: false)
+                                                            .pausePlayer();
                                                         noteProvider
                                                             .subCommentRecord();
                                                       }
@@ -918,6 +938,11 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                           .isRecording()) {
                                                         noteProvider.stop();
                                                       } else {
+                                                        stopMainPlayer();
+                                                        Provider.of<CircleCommentsProvider>(
+                                                                context,
+                                                                listen: false)
+                                                            .pausePlayer();
                                                         noteProvider
                                                             .record(context);
                                                       }
