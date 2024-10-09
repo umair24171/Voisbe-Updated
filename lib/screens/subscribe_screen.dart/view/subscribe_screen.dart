@@ -364,7 +364,7 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
                                   color: whiteColor,
                                   size: 18,
                                 ),
-                              ),
+                              ), 
                               Expanded(
                                 child: Text(
                                   'Access to exclusive voice messages\nonly for subscribers.',
