@@ -184,6 +184,7 @@ class _SingleCommentNotificationState extends State<SingleCommentNotification> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: CustomProgressPlayer(
+                  // waveforms: widget.commentNotificationModel.waveforms ?? [],
                   lockPosts: [],
                   stopMainPlayer: () {},
                   isChatUserPlayer: true,

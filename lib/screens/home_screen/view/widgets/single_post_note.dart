@@ -260,6 +260,7 @@ class _SingleNotePostState extends State<SingleNotePost> {
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: MainPlayer(
+                waveforms: widget.note.waveforms ?? [],
                 lockPosts: [],
                 title: '',
                 // playCounts: playCounts,

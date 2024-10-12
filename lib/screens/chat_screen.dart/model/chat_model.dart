@@ -17,6 +17,7 @@ class ChatModel {
   String messageRead;
   final String avatarUrl;
   final List deletedChat;
+  List<double>? waveforms;
 
   ChatModel(
       {required this.name,
@@ -27,6 +28,7 @@ class ChatModel {
       required this.messageRead,
       required this.isShare,
       required this.postOwner,
+      this.waveforms,
       required this.deletedChat,
       required this.receiverId,
       required this.avatarUrl});
@@ -44,6 +46,7 @@ class ChatModel {
       'deletedChat': deletedChat,
       'time': time,
       'avatarUrl': avatarUrl,
+      'waveforms': waveforms
     };
   }
 
@@ -62,6 +65,9 @@ class ChatModel {
       postOwner: map['postOwner'] as String,
       time: (map['time'] as Timestamp).toDate(),
       avatarUrl: map['avatarUrl'] as String,
+      waveforms: map['waveforms'] != null
+          ? List<double>.from(map['waveforms'] as List)
+          : [],
     );
   }
 

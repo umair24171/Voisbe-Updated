@@ -149,6 +149,7 @@ class _SharePostSheetState extends State<SharePostSheet> {
                         allUsers.photoUrl,
                         userProvider.token,
                         allUsers.token,
+                        widget.note.waveforms ?? [],
                         context);
                     Navigator.push(
                       context,

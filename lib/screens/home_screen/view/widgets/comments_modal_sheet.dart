@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:audio_waveforms/audio_waveforms.dart' as audi;
+
 // import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -320,11 +321,14 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
     });
   }
 
+  audi.PlayerController controller = audi.PlayerController();
+
   @override
   void dispose() {
     // Cancel the subscription when the widget is disposed
     _audioPlayer.dispose();
     commentManager.dispose();
+    controller.dispose();
     // recorderController.dispose();
     super.dispose();
   }
@@ -384,7 +388,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
 
                       child: ListView.builder(
                         shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: commentsList.length,
                         itemBuilder: (context, index) {
                           final key = ValueKey<String>(
@@ -495,6 +499,12 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                               noteProvider.setIsLoading(true);
                                               String commentId =
                                                   const Uuid().v4();
+                                              List<double> waveformData =
+                                                  await controller
+                                                      .extractWaveformData(
+                                                path:noteProvider.voiceNote!.path,
+                                                noOfSamples: 200,
+                                              );
                                               String comment =
                                                   await AddNoteController()
                                                       .uploadFile(
@@ -504,6 +514,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                           context);
                                               CommentModel commentModel =
                                                   CommentModel(
+                                                    
                                                 commentid: commentId,
                                                 comment: comment,
                                                 username: userProvider!.name,
@@ -514,6 +525,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                 likes: [],
                                                 userImage:
                                                     userProvider.photoUrl,
+                                                    waveforms: waveformData
                                               );
 
                                               commentProvider
@@ -649,6 +661,12 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                       .setIsLoading(true);
                                                   String commentId =
                                                       const Uuid().v4();
+                                                      List<double> waveformData =
+                                                  await controller
+                                                      .extractWaveformData(
+                                                path:noteProvider.commentNoteFile!.path,
+                                                noOfSamples: 200,
+                                              );
                                                   String comment =
                                                       await AddNoteController()
                                                           .uploadFile(
@@ -658,6 +676,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                               context);
                                                   SubCommentModel commentModel =
                                                       SubCommentModel(
+                                                        waveforms: waveformData,
                                                     replyingTo: noteProvider
                                                         .commentModel!.userId,
                                                     subCommentId: commentId,
@@ -762,6 +781,12 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                           .setIsLoading(true);
                                                       String commentId =
                                                           const Uuid().v4();
+                                                          List<double> waveformData =
+                                                  await controller
+                                                      .extractWaveformData(
+                                                path:noteProvider.subCommentNoteFile!.path,
+                                                noOfSamples: 200,
+                                              );
                                                       String comment =
                                                           await AddNoteController()
                                                               .uploadFile(
@@ -772,6 +797,7 @@ class _CommentModalSheetState extends State<CommentModalSheet> {
                                                       SubCommentModel
                                                           commentModel =
                                                           SubCommentModel(
+                                                            waveforms: waveformData,
                                                         replyingTo: noteProvider
                                                             .subCommentModel!
                                                             .userId,

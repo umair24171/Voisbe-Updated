@@ -318,6 +318,7 @@ class _SinglePostNoteState extends State<SinglePostNote> {
 
                 if (widget.isFirstPost)
                   MainPlayer(
+                      waveforms: widget.note.waveforms ?? [],
                       audioPlayer: widget.audioPlayer,
                       changeIndex: widget.changeIndex,
                       currentIndex: widget.currentIndex,

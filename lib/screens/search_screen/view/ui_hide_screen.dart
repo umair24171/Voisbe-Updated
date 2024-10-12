@@ -104,9 +104,8 @@ class _UiHideScreenState extends State<UiHideScreen> {
       }
     } else {
       await _audioPlayer
-          .play( 
-            Platform.isAndroid ? UrlSource(fileInfo.file.path) :
-        UrlSource(url),
+          .play(
+        Platform.isAndroid ? UrlSource(fileInfo.file.path) : UrlSource(url),
       )
           .then((value) async {
         setState(() {
@@ -324,6 +323,7 @@ class _UiHideScreenState extends State<UiHideScreen> {
                         // }),
                         CustomProgressPlayer(
                             postId: widget.feedModel.noteId,
+                            // waveforms: widget.feedModel.waveforms ?? [],
                             lockPosts: [],
                             stopMainPlayer: () {},
                             currentIndex: _currentIndex,
@@ -366,7 +366,7 @@ class _UiHideScreenState extends State<UiHideScreen> {
                                   } else if (await noteProvider.recorder
                                       .isRecording()) {
                                     noteProvider.setIsSending(true);
-                                    noteProvider.stop( );
+                                    noteProvider.stop();
                                   } else if (noteProvider.isSending) {
                                     Provider.of<NoteProvider>(context,
                                             listen: false)

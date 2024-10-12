@@ -17,6 +17,7 @@ class CommentNotoficationModel {
   final String postThumbnail;
   final String postType;
   final DateTime time;
+  List<double>? waveforms;
 
   CommentNotoficationModel(
       {required this.notificationId,
@@ -29,6 +30,7 @@ class CommentNotoficationModel {
       required this.noteUrl,
       required this.time,
       required this.postType,
+      this.waveforms,
       required this.toId});
 
   Map<String, dynamic> toMap() {
@@ -43,23 +45,28 @@ class CommentNotoficationModel {
       'time': time,
       'notificationType': notificationType,
       'toId': toId,
-      'postType': postType
+      'postType': postType,
+      'waveforms': waveforms
     };
   }
 
   factory CommentNotoficationModel.fromMap(Map<String, dynamic> map) {
     return CommentNotoficationModel(
-        postType: map['postType'] as String,
-        postBackground: map['postBackground'] as String,
-        postThumbnail: map['postThumbnail'] as String,
-        time: (map['time'] as Timestamp).toDate(),
-        notificationId: map['notificationId'] as String,
-        notification: map['notification'] as String,
-        currentUserId: map['currentUserId'] as String,
-        toId: map['toId'] as String,
-        noteUrl: map['noteUrl'] as String,
-        isRead: map['isRead'] as String,
-        notificationType: map['notificationType'] as String);
+      postType: map['postType'] as String,
+      postBackground: map['postBackground'] as String,
+      postThumbnail: map['postThumbnail'] as String,
+      time: (map['time'] as Timestamp).toDate(),
+      notificationId: map['notificationId'] as String,
+      notification: map['notification'] as String,
+      currentUserId: map['currentUserId'] as String,
+      toId: map['toId'] as String,
+      noteUrl: map['noteUrl'] as String,
+      isRead: map['isRead'] as String,
+      notificationType: map['notificationType'] as String,
+      waveforms: map['waveforms'] != null
+          ? List<double>.from(map['waveforms'] as List)
+          : [],
+    );
   }
 
   String toJson() => json.encode(toMap());

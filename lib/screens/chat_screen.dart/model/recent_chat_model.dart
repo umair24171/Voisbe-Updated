@@ -20,6 +20,7 @@ class RecentChatModel {
   final bool? seen;
   final String? usersId;
   final List? deletedChat;
+  List<double>? waveforms;
 
   RecentChatModel({
     required this.chatId,
@@ -30,6 +31,7 @@ class RecentChatModel {
     required this.senderImage,
     required this.senderName,
     required this.usersId,
+    this.waveforms,
     required this.receiverName,
     required this.receiverImage,
     required this.senderToken,
@@ -54,6 +56,7 @@ class RecentChatModel {
       'receiverImage': receiverImage,
       'usersId': usersId,
       'seen': seen,
+      'waveforms': waveforms
     };
   }
 
@@ -75,6 +78,9 @@ class RecentChatModel {
       usersId: map['usersId'] as String?,
       receiverImage: map['receiverImage'] as String?,
       seen: map['seen'] as bool?,
+      waveforms: map['waveforms'] != null
+          ? List<double>.from(map['waveforms'] as List)
+          : [],
     );
   }
 

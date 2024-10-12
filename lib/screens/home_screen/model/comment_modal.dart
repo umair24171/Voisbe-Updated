@@ -14,6 +14,7 @@ class CommentModel {
 
   List likes;
   String userImage;
+  List<double>? waveforms;
   CommentModel(
       {required this.commentid,
       required this.comment,
@@ -23,6 +24,7 @@ class CommentModel {
       required this.postId,
       required this.likes,
       required this.userImage,
+      this.waveforms,
       required this.playedComment});
 
   Map<String, dynamic> toMap() {
@@ -35,6 +37,7 @@ class CommentModel {
       'postId': postId,
       'likes': likes,
       'userImage': userImage,
+      'waveforms': waveforms,
       'playedComment': playedComment
     };
   }
@@ -47,6 +50,9 @@ class CommentModel {
         time: (map['time'] as Timestamp).toDate(),
         userId: map['userId'] as String,
         postId: map['postId'] as String,
+        waveforms: map['waveforms'] != null
+            ? List<double>.from(map['waveforms'] as List)
+            : [],
         likes: List.from((map['likes'] as List)),
         userImage: map['userImage'] as String,
         playedComment: map['playedComment'] as int);

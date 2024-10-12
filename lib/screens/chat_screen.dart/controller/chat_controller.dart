@@ -18,6 +18,7 @@ class ChatController {
       String receiverImage,
       String senderToken,
       String receiverToken,
+      List<double> waveforms,
       context) async {
     try {
       Provider.of<NoteProvider>(context, listen: false).setIsLoading(true);
@@ -47,7 +48,8 @@ class ChatController {
         'deletedChat': [],
         'receiverName': receiverName,
         'seen': false,
-        'usersId': usersId
+        'usersId': usersId,
+        'waveforms': waveforms
       });
       Provider.of<NoteProvider>(context, listen: false).setIsLoading(false);
     } catch (e) {

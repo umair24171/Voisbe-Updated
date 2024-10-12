@@ -180,6 +180,7 @@ class BuildMessageContainer extends StatelessWidget {
                   top: 12,
                 ),
                 child: ChatPlayer(
+                    waveforms: chatModel.waveforms ?? [],
                     messageId: chatModel.chatId,
                     playPause: playPause,
                     changeIndex: changeIndex,

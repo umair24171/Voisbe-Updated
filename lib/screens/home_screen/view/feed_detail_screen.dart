@@ -255,6 +255,8 @@ class _FeedDetailScreenState extends State<FeedDetailScreen> {
                           Consumer<DisplayNotesProvider>(
                               builder: (context, displayPro, _) {
                             return MainPlayer(
+                                waveforms:
+                                    widget.feedModel.note.waveforms ?? [],
                                 lockPosts: [],
                                 title: '',
                                 // playCounts: playCounts,

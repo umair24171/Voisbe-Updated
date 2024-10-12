@@ -2,6 +2,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:flutter/cupertino.dart';
@@ -169,6 +170,17 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
     getRecommendedHashtagsBasedOnTopic();
     getTrendingHastags();
     super.initState();
+  }
+
+  PlayerController controller = PlayerController();
+
+  getWavesData() async {
+    // Extract waveform data
+  }
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -611,7 +623,6 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                     Consumer<UserProvider>(builder: (context, loadingPro, _) {
                       return ElevatedButton.icon(
                         style: ButtonStyle(
-                          
                             backgroundColor:
                                 WidgetStatePropertyAll(whiteColor)),
                         onPressed: () async {
@@ -632,6 +643,16 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                                           : noteProvider.audioFiles.first,
                                   context)
                               : soundPro.voiceUrl!;
+
+                          List<double> waveformData =
+                              await controller.extractWaveformData(
+                            path: widget.filePath != null
+                                ? widget.filePath!
+                                : noteProvider.audioFiles.isEmpty
+                                    ? noteProvider.voiceNote!.path
+                                    : noteProvider.audioFiles.first.path,
+                            noOfSamples: 200,
+                          );
 
                           // uploading thumbail if the certain conditions met
 
@@ -669,6 +690,7 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                           //  creating the post model with the requird data to craete the post
 
                           NoteModel note = NoteModel(
+                              waveforms: waveformData,
                               videoThumbnail: videoThumbnail ?? '',
                               mostListenedWaves: [],
                               backgroundType: widget.backgroundType,

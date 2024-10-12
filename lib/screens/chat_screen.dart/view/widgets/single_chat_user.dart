@@ -283,6 +283,7 @@ class BuildSingleChatUser extends StatelessWidget {
                   ],
                 ),
                 CustomProgressPlayer(
+                  // waveforms: widget.chatModel.waveforms ?? [],
                   lockPosts: [],
                   stopMainPlayer: () {},
                   postId: widget.chatModel.chatId,

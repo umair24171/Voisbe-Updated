@@ -35,6 +35,7 @@ class ChatPlayer extends StatefulWidget {
       required this.player,
       required this.position,
       required this.isPlaying,
+      required this.waveforms,
       this.size = 35,
       this.waveColor})
       : super(key: key);
@@ -57,6 +58,7 @@ class ChatPlayer extends StatefulWidget {
   final bool isPlaying;
   final VoidCallback playPause;
   final String messageId;
+  List<double> waveforms;
 
   @override
   State<ChatPlayer> createState() => _ChatPlayerState();
@@ -85,11 +87,11 @@ class _ChatPlayerState extends State<ChatPlayer> {
     player = AudioPlayer();
     // player = audo.AudioPlayer();
     // extractWavedata();
-    if (Platform.isAndroid) {
-      extractWavedata();
-    } else {
-      loadAudioFromUrl(widget.noteUrl);
-    }
+    // if (Platform.isAndroid) {
+    extractWavedata();
+    // } else {
+    // loadAudioFromUrl(widget.noteUrl);
+    // }
 
     // _init();
     player.setReleaseMode(ReleaseMode.stop);
@@ -361,37 +363,69 @@ class _ChatPlayerState extends State<ChatPlayer> {
                         },
                         child: CustomPaint(
                           size: Size(widget.width, widget.height),
-                          painter: RectangleActiveWaveformPainter(
-                            onSeek: (details) {
-                              widget.player.seek(details);
-                            },
-                            activeColor:
-                                widget.changeIndex == widget.currentIndex &&
-                                        widget.isPlaying
-                                    ? widget.waveColor == null
-                                        ? color
-                                        : widget.waveColor!
-                                    : widget.waveColor == null
-                                        ? primaryColor.withOpacity(0.5)
-                                        : widget.waveColor!.withOpacity(0.5),
-                            inactiveColor: widget.waveColor == null
-                                ? primaryColor.withOpacity(0.5)
-                                : widget.waveColor!.withOpacity(0.5),
-                            scrollController: _scrollController,
-                            duration: duration,
-                            position: widget.position,
-                            style: PaintingStyle.fill,
-                            activeSamples: waveForm,
-                            borderColor: primaryColor.withOpacity(0.5),
-                            sampleWidth: 2.5,
-                            borderWidth: BorderSide.strokeAlignCenter,
-                            color: widget.waveColor == null
-                                ? primaryColor.withOpacity(0.5)
-                                : widget.waveColor!.withOpacity(0.5),
-                            isCentered: true,
-                            isRoundedRectangle: true,
-                            waveformAlignment: WaveformAlignment.center,
-                          ),
+                          painter: Platform.isIOS
+                              ? IosRectangleWaves(
+                                  onSeek: (details) {
+                                    widget.player.seek(details);
+                                  },
+                                  activeColor: widget.changeIndex ==
+                                              widget.currentIndex &&
+                                          widget.isPlaying
+                                      ? widget.waveColor == null
+                                          ? color
+                                          : widget.waveColor!
+                                      : widget.waveColor == null
+                                          ? primaryColor.withOpacity(0.5)
+                                          : widget.waveColor!.withOpacity(0.5),
+                                  inactiveColor: widget.waveColor == null
+                                      ? primaryColor.withOpacity(0.5)
+                                      : widget.waveColor!.withOpacity(0.5),
+                                  scrollController: _scrollController,
+                                  duration: duration,
+                                  position: widget.position,
+                                  style: PaintingStyle.fill,
+                                  activeSamples: widget.waveforms,
+                                  borderColor: primaryColor.withOpacity(0.5),
+                                  sampleWidth: 2.5,
+                                  borderWidth: BorderSide.strokeAlignCenter,
+                                  color: widget.waveColor == null
+                                      ? primaryColor.withOpacity(0.5)
+                                      : widget.waveColor!.withOpacity(0.5),
+                                  isCentered: true,
+                                  isRoundedRectangle: true,
+                                  waveformAlignment: WaveformAlignment.center,
+                                )
+                              : RectangleActiveWaveformPainter(
+                                  onSeek: (details) {
+                                    widget.player.seek(details);
+                                  },
+                                  activeColor: widget.changeIndex ==
+                                              widget.currentIndex &&
+                                          widget.isPlaying
+                                      ? widget.waveColor == null
+                                          ? color
+                                          : widget.waveColor!
+                                      : widget.waveColor == null
+                                          ? primaryColor.withOpacity(0.5)
+                                          : widget.waveColor!.withOpacity(0.5),
+                                  inactiveColor: widget.waveColor == null
+                                      ? primaryColor.withOpacity(0.5)
+                                      : widget.waveColor!.withOpacity(0.5),
+                                  scrollController: _scrollController,
+                                  duration: duration,
+                                  position: widget.position,
+                                  style: PaintingStyle.fill,
+                                  activeSamples: waveForm,
+                                  borderColor: primaryColor.withOpacity(0.5),
+                                  sampleWidth: 2.5,
+                                  borderWidth: BorderSide.strokeAlignCenter,
+                                  color: widget.waveColor == null
+                                      ? primaryColor.withOpacity(0.5)
+                                      : widget.waveColor!.withOpacity(0.5),
+                                  isCentered: true,
+                                  isRoundedRectangle: true,
+                                  waveformAlignment: WaveformAlignment.center,
+                                ),
                         ),
                       ),
                     ),

@@ -965,6 +965,7 @@ class MainPlayer extends StatefulWidget {
     required this.listenedWaves,
     required this.changeIndex,
     required this.position,
+    required this.waveforms,
     // required this.price,
     required this.lockPosts,
     required this.title,
@@ -1002,6 +1003,7 @@ class MainPlayer extends StatefulWidget {
   List<int> lockPosts;
   bool isProfilePlayer;
   final String title;
+  List<double> waveforms;
   // double price;
 
   @override
@@ -1459,35 +1461,67 @@ class _MainPlayerState extends State<MainPlayer> {
                             },
                             child: CustomPaint(
                               size: Size(widget.width, widget.height),
-                              painter: RectangleActiveWaveformPainter(
-                                onSeek: (position) {
-                                  widget.audioPlayer.seek(position);
-                                  // scrollToPosition(position);
-                                },
-                                activeColor:
-                                    widget.changeIndex == widget.currentIndex &&
-                                            widget.isPlaying
-                                        ? whiteColor
-                                        : whiteColor.withOpacity(0.5),
-                                inactiveColor: whiteColor.withOpacity(0.5),
-                                scrollController: _scrollController,
-                                duration: widget.duration,
-                                position: widget.position,
-                                style: PaintingStyle.fill,
-                                activeSamples:
-                                    Platform.isIOS ? samples : waveForm,
-                                borderColor: primaryColor.withOpacity(0.5),
-                                sampleWidth: 2.5,
-                                borderWidth: BorderSide.strokeAlignCenter,
-                                color: filterPro.selectedFilter
-                                        .contains('Close Friends')
-                                    ? greenColor.withOpacity(0.5)
-                                    : primaryColor.withOpacity(0.5),
-                                isCentered: true,
-                                isRoundedRectangle: true,
-                                waveformAlignment:
-                                    audo.WaveformAlignment.center,
-                              ),
+                              painter: Platform.isIOS
+                                  ? IosRectangleWaves(
+                                      onSeek: (position) {
+                                        widget.audioPlayer.seek(position);
+                                        // scrollToPosition(position);
+                                      },
+                                      activeColor: widget.changeIndex ==
+                                                  widget.currentIndex &&
+                                              widget.isPlaying
+                                          ? whiteColor
+                                          : whiteColor.withOpacity(0.5),
+                                      inactiveColor:
+                                          whiteColor.withOpacity(0.5),
+                                      scrollController: _scrollController,
+                                      duration: widget.duration,
+                                      position: widget.position,
+                                      style: PaintingStyle.fill,
+                                      activeSamples: widget.waveforms,
+                                      borderColor:
+                                          primaryColor.withOpacity(0.5),
+                                      sampleWidth: 2.5,
+                                      borderWidth: BorderSide.strokeAlignCenter,
+                                      color: filterPro.selectedFilter
+                                              .contains('Close Friends')
+                                          ? greenColor.withOpacity(0.5)
+                                          : primaryColor.withOpacity(0.5),
+                                      isCentered: true,
+                                      isRoundedRectangle: true,
+                                      waveformAlignment:
+                                          audo.WaveformAlignment.center,
+                                    )
+                                  : RectangleActiveWaveformPainter(
+                                      onSeek: (position) {
+                                        widget.audioPlayer.seek(position);
+                                        // scrollToPosition(position);
+                                      },
+                                      activeColor: widget.changeIndex ==
+                                                  widget.currentIndex &&
+                                              widget.isPlaying
+                                          ? whiteColor
+                                          : whiteColor.withOpacity(0.5),
+                                      inactiveColor:
+                                          whiteColor.withOpacity(0.5),
+                                      scrollController: _scrollController,
+                                      duration: widget.duration,
+                                      position: widget.position,
+                                      style: PaintingStyle.fill,
+                                      activeSamples: waveForm,
+                                      borderColor:
+                                          primaryColor.withOpacity(0.5),
+                                      sampleWidth: 2.5,
+                                      borderWidth: BorderSide.strokeAlignCenter,
+                                      color: filterPro.selectedFilter
+                                              .contains('Close Friends')
+                                          ? greenColor.withOpacity(0.5)
+                                          : primaryColor.withOpacity(0.5),
+                                      isCentered: true,
+                                      isRoundedRectangle: true,
+                                      waveformAlignment:
+                                          audo.WaveformAlignment.center,
+                                    ),
                             ),
                           ),
                         ),
@@ -1529,41 +1563,91 @@ class _MainPlayerState extends State<MainPlayer> {
                             },
                             child: CustomPaint(
                               size: Size(widget.width, widget.height),
-                              painter: RectangleActiveWaveformPainter(
-                                onSeek: (position) {
-                                  widget.audioPlayer.seek(position);
-                                  // scrollToPosition(position);
-                                },
-                                activeColor: filterPro.selectedFilter
-                                        .contains('Close Friends')
-                                    ? greenColor
-                                    : primaryColor,
-                                inactiveColor: filterPro.selectedFilter
-                                        .contains('Close Friends')
-                                    ? greenColor.withOpacity(0.5)
-                                    : primaryColor.withOpacity(0.5),
-                                scrollController: _scrollController,
-                                duration: widget.duration,
-                                position: widget.position,
-                                style: PaintingStyle.fill,
-                                activeSamples:
-                                    Platform.isIOS ? samples : waveForm,
-                                borderColor: primaryColor.withOpacity(0.5),
-                                sampleWidth: 2.5,
-                                borderWidth: BorderSide.strokeAlignCenter,
-                                color: filterPro.selectedFilter
-                                        .contains('Close Friends')
-                                    ? greenColor.withOpacity(0.5)
-                                    : primaryColor.withOpacity(0.5),
-                                isCentered: true,
-                                isRoundedRectangle: true,
-                                waveformAlignment:
-                                    audo.WaveformAlignment.center,
-                              ),
+                              painter: Platform.isIOS
+                                  ? IosRectangleWaves(
+                                      onSeek: (position) {
+                                        widget.audioPlayer.seek(position);
+                                        // scrollToPosition(position);
+                                      },
+                                      activeColor: filterPro.selectedFilter
+                                              .contains('Close Friends')
+                                          ? greenColor
+                                          : primaryColor,
+                                      inactiveColor: filterPro.selectedFilter
+                                              .contains('Close Friends')
+                                          ? greenColor.withOpacity(0.5)
+                                          : primaryColor.withOpacity(0.5),
+                                      scrollController: _scrollController,
+                                      duration: widget.duration,
+                                      position: widget.position,
+                                      style: PaintingStyle.fill,
+                                      activeSamples: widget.waveforms,
+                                      // Platform.isIOS ? samples : waveForm,
+                                      borderColor:
+                                          primaryColor.withOpacity(0.5),
+                                      sampleWidth: 2.5,
+                                      borderWidth: BorderSide.strokeAlignCenter,
+                                      color: filterPro.selectedFilter
+                                              .contains('Close Friends')
+                                          ? greenColor.withOpacity(0.5)
+                                          : primaryColor.withOpacity(0.5),
+                                      isCentered: true,
+                                      isRoundedRectangle: true,
+                                      waveformAlignment:
+                                          audo.WaveformAlignment.center,
+                                    )
+                                  : RectangleActiveWaveformPainter(
+                                      onSeek: (position) {
+                                        widget.audioPlayer.seek(position);
+                                        // scrollToPosition(position);
+                                      },
+                                      activeColor: filterPro.selectedFilter
+                                              .contains('Close Friends')
+                                          ? greenColor
+                                          : primaryColor,
+                                      inactiveColor: filterPro.selectedFilter
+                                              .contains('Close Friends')
+                                          ? greenColor.withOpacity(0.5)
+                                          : primaryColor.withOpacity(0.5),
+                                      scrollController: _scrollController,
+                                      duration: widget.duration,
+                                      position: widget.position,
+                                      style: PaintingStyle.fill,
+                                      activeSamples: waveForm,
+                                      // Platform.isIOS ? samples : waveForm,
+                                      borderColor:
+                                          primaryColor.withOpacity(0.5),
+                                      sampleWidth: 2.5,
+                                      borderWidth: BorderSide.strokeAlignCenter,
+                                      color: filterPro.selectedFilter
+                                              .contains('Close Friends')
+                                          ? greenColor.withOpacity(0.5)
+                                          : primaryColor.withOpacity(0.5),
+                                      isCentered: true,
+                                      isRoundedRectangle: true,
+                                      waveformAlignment:
+                                          audo.WaveformAlignment.center,
+                                    ),
                             ),
                           ),
                         ),
                       );
+
+                      // return
+                      // wave.AudioFileWaveforms(
+                      //   size: Size(widget.width, widget.height),
+                      //   playerController: wave.PlayerController(),
+                      //   enableSeekGesture: true,
+                      //   waveformType: wave.WaveformType.fitWidth,
+                      //   playerWaveStyle: wave.PlayerWaveStyle(
+                      //     fixedWaveColor: primaryColor.withOpacity(0.5),
+                      //     liveWaveColor: primaryColor,
+                      //     seekLineColor: primaryColor,
+                      //     seekLineThickness: 2,
+                      //   ),
+                      //   backgroundColor: Colors.transparent,
+                      //   waveformData: widget.waveforms,
+                      // );
                     }),
                   const SizedBox(
                     width: 10,
@@ -1654,6 +1738,221 @@ class _MainPlayerState extends State<MainPlayer> {
         ),
       ),
     );
+  }
+}
+
+class IosRectangleWaves extends audo.ActiveWaveformPainter {
+  IosRectangleWaves({
+    required super.color,
+    required super.activeSamples,
+    required super.waveformAlignment,
+    required super.sampleWidth,
+    required super.borderColor,
+    required super.borderWidth,
+    required this.isRoundedRectangle,
+    required this.isCentered,
+    required this.duration,
+    required this.position,
+    required this.scrollController,
+    required this.activeColor,
+    required this.inactiveColor,
+    required this.onSeek,
+    this.heightScalingFactor = 200.0,
+    super.gradient,
+    super.style = PaintingStyle.fill,
+  }) {
+    // Attach a listener to the ScrollController
+    scrollController.addListener(_onScroll);
+  }
+
+  final bool isRoundedRectangle;
+  final bool isCentered;
+  final Duration duration;
+  final Duration position;
+  final ScrollController scrollController;
+  final Color activeColor;
+  final Color inactiveColor;
+  final double heightScalingFactor; // New parameter for scaling wave height
+  final Function(Duration) onSeek; // Callback to perform seek
+
+  void _onScroll() {
+    final scrollOffset = scrollController.offset;
+    final totalSamples = activeSamples.length;
+    final scrollPositionInSamples = scrollOffset / sampleWidth;
+    final percentScrolled = scrollPositionInSamples / totalSamples;
+    final newPosition = Duration(
+        milliseconds: (percentScrolled * duration.inMilliseconds).toInt());
+
+    // Seek to the new position using the callback
+    onSeek(newPosition);
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final borderPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..strokeWidth = borderWidth
+      ..color = borderColor;
+
+    final paint = Paint()
+      ..style = style
+      ..color = color;
+
+    if (gradient != null) {
+      paint.shader = gradient!.createShader(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+      );
+    }
+
+    final alignPosition = waveformAlignment.getAlignPosition(size.height);
+
+    canvas.save();
+    canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    if (duration.inMilliseconds == 0 || activeSamples.isEmpty) {
+      canvas.restore();
+      return;
+    }
+
+    final progressPercent = duration.inMilliseconds > 0
+        ? position.inMilliseconds / duration.inMilliseconds
+        : 0.0;
+    final currentSampleIndex = (progressPercent * activeSamples.length).floor();
+
+    final scrollOffset = scrollController.offset;
+
+    if (isRoundedRectangle) {
+      drawRoundedRectangles(
+        canvas,
+        alignPosition,
+        borderPaint,
+        waveformAlignment,
+        isCentered,
+        size,
+        currentSampleIndex,
+        progressPercent,
+        scrollOffset,
+      );
+    } else {
+      drawRegularRectangles(
+        canvas,
+        alignPosition,
+        borderPaint,
+        waveformAlignment,
+        isCentered,
+        size,
+        currentSampleIndex,
+        progressPercent,
+        scrollOffset,
+      );
+    }
+
+    canvas.restore();
+  }
+
+  void drawRegularRectangles(
+    Canvas canvas,
+    double alignPosition,
+    Paint borderPaint,
+    audo.WaveformAlignment waveformAlignment,
+    bool isCentered,
+    Size size,
+    int currentSampleIndex,
+    double progressPercent,
+    double scrollOffset,
+  ) {
+    final visibleSampleCount = (size.width / sampleWidth).floor();
+    for (var i = 0; i < visibleSampleCount; i++) {
+      final x = sampleWidth * (i + scrollOffset / sampleWidth).floor();
+      if (x >= size.width + scrollOffset) break;
+
+      final sampleIndex = activeSamples.isNotEmpty
+          ? (i / visibleSampleCount * activeSamples.length).floor()
+          : 0;
+      final isAbsolute = waveformAlignment != audo.WaveformAlignment.center;
+
+      // Apply scaling factor to increase wave height
+      final y = (isCentered && !isAbsolute
+              ? activeSamples[sampleIndex] * 23
+              : activeSamples[sampleIndex]) *
+          heightScalingFactor;
+
+      final positionFromTop =
+          isCentered && !isAbsolute ? alignPosition - y / 2 : alignPosition;
+
+      final paint = Paint()
+        ..style = style
+        ..color =
+            sampleIndex <= currentSampleIndex ? activeColor : inactiveColor;
+
+      canvas.drawRect(
+        Rect.fromLTWH(x - scrollOffset, positionFromTop, sampleWidth, y),
+        paint,
+      );
+    }
+  }
+
+  void drawRoundedRectangles(
+    Canvas canvas,
+    double alignPosition,
+    Paint borderPaint,
+    audo.WaveformAlignment waveformAlignment,
+    bool isCentered,
+    Size size,
+    int currentSampleIndex,
+    double progressPercent,
+    double scrollOffset,
+  ) {
+    final visibleSampleCount = (size.width / sampleWidth).floor();
+    for (var i = 0; i < visibleSampleCount; i++) {
+      if (i.isEven) {
+        final x = sampleWidth * (i + scrollOffset / sampleWidth).floor();
+        if (x >= size.width + scrollOffset) break;
+
+        final sampleIndex = activeSamples.isNotEmpty
+            ? (i / visibleSampleCount * activeSamples.length).floor()
+            : 0;
+        final isAbsolute = waveformAlignment != audo.WaveformAlignment.center;
+
+        // Apply scaling factor to increase wave height
+        final y = (isAbsolute
+                ? activeSamples[sampleIndex]
+                : !isCentered
+                    ? activeSamples[sampleIndex]
+                    : activeSamples[sampleIndex] * 2) *
+            heightScalingFactor;
+
+        final positionFromTop = isAbsolute
+            ? alignPosition
+            : !isCentered
+                ? alignPosition
+                : alignPosition - y / 2;
+
+        final paint = Paint()
+          ..style = style
+          ..color =
+              sampleIndex <= currentSampleIndex ? activeColor : inactiveColor;
+
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(x - scrollOffset, positionFromTop, sampleWidth, y),
+            Radius.circular(sampleWidth / 2),
+          ),
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant IosRectangleWaves oldDelegate) {
+    return getShouldRepaintValue(oldDelegate) ||
+        isRoundedRectangle != oldDelegate.isRoundedRectangle ||
+        isCentered != oldDelegate.isCentered ||
+        duration != oldDelegate.duration ||
+        position != oldDelegate.position ||
+        scrollController != oldDelegate.scrollController ||
+        heightScalingFactor != oldDelegate.heightScalingFactor;
   }
 }
 

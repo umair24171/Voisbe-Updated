@@ -10,6 +10,7 @@ class SubCommentModel {
   final DateTime createdAt;
   final String postId;
   final String replyingTo;
+  List<double>? waveforms;
 
   SubCommentModel(
       {required this.comment,
@@ -20,7 +21,8 @@ class SubCommentModel {
       required this.userImage,
       required this.replyingTo,
       required this.postId,
-      required this.createdAt});
+      required this.createdAt,
+      this.waveforms});
 
   factory SubCommentModel.fromMap(Map<String, dynamic> json) {
     return SubCommentModel(
@@ -32,6 +34,9 @@ class SubCommentModel {
         postId: json['postId'],
         userImage: json['userImage'],
         replyingTo: json['replyingTo'],
+        waveforms: json['waveforms'] != null
+            ? List<double>.from(json['waveforms'] as List)
+            : [],
         createdAt: (json['createdAt'] as Timestamp).toDate());
   }
 
@@ -45,7 +50,8 @@ class SubCommentModel {
       'postId': postId,
       'userImage': userImage,
       'createdAt': createdAt,
-      'replyingTo': replyingTo
+      'replyingTo': replyingTo,
+      'waveforms': waveforms
     };
   }
 }

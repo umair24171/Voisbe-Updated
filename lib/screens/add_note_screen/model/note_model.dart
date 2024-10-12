@@ -24,28 +24,29 @@ class NoteModel {
   List<String> hashtags;
   bool isPostForSubscribers;
   String backgroundImage;
-  NoteModel({
-    required this.noteId,
-    required this.username,
-    required this.photoUrl,
-    required this.title,
-    required this.userUid,
-    required this.mostListenedWaves,
-    required this.videoThumbnail,
-    required this.tagPeople,
-    required this.likes,
-    required this.userToken,
-    required this.noteUrl,
-    required this.publishedDate,
-    required this.backgroundType,
-    required this.isPostForSubscribers,
-    required this.comments,
-    required this.backgroundImage,
-    required this.topic,
-    required this.isPinned,
-    required this.topicColor,
-    required this.hashtags,
-  });
+  List<double>? waveforms;
+  NoteModel(
+      {required this.noteId,
+      required this.username,
+      required this.photoUrl,
+      required this.title,
+      required this.userUid,
+      required this.mostListenedWaves,
+      required this.videoThumbnail,
+      required this.tagPeople,
+      required this.likes,
+      required this.userToken,
+      required this.noteUrl,
+      required this.publishedDate,
+      required this.backgroundType,
+      required this.isPostForSubscribers,
+      required this.comments,
+      required this.backgroundImage,
+      required this.topic,
+      required this.isPinned,
+      required this.topicColor,
+      required this.hashtags,
+      this.waveforms});
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -62,13 +63,15 @@ class NoteModel {
       'publishedDate': publishedDate,
       'backgroundImage': backgroundImage,
       'userToken': userToken,
-      'isPostForSubscribers': isPostForSubscribers,
+      ''
+          'isPostForSubscribers': isPostForSubscribers,
       'comments': comments,
       'isPinned': isPinned,
       'topicColor': topicColor.value,
       'likes': likes,
       'topic': topic,
       'hashtags': hashtags,
+      'waveforms': waveforms,
     };
   }
 
@@ -96,6 +99,9 @@ class NoteModel {
       publishedDate: map['publishedDate'].toDate() as DateTime,
       topic: map['topic'] as String,
       hashtags: List<String>.from(map['hashtags'] as List),
+      waveforms: map['waveforms'] != null
+          ? List<double>.from(map['waveforms'] as List)
+          : [],
     );
   }
 }

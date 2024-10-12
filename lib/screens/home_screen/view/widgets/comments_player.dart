@@ -46,6 +46,7 @@ class CommentsPlayer extends StatefulWidget {
       // this.stopOtherPlayer,
       this.playedCounter,
       required this.currentIndex,
+      required this.waveforms,
       this.waveColor})
       : super(key: key);
 
@@ -69,6 +70,7 @@ class CommentsPlayer extends StatefulWidget {
   int changeIndex;
   bool isPlaying;
   Duration position;
+  List<double> waveforms;
   @override
   State<CommentsPlayer> createState() => _CommentsPlayerState();
 }
@@ -306,11 +308,11 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
     super.initState();
     _scrollController = ScrollController();
     // extractWavedata();
-    if (Platform.isAndroid) {
-      extractWavedata();
-    } else {
-      loadAudioFromUrl(widget.noteUrl);
-    }
+    // if (Platform.isAndroid) {
+    extractWavedata();
+    // } else {
+    // loadAudioFromUrl(widget.noteUrl);
+    // }
     initPlayer();
   }
 
@@ -479,43 +481,81 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
                         },
                         child: CustomPaint(
                           size: Size(widget.width, widget.height),
-                          painter: RectangleActiveWaveformPainter(
-                            onSeek: (p0) {
-                              widget.player.seek(p0);
-                              // scrollToPosition(p0);
-                            },
-                            activeColor:
-                                widget.currentIndex == widget.changeIndex &&
-                                        widget.isPlaying
-                                    ? filterPro.selectedFilter
-                                            .contains('Close Friends')
-                                        ? whiteColor
-                                        : widget.isMainPlayer
-                                            ? primaryColor
-                                            : widget.waveColor!
-                                    : whiteColor.withOpacity(0.5),
-                            inactiveColor: filterPro.selectedFilter
-                                    .contains('Close Friends')
-                                ? whiteColor.withOpacity(0.5)
-                                : widget.isMainPlayer
-                                    ? primaryColor.withOpacity(0.5)
-                                    : widget.waveColor!.withOpacity(0.5),
-                            scrollController: _scrollController,
-                            duration: duration,
-                            position: widget.position,
-                            style: PaintingStyle.fill,
-                            activeSamples: waveForm,
-                            borderColor: primaryColor.withOpacity(0.5),
-                            sampleWidth: 2.5,
-                            borderWidth: BorderSide.strokeAlignCenter,
-                            color: filterPro.selectedFilter
-                                    .contains('Close Friends')
-                                ? greenColor.withOpacity(0.5)
-                                : primaryColor.withOpacity(0.5),
-                            isCentered: true,
-                            isRoundedRectangle: true,
-                            waveformAlignment: WaveformAlignment.center,
-                          ),
+                          painter: Platform.isIOS
+                              ? IosRectangleWaves(
+                                  onSeek: (p0) {
+                                    widget.player.seek(p0);
+                                    // scrollToPosition(p0);
+                                  },
+                                  activeColor: widget.currentIndex ==
+                                              widget.changeIndex &&
+                                          widget.isPlaying
+                                      ? filterPro.selectedFilter
+                                              .contains('Close Friends')
+                                          ? whiteColor
+                                          : widget.isMainPlayer
+                                              ? primaryColor
+                                              : widget.waveColor!
+                                      : whiteColor.withOpacity(0.5),
+                                  inactiveColor: filterPro.selectedFilter
+                                          .contains('Close Friends')
+                                      ? whiteColor.withOpacity(0.5)
+                                      : widget.isMainPlayer
+                                          ? primaryColor.withOpacity(0.5)
+                                          : widget.waveColor!.withOpacity(0.5),
+                                  scrollController: _scrollController,
+                                  duration: duration,
+                                  position: widget.position,
+                                  style: PaintingStyle.fill,
+                                  activeSamples: widget.waveforms,
+                                  borderColor: primaryColor.withOpacity(0.5),
+                                  sampleWidth: 2.5,
+                                  borderWidth: BorderSide.strokeAlignCenter,
+                                  color: filterPro.selectedFilter
+                                          .contains('Close Friends')
+                                      ? greenColor.withOpacity(0.5)
+                                      : primaryColor.withOpacity(0.5),
+                                  isCentered: true,
+                                  isRoundedRectangle: true,
+                                  waveformAlignment: WaveformAlignment.center,
+                                )
+                              : RectangleActiveWaveformPainter(
+                                  onSeek: (p0) {
+                                    widget.player.seek(p0);
+                                    // scrollToPosition(p0);
+                                  },
+                                  activeColor: widget.currentIndex ==
+                                              widget.changeIndex &&
+                                          widget.isPlaying
+                                      ? filterPro.selectedFilter
+                                              .contains('Close Friends')
+                                          ? whiteColor
+                                          : widget.isMainPlayer
+                                              ? primaryColor
+                                              : widget.waveColor!
+                                      : whiteColor.withOpacity(0.5),
+                                  inactiveColor: filterPro.selectedFilter
+                                          .contains('Close Friends')
+                                      ? whiteColor.withOpacity(0.5)
+                                      : widget.isMainPlayer
+                                          ? primaryColor.withOpacity(0.5)
+                                          : widget.waveColor!.withOpacity(0.5),
+                                  scrollController: _scrollController,
+                                  duration: duration,
+                                  position: widget.position,
+                                  style: PaintingStyle.fill,
+                                  activeSamples: waveForm,
+                                  borderColor: primaryColor.withOpacity(0.5),
+                                  sampleWidth: 2.5,
+                                  borderWidth: BorderSide.strokeAlignCenter,
+                                  color: filterPro.selectedFilter
+                                          .contains('Close Friends')
+                                      ? greenColor.withOpacity(0.5)
+                                      : primaryColor.withOpacity(0.5),
+                                  isCentered: true,
+                                  isRoundedRectangle: true,
+                                  waveformAlignment: WaveformAlignment.center,
+                                ),
                         ),
                       )),
                 );

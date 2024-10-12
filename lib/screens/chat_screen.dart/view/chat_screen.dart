@@ -11,7 +11,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flutter/cupertino.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 // import 'package:flutter_svg/svg.dart';
@@ -224,6 +223,14 @@ class _ChatScreenState extends State<ChatScreen> {
         position = Duration.zero;
       });
     });
+  }
+
+  audi.PlayerController controller = audi.PlayerController();
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -587,9 +594,22 @@ class _ChatScreenState extends State<ChatScreen> {
                                                                           note.voiceNote!,
                                                                           context);
 
+                                                              List<double>
+                                                                  waveformData =
+                                                                  await controller
+                                                                      .extractWaveformData(
+                                                                path: note
+                                                                    .voiceNote!
+                                                                    .path,
+                                                                noOfSamples:
+                                                                    200,
+                                                              );
+
                                                               //  creating the chat model
 
                                                               ChatModel chat = ChatModel(
+                                                                  waveforms:
+                                                                      waveformData,
                                                                   deletedChat: [],
                                                                   name:
                                                                       userProvider!
@@ -617,6 +637,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                                               //  creating the sub model of the chat
 
                                                               RecentChatModel recentChatModel = RecentChatModel(
+                                                                  waveforms:
+                                                                      waveformData,
                                                                   deletedChat: [],
                                                                   chatId:
                                                                       chatId,
@@ -660,9 +682,10 @@ class _ChatScreenState extends State<ChatScreen> {
                                                                       userProvider
                                                                           .token,
                                                                       recToken,
+                                                                      waveformData,
                                                                       context)
                                                                   .then(
-                                                                      (value) {
+                                                                      (value) async {
                                                                 //   notifying the user after sending
 
                                                                 NotificationMethods

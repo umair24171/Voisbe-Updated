@@ -394,6 +394,8 @@ class _CircleCommentsState extends State<CircleComments> {
 
   //  disposing all the players when no longer needs
 
+  audo.PlayerController controller = audo.PlayerController();
+
   @override
   void dispose() {
     // Cancel the subscription when the widget is disposed
@@ -401,6 +403,9 @@ class _CircleCommentsState extends State<CircleComments> {
     // _subscription.cancel();
     // Provider.of<CircleCommentsProvider>(context, listen: false).disposePlayer();
     commentManager.dispose();
+    controller.dispose();
+
+    recorderController.dispose();
     // _controller.dispose();
     super.dispose();
   }
@@ -476,7 +481,7 @@ class _CircleCommentsState extends State<CircleComments> {
                                   } else if (await noteProvider.recorder
                                       .isRecording()) {
                                     noteProvider.setIsSending(true);
-                                    noteProvider.stop( );
+                                    noteProvider.stop();
                                     recorderController.stop();
                                   } else if (noteProvider.isSending) {
                                     Provider.of<NoteProvider>(context,
@@ -507,6 +512,18 @@ class _CircleCommentsState extends State<CircleComments> {
                                         .addComment(widget.noteModel.noteId,
                                             commentId, commentModel, context)
                                         .then((value) async {
+                                      List<double> waveformData =
+                                          await controller.extractWaveformData(
+                                        path: noteProvider.voiceNote!.path,
+                                        noOfSamples: 200,
+                                      );
+                                      await FirebaseFirestore.instance
+                                          .collection('notes')
+                                          .doc(widget.noteModel.noteId)
+                                          .collection('comments')
+                                          .doc(commentId)
+                                          .update({'waveforms': waveformData});
+
                                       String notificationId = const Uuid().v4();
 
                                       //  removing everything setting false the values

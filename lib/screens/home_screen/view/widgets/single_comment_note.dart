@@ -217,6 +217,7 @@ class BuildCommentContent extends StatelessWidget {
                       ],
                     ),
                     CommentsPlayer(
+                        waveforms: widget.commentModel.waveforms ?? [],
                         isPlaying: widget.isPlaying,
                         player: widget.player,
                         isComment: true,
@@ -559,6 +560,8 @@ class BuildCommentContent extends StatelessWidget {
                                         ],
                                       ),
                                       CustomProgressPlayer(
+                                          // waveforms:
+                                          //     subCommentModel.waveforms ?? [],
                                           lockPosts: [],
                                           stopMainPlayer: widget.stopMainPlayer,
                                           isSubCommentPlayer: true,
@@ -820,6 +823,8 @@ class BuildCommentContent extends StatelessWidget {
                                       ],
                                     ),
                                     CustomProgressPlayer(
+                                        // waveforms:
+                                        //     subCommentModel.waveforms ?? [],
                                         lockPosts: [],
                                         stopMainPlayer: widget.stopMainPlayer,
                                         isSubCommentPlayer: true,
