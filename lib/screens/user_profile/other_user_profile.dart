@@ -142,6 +142,8 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
     }
   }
 
+  bool _isBlurred = true;
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -151,68 +153,104 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
     var currentUSer = Provider.of<UserProvider>(context, listen: false).user;
 
     // userProvider.otherUser;
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        scrolledUnderElevation: 0,
-        surfaceTintColor: whiteColor,
-        automaticallyImplyLeading: false,
-        backgroundColor: whiteColor,
-        title: Row(children: [
-          //  showing the username
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
 
-          Consumer<UserProfileProvider>(builder: (context, userProvider, _) {
-            return Row(
-              children: [
-                if (userProvider.otherUser != null)
-                  Text(
-                    userProvider.otherUser!.name,
-                    style: TextStyle(
-                        fontFamily: fontFamily,
-                        fontSize: 19,
-                        fontWeight: FontWeight.w600),
+        setState(() {
+          _isBlurred = false;
+        });
+
+        if (widget.previousId != null) {
+          Provider.of<UserProfileProvider>(context, listen: false)
+              .otherUserProfile(widget.previousId!);
+          setState(() {
+            _isBlurred = true;
+          });
+        }
+
+        // Stop and dispose of audio before navigating
+        // await _stopAndDisposeAudio();
+
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          scrolledUnderElevation: 0,
+          surfaceTintColor: whiteColor,
+          automaticallyImplyLeading: false,
+          backgroundColor: whiteColor,
+          // leading: InkWell(
+          //   onTap: () {
+          //     navPop(context);
+          //   },
+          //   child: const Icon(
+          //     Icons.arrow_back_ios,
+          //     size: 20,
+          //   ),
+          // ),
+          title: Row(children: [
+            //  showing the username
+
+            Consumer<UserProfileProvider>(builder: (context, userProvider, _) {
+              return Row(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      navPop(context);
+                    },
+                    child: const Icon(
+                      Icons.arrow_back_ios,
+                      size: 20,
+                    ),
                   ),
-                if (userProvider.otherUser != null)
-                  if (userProvider.otherUser!.isVerified) verifiedIcon()
-              ],
-            );
-          }),
-        ]),
-        actions: [
-          //  navigate to settings screen icon
+                  const SizedBox(
+                    width: 5,
+                  ),
+                  if (userProvider.otherUser != null)
+                    Text(
+                      userProvider.otherUser!.name,
+                      style: TextStyle(
+                          fontFamily: fontFamily,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  if (userProvider.otherUser != null)
+                    if (userProvider.otherUser!.isVerified) verifiedIcon()
+                ],
+              );
+            }),
+          ]),
+          actions: [
+            //  navigate to settings screen icon
 
-          IconButton(
-            onPressed: () async {
-              Navigator.push(context, MaterialPageRoute(
-                builder: (context) {
-                  return SettingsScreen();
-                },
-              ));
-            },
-            icon: Icon(
-              Icons.menu,
-              color: blackColor,
-              size: 30,
-            ),
-          )
-        ],
-      ),
-      body: PopScope(
-        onPopInvoked: (value) {
-          //  udpating the user on back
-
-          if (widget.previousId != null) {
-            Provider.of<UserProfileProvider>(context, listen: false)
-                .otherUserProfile(widget.previousId!);
-          }
-        },
-        child: Stack(
+            IconButton(
+              onPressed: () async {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) {
+                    return SettingsScreen();
+                  },
+                ));
+              },
+              icon: Icon(
+                Icons.menu,
+                color: blackColor,
+                size: 30,
+              ),
+            )
+          ],
+        ),
+        body: Stack(
           children: [
             Consumer<UserProfileProvider>(builder: (context, userProvider, _) {
               //  background of the screen the profile photo of the user
 
               return userProvider.otherUser == null
-                  ? Text('')
+                  ? const Text('')
                   : Container(
                       height: size.height,
                       decoration: BoxDecoration(
@@ -254,7 +292,7 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                 return getData();
               },
               child: SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
+                physics: const AlwaysScrollableScrollPhysics(),
                 child: Stack(
                   children: [
                     // Container(
@@ -409,7 +447,7 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                 width: 5,
                               ),
 
-//  showing button to subscribe the user if the users susbscription is enable
+                              //  showing button to subscribe the user if the users susbscription is enable
 
                               Consumer<UserProfileProvider>(
                                   builder: (context, userProvider, _) {
@@ -470,7 +508,7 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                                             width: 30,
                                                           ));
                                               } else {
-                                                return Text("");
+                                                return const Text("");
                                               }
                                             }),
                                       )
@@ -1112,7 +1150,7 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                             builder: (context, userProvider, _) {
                           return userProvider.otherUser != null &&
                                   userProvider.otherUser!.link.isEmpty
-                              ? SizedBox()
+                              ? const SizedBox()
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -1323,7 +1361,7 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
                                         'This account is private.\n Follow to see their posts.',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                            color: Color(0xffED6A5A),
+                                            color: const Color(0xffED6A5A),
                                             fontSize: 14,
                                             fontFamily: fontFamily,
                                             fontWeight: FontWeight.w700),

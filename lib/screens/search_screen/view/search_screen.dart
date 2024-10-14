@@ -336,7 +336,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
                         chatPro.clearSearchedUser();
                         for (var user in chatPro.users) {
-                          if (user.name.contains(value)) {
+                          if (user.name.toLowerCase().contains(value)) {
                             //  adding user to the list if the name matches to the value
                             chatPro.addSearchedUsers(user);
                           }
@@ -348,7 +348,11 @@ class _SearchScreenState extends State<SearchScreen> {
                         chatPro.clearSearchedUser();
                       }
                     },
+                    controller:
+                        Provider.of<ChatProvider>(context, listen: false)
+                            .searchController,
                     textAlignVertical: TextAlignVertical.center,
+                    textInputAction: TextInputAction.done,
                     decoration: InputDecoration(
                       constraints: BoxConstraints(
                           maxHeight: 35, maxWidth: size.width * 0.8),

@@ -60,6 +60,8 @@ class _BottomBarState extends State<BottomBar> {
     pageController.jumpToPage(page);
     stopMainPlayer();
     Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
+    Provider.of<ChatProvider>(context, listen: false).changeSearchStatus(false);
+    Provider.of<ChatProvider>(context, listen: false).searchController.clear();
   }
 
   stopMainPlayer() {

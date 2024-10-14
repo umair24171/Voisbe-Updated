@@ -171,6 +171,7 @@ class _CustomListTileState extends State<CustomListTile> {
                                 // maxLines: widget.isBio ? 3 : 1,
                                 maxLength: widget.isBio ? 160 : null,
                                 maxLines: widget.isBio ? 3 : 1,
+                                textInputAction: TextInputAction.done,
                                 textCapitalization: widget.textCapitalization,
                                 autovalidateMode: null,
                                 // validator: widget.validator,
@@ -261,6 +262,10 @@ class _CustomListTileState extends State<CustomListTile> {
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: TextFormField(
+                                    scrollPadding: EdgeInsets.only(
+                                        bottom: MediaQuery.of(context)
+                                            .viewInsets
+                                            .bottom),
                                     inputFormatters: [
                                       widget.isPrice
                                           ? FilteringTextInputFormatter

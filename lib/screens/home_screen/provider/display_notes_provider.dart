@@ -28,7 +28,7 @@ class DisplayNotesProvider with ChangeNotifier {
   List<UserModel> likedUsers = [];
   List<NoteModel> currentUserPosts = [];
   bool isExist = false;
-  PersonalizeModel? userPersonalizeData;
+  // PersonalizeModel? userPersonalizeData;
   List<UserModel> allUsers = [];
   List<UserModel> searchedUsers = [];
   bool isSearching = false;
@@ -201,21 +201,21 @@ class DisplayNotesProvider with ChangeNotifier {
   }
 
   void playPause(String url, int index) async {
-     FileInfo? fileInfo;
-  if(Platform.isAndroid){
+    FileInfo? fileInfo;
+    if (Platform.isAndroid) {
       final cacheManager = DefaultCacheManager();
-    fileInfo = await cacheManager.getFileFromCache(url);
+      fileInfo = await cacheManager.getFileFromCache(url);
 
-    if (fileInfo == null) {
-      // File is not cached, download and cache it
-      try {
-        fileInfo = await cacheManager.downloadFile(url, key: url);
-      } catch (e) {
-        print('Error downloading file: $e');
-        return;
+      if (fileInfo == null) {
+        // File is not cached, download and cache it
+        try {
+          fileInfo = await cacheManager.downloadFile(url, key: url);
+        } catch (e) {
+          print('Error downloading file: $e');
+          return;
+        }
       }
     }
-  }
 
     // Use the cached file for playback
     if (isPlaying && changeIndex != index) {

@@ -233,6 +233,13 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
+  Future<void> _stopAndDisposeAudio() async {
+    await _audioPlayer.stop();
+    await _audioPlayer.dispose();
+  }
+
+  bool _isBlurred = true;
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -256,107 +263,38 @@ class _ChatScreenState extends State<ChatScreen> {
         ? widget.rectoken!
         : widget.receiverUser!.token;
 
-    return Scaffold(
-      appBar: AppBar(
-        surfaceTintColor: whiteColor,
-        titleSpacing: 0,
-        backgroundColor: whiteColor,
-        leading: IconButton(
-            onPressed: () {
-              navPop(context);
-            },
-            icon: Icon(
-              Icons.arrow_back_ios,
-              color: blackColor,
-            )),
-        title: Row(
-          children: [
-            //  getting the chat user  image and name real time
+   return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
 
-            StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(recID)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    UserModel recImage =
-                        UserModel.fromMap(snapshot.data!.data()!);
-                    return CircleAvatar(
-                      radius: 18,
-                      backgroundImage: NetworkImage(
-                        recImage.photoUrl,
-                      ),
-                    );
-                  } else {
-                    return const Text('');
-                  }
-                }),
-            const SizedBox(
-              width: 8,
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                //  getting the chat username  real time and checking the verified user
+        setState(() {
+          _isBlurred = false;
+        });
 
-                StreamBuilder(
-                    stream: FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(recID)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        UserModel blueTick =
-                            UserModel.fromMap(snapshot.data!.data()!);
-                        return InkWell(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      OtherUserProfile(userId: blueTick.uid),
-                                ));
-                          },
-                          child: Row(
-                            children: [
-                              Text(
-                                blueTick.name,
-                                style: TextStyle(
-                                    fontFamily: fontFamily,
-                                    color: blackColor,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700),
-                              ),
-                              blueTick.isVerified
-                                  ? verifiedIcon()
-                                  : const Text('')
-                            ],
-                          ),
-                        );
-                      } else {
-                        return const SizedBox();
-                      }
-                    }),
-              ],
-            )
-          ],
-        ),
-      ),
+        // Stop and dispose of audio before navigating
+        await _stopAndDisposeAudio();
 
-      //  refresh indicator to get the latest messages
-
-      body: RefreshIndicator(
-        backgroundColor: whiteColor,
-        color: primaryColor,
-        onRefresh: () async {
-          return getStreamMessages();
-        },
-        child: SizedBox(
-          height: size.height,
-          child: Stack(
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          surfaceTintColor: whiteColor,
+          titleSpacing: 0,
+          backgroundColor: whiteColor,
+          leading: IconButton(
+              onPressed: () {
+                navPop(context);
+              },
+              icon: Icon(
+                Icons.arrow_back_ios,
+                color: blackColor,
+              )),
+          title: Row(
             children: [
-              //  background of the screen would be chat user image getting real time through stream builder
+              //  getting the chat user  image and name real time
 
               StreamBuilder(
                   stream: FirebaseFirestore.instance
@@ -367,485 +305,578 @@ class _ChatScreenState extends State<ChatScreen> {
                     if (snapshot.hasData) {
                       UserModel recImage =
                           UserModel.fromMap(snapshot.data!.data()!);
-                      return Container(
-                        height: size.height,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: NetworkImage(recImage.photoUrl))),
+                      return CircleAvatar(
+                        radius: 18,
+                        backgroundImage: NetworkImage(
+                          recImage.photoUrl,
+                        ),
                       );
                     } else {
                       return const Text('');
                     }
                   }),
-
-              //  above that there is a blur filter
-
-              BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                child: Container(
-                  color: Colors.white.withOpacity(0.1), // Transparent color
-                ),
+              const SizedBox(
+                width: 8,
               ),
-              SizedBox(
-                height: size.height,
-                child: Column(
-                  children: [
-                    Expanded(
-                        child: messagesSnapshots != null
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  //  getting the chat username  real time and checking the verified user
 
-                            //  building the messages through list
+                  StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(recID)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          UserModel blueTick =
+                              UserModel.fromMap(snapshot.data!.data()!);
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        OtherUserProfile(userId: blueTick.uid),
+                                  ));
+                            },
+                            child: Row(
+                              children: [
+                                Text(
+                                  blueTick.name,
+                                  style: TextStyle(
+                                      fontFamily: fontFamily,
+                                      color: blackColor,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700),
+                                ),
+                                blueTick.isVerified
+                                    ? verifiedIcon()
+                                    : const Text('')
+                              ],
+                            ),
+                          );
+                        } else {
+                          return const SizedBox();
+                        }
+                      }),
+                ],
+              )
+            ],
+          ),
+        ),
 
-                            ? ListView.builder(
-                                reverse: true,
-                                itemCount: messagesSnapshots!.length,
-                                itemBuilder: (context, index) {
-                                  // converting the messages into the list of chat model
+        //  refresh indicator to get the latest messages
 
-                                  ChatModel chat = messagesSnapshots![index];
+        body: RefreshIndicator(
+          backgroundColor: whiteColor,
+          color: primaryColor,
+          onRefresh: () async {
+            return getStreamMessages();
+          },
+          child: SizedBox(
+            height: size.height,
+            child: Stack(
+              children: [
+                //  background of the screen would be chat user image getting real time through stream builder
 
-                                  //   checking the message send by me or not
-                                  bool isMe = chat.senderId ==
-                                          FirebaseAuth.instance.currentUser!.uid
-                                      ? true
-                                      : false;
+                StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(recID)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        UserModel recImage =
+                            UserModel.fromMap(snapshot.data!.data()!);
+                        return Container(
+                          height: size.height,
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: NetworkImage(recImage.photoUrl))),
+                        );
+                      } else {
+                        return const Text('');
+                      }
+                    }),
 
-                                  //  converting into the time format
+                //  above that there is a blur filter
 
-                                  String formattedDateTime =
-                                      DateFormat('yyyy-MM-dd hh:mm a')
-                                          .format(chat.time);
+                if (_isBlurred)
+                  BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                    child: Container(
+                      color: Colors.white.withOpacity(0.1), // Transparent color
+                    ),
+                  ),
+                SizedBox(
+                  height: size.height,
+                  child: Column(
+                    children: [
+                      Expanded(
+                          child: messagesSnapshots != null
 
-                                  //  getting the unique key for each chat
+                              //  building the messages through list
 
-                                  final key = ValueKey<String>(
-                                      'comment_${chat.chatId}');
-                                  return KeyedSubtree(
-                                    key: key,
-                                    child: Column(
-                                      children: [
-                                        // time of the sent message
+                              ? ListView.builder(
+                                  reverse: true,
+                                  itemCount: messagesSnapshots!.length,
+                                  itemBuilder: (context, index) {
+                                    // converting the messages into the list of chat model
 
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 15),
-                                          child: Text(
-                                            formattedDateTime,
-                                            style: TextStyle(color: whiteColor),
+                                    ChatModel chat = messagesSnapshots![index];
+
+                                    //   checking the message send by me or not
+                                    bool isMe = chat.senderId ==
+                                            FirebaseAuth
+                                                .instance.currentUser!.uid
+                                        ? true
+                                        : false;
+
+                                    //  converting into the time format
+
+                                    String formattedDateTime =
+                                        DateFormat('yyyy-MM-dd hh:mm a')
+                                            .format(chat.time);
+
+                                    //  getting the unique key for each chat
+
+                                    final key = ValueKey<String>(
+                                        'comment_${chat.chatId}');
+                                    return KeyedSubtree(
+                                      key: key,
+                                      child: Column(
+                                        children: [
+                                          // time of the sent message
+
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(top: 15),
+                                            child: Text(
+                                              formattedDateTime,
+                                              style:
+                                                  TextStyle(color: whiteColor),
+                                            ),
                                           ),
-                                        ),
 
-                                        //  building the custom message and passing the required data
+                                          //  building the custom message and passing the required data
 
-                                        CustomMessageNote(
-                                          getStreamChats: getStreamMessages,
-                                          changeIndex: _currentIndex,
-                                          currentIndex: index,
-                                          isPlaying: _isPlaying,
-                                          playPause: () {
-                                            _playAudio(chat.message, index);
-                                          },
-                                          player: _audioPlayer,
-                                          position: position,
-                                          isShare: chat.isShare,
-                                          isMe: isMe,
-                                          chatModel: chat,
-                                          conversationId: getConversationId(),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                })
+                                          CustomMessageNote(
+                                            getStreamChats: getStreamMessages,
+                                            changeIndex: _currentIndex,
+                                            currentIndex: index,
+                                            isPlaying: _isPlaying,
+                                            playPause: () {
+                                              _playAudio(chat.message, index);
+                                            },
+                                            player: _audioPlayer,
+                                            position: position,
+                                            isShare: chat.isShare,
+                                            isMe: isMe,
+                                            chatModel: chat,
+                                            conversationId: getConversationId(),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  })
 
-                            //  while the messages are loading show this bar
+                              //  while the messages are loading show this bar
 
-                            : SpinKitThreeBounce(
-                                color: primaryColor,
-                                size: 15,
-                              )),
-                    Container(
-                      height: 100,
-                      decoration: BoxDecoration(color: whiteColor),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Padding(
-                          //   padding: const EdgeInsets.symmetric(vertical: 12),
-                          //   child: Row(
-                          //     mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          //     children: [
-                          //       Text(
-                          //         '❤️',
-                          //         style: TextStyle(
-                          //             fontSize: 22, fontFamily: fontFamily),
-                          //       ),
-                          //       Text(
-                          //         '🙌',
-                          //         style: TextStyle(
-                          //             fontSize: 22, fontFamily: fontFamily),
-                          //       ),
-                          //       Text(
-                          //         '🔥',
-                          //         style: TextStyle(
-                          //             fontSize: 22, fontFamily: fontFamily),
-                          //       ),
-                          //       Text(
-                          //         '👏',
-                          //         style: TextStyle(
-                          //             fontSize: 22, fontFamily: fontFamily),
-                          //       ),
-                          //       Text(
-                          //         '😥',
-                          //         style: TextStyle(
-                          //             fontSize: 22, fontFamily: fontFamily),
-                          //       ),
-                          //       Text(
-                          //         '😍',
-                          //         style: TextStyle(
-                          //             fontSize: 22, fontFamily: fontFamily),
-                          //       ),
-                          //       Text(
-                          //         '😮',
-                          //         style: TextStyle(
-                          //             fontSize: 22, fontFamily: fontFamily),
-                          //       ),
-                          //       Text(
-                          //         '😂',
-                          //         style: TextStyle(
-                          //             fontSize: 22, fontFamily: fontFamily),
-                          //       ),
-                          //     ],
-                          //   ),
-                          // ),
+                              : SpinKitThreeBounce(
+                                  color: primaryColor,
+                                  size: 15,
+                                )),
+                      Container(
+                        height: 100,
+                        decoration: BoxDecoration(color: whiteColor),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Padding(
+                            //   padding: const EdgeInsets.symmetric(vertical: 12),
+                            //   child: Row(
+                            //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            //     children: [
+                            //       Text(
+                            //         '❤️',
+                            //         style: TextStyle(
+                            //             fontSize: 22, fontFamily: fontFamily),
+                            //       ),
+                            //       Text(
+                            //         '🙌',
+                            //         style: TextStyle(
+                            //             fontSize: 22, fontFamily: fontFamily),
+                            //       ),
+                            //       Text(
+                            //         '🔥',
+                            //         style: TextStyle(
+                            //             fontSize: 22, fontFamily: fontFamily),
+                            //       ),
+                            //       Text(
+                            //         '👏',
+                            //         style: TextStyle(
+                            //             fontSize: 22, fontFamily: fontFamily),
+                            //       ),
+                            //       Text(
+                            //         '😥',
+                            //         style: TextStyle(
+                            //             fontSize: 22, fontFamily: fontFamily),
+                            //       ),
+                            //       Text(
+                            //         '😍',
+                            //         style: TextStyle(
+                            //             fontSize: 22, fontFamily: fontFamily),
+                            //       ),
+                            //       Text(
+                            //         '😮',
+                            //         style: TextStyle(
+                            //             fontSize: 22, fontFamily: fontFamily),
+                            //       ),
+                            //       Text(
+                            //         '😂',
+                            //         style: TextStyle(
+                            //             fontSize: 22, fontFamily: fontFamily),
+                            //       ),
+                            //     ],
+                            //   ),
+                            // ),
 
-                          // CustomRecordChat()
+                            // CustomRecordChat()
 
-                          //  show recording or if  need to start recording
+                            //  show recording or if  need to start recording
 
-                          Consumer<NoteProvider>(builder: (context, note, _) {
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              child: Row(
-                                children: [
-                                  if (note.voiceNote == null)
+                            Consumer<NoteProvider>(builder: (context, note, _) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 10),
+                                child: Row(
+                                  children: [
+                                    if (note.voiceNote == null)
 
-                                    //  showing the current user image
+                                      //  showing the current user image
 
-                                    Consumer<UserProvider>(
-                                        builder: (context, userPro, _) {
-                                      return CircleAvatar(
-                                        radius: 18,
-                                        backgroundImage: NetworkImage(
-                                          userPro.user!.photoUrl,
-                                        ),
-                                      );
-                                    }),
-                                  Expanded(
-                                    child: note.voiceNote != null
-                                        ? Row(
-                                            children: [
-                                              //  showing the recorded voice chat
+                                      Consumer<UserProvider>(
+                                          builder: (context, userPro, _) {
+                                        return CircleAvatar(
+                                          radius: 18,
+                                          backgroundImage: NetworkImage(
+                                            userPro.user!.photoUrl,
+                                          ),
+                                        );
+                                      }),
+                                    Expanded(
+                                      child: note.voiceNote != null
+                                          ? Row(
+                                              children: [
+                                                //  showing the recorded voice chat
 
-                                              VoiceMessageView(
-                                                  size: 25,
-                                                  innerPadding: 0,
-                                                  controller: VoiceController(
-                                                      audioSrc:
-                                                          note.voiceNote!.path,
-                                                      maxDuration:
-                                                          const Duration(
-                                                              seconds: 500),
-                                                      isFile: true,
-                                                      onComplete: () {},
-                                                      onPause: () {},
-                                                      onPlaying: () {})),
-                                              const SizedBox(
-                                                width: 3,
-                                              ),
+                                                VoiceMessageView(
+                                                    size: 25,
+                                                    innerPadding: 0,
+                                                    controller: VoiceController(
+                                                        audioSrc: note
+                                                            .voiceNote!.path,
+                                                        maxDuration:
+                                                            const Duration(
+                                                                seconds: 500),
+                                                        isFile: true,
+                                                        onComplete: () {},
+                                                        onPause: () {},
+                                                        onPlaying: () {})),
+                                                const SizedBox(
+                                                  width: 3,
+                                                ),
 
-                                              //  while sending the voice show loader
+                                                //  while sending the voice show loader
 
-                                              note.isLoading
-                                                  ? SizedBox(
-                                                      height: 15,
-                                                      width: 15,
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                        color: blackColor,
-                                                      ),
-                                                    )
-                                                  : GestureDetector(
-                                                      onTap: note.isLoading
-                                                          ? null
-                                                          : () async {
-                                                              note.setIsLoading(
-                                                                  true);
-                                                              String chatId =
-                                                                  const Uuid()
-                                                                      .v4();
+                                                note.isLoading
+                                                    ? SizedBox(
+                                                        height: 15,
+                                                        width: 15,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                          color: blackColor,
+                                                        ),
+                                                      )
+                                                    : GestureDetector(
+                                                        onTap: note.isLoading
+                                                            ? null
+                                                            : () async {
+                                                                note.setIsLoading(
+                                                                    true);
+                                                                String chatId =
+                                                                    const Uuid()
+                                                                        .v4();
 
-                                                              //  uploading the chat note
+                                                                //  uploading the chat note
 
-                                                              String message =
-                                                                  await AddNoteController()
-                                                                      .uploadFile(
-                                                                          'chats',
-                                                                          note.voiceNote!,
-                                                                          context);
+                                                                String message =
+                                                                    await AddNoteController().uploadFile(
+                                                                        'chats',
+                                                                        note.voiceNote!,
+                                                                        context);
 
-                                                              List<double>
-                                                                  waveformData =
-                                                                  await controller
-                                                                      .extractWaveformData(
-                                                                path: note
-                                                                    .voiceNote!
-                                                                    .path,
-                                                                noOfSamples:
-                                                                    200,
-                                                              );
+                                                                List<double>
+                                                                    waveformData =
+                                                                    await controller
+                                                                        .extractWaveformData(
+                                                                  path: note
+                                                                      .voiceNote!
+                                                                      .path,
+                                                                  noOfSamples:
+                                                                      200,
+                                                                );
 
-                                                              //  creating the chat model
+                                                                //  creating the chat model
 
-                                                              ChatModel chat = ChatModel(
-                                                                  waveforms:
-                                                                      waveformData,
-                                                                  deletedChat: [],
-                                                                  name:
-                                                                      userProvider!
-                                                                          .name,
-                                                                  message:
-                                                                      message,
-                                                                  senderId:
-                                                                      userProvider
-                                                                          .uid,
-                                                                  chatId:
-                                                                      chatId,
-                                                                  postOwner: '',
-                                                                  time: DateTime
-                                                                      .now(),
-                                                                  isShare:
-                                                                      false,
-                                                                  receiverId:
-                                                                      recID,
-                                                                  messageRead:
-                                                                      '',
-                                                                  avatarUrl:
-                                                                      userProvider
-                                                                          .photoUrl);
-
-                                                              //  creating the sub model of the chat
-
-                                                              RecentChatModel recentChatModel = RecentChatModel(
-                                                                  waveforms:
-                                                                      waveformData,
-                                                                  deletedChat: [],
-                                                                  chatId:
-                                                                      chatId,
-                                                                  senderId:
-                                                                      userProvider
-                                                                          .uid,
-                                                                  receiverId:
-                                                                      recID,
-                                                                  message:
-                                                                      message,
-                                                                  time: DateTime
-                                                                      .now(),
-                                                                  senderImage:
-                                                                      userProvider
-                                                                          .photoUrl,
-                                                                  senderName:
-                                                                      userProvider
-                                                                          .name,
-                                                                  usersId:
-                                                                      getConversationId(),
-                                                                  receiverName:
-                                                                      recName,
-                                                                  receiverImage:
-                                                                      recPhoto,
-                                                                  senderToken:
-                                                                      userProvider
-                                                                          .token,
-                                                                  receiverToken:
-                                                                      recToken,
-                                                                  seen: false);
-
-                                                              // sending the message to the database
-
-                                                              ChatController()
-                                                                  .sendMessage(
-                                                                      chat,
-                                                                      chatId,
-                                                                      getConversationId(),
-                                                                      recName,
-                                                                      recPhoto,
-                                                                      userProvider
-                                                                          .token,
-                                                                      recToken,
-                                                                      waveformData,
-                                                                      context)
-                                                                  .then(
-                                                                      (value) async {
-                                                                //   notifying the user after sending
-
-                                                                NotificationMethods
-                                                                    .sendPushNotification(
+                                                                ChatModel chat = ChatModel(
+                                                                    waveforms:
+                                                                        waveformData,
+                                                                    deletedChat: [],
+                                                                    name: userProvider!
+                                                                        .name,
+                                                                    message:
+                                                                        message,
+                                                                    senderId:
+                                                                        userProvider
+                                                                            .uid,
+                                                                    chatId:
+                                                                        chatId,
+                                                                    postOwner:
+                                                                        '',
+                                                                    time: DateTime
+                                                                        .now(),
+                                                                    isShare:
+                                                                        false,
+                                                                    receiverId:
                                                                         recID,
-                                                                        recToken,
-                                                                        '${userProvider.username} sent a voice note',
+                                                                    messageRead:
+                                                                        '',
+                                                                    avatarUrl:
+                                                                        userProvider
+                                                                            .photoUrl);
+
+                                                                //  creating the sub model of the chat
+
+                                                                RecentChatModel recentChatModel = RecentChatModel(
+                                                                    waveforms:
+                                                                        waveformData,
+                                                                    deletedChat: [],
+                                                                    chatId:
+                                                                        chatId,
+                                                                    senderId:
+                                                                        userProvider
+                                                                            .uid,
+                                                                    receiverId:
+                                                                        recID,
+                                                                    message:
+                                                                        message,
+                                                                    time: DateTime
+                                                                        .now(),
+                                                                    senderImage:
+                                                                        userProvider
+                                                                            .photoUrl,
+                                                                    senderName:
                                                                         userProvider
                                                                             .name,
-                                                                        'chat',
-                                                                        '');
-                                                                note.setIsLoading(
-                                                                    false);
+                                                                    usersId:
+                                                                        getConversationId(),
+                                                                    receiverName:
+                                                                        recName,
+                                                                    receiverImage:
+                                                                        recPhoto,
+                                                                    senderToken:
+                                                                        userProvider
+                                                                            .token,
+                                                                    receiverToken:
+                                                                        recToken,
+                                                                    seen:
+                                                                        false);
 
-                                                                //  removing the recorded note after  sending
+                                                                // sending the message to the database
 
-                                                                note.removeVoiceNote();
-                                                              });
-                                                            },
+                                                                ChatController()
+                                                                    .sendMessage(
+                                                                        chat,
+                                                                        chatId,
+                                                                        getConversationId(),
+                                                                        recName,
+                                                                        recPhoto,
+                                                                        userProvider
+                                                                            .token,
+                                                                        recToken,
+                                                                        waveformData,
+                                                                        context)
+                                                                    .then(
+                                                                        (value) async {
+                                                                  //   notifying the user after sending
+
+                                                                  NotificationMethods.sendPushNotification(
+                                                                      recID,
+                                                                      recToken,
+                                                                      '${userProvider.username} sent a voice note',
+                                                                      userProvider
+                                                                          .name,
+                                                                      'chat',
+                                                                      '');
+                                                                  note.setIsLoading(
+                                                                      false);
+
+                                                                  //  removing the recorded note after  sending
+
+                                                                  note.removeVoiceNote();
+                                                                });
+                                                              },
+                                                        child: Icon(
+                                                          Icons.send_rounded,
+                                                          color: blackColor,
+                                                          size: 30,
+                                                        ),
+                                                      ),
+                                                const SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Expanded(
+                                                  child: GestureDetector(
+                                                      onTap: () {
+                                                        note.removeVoiceNote();
+                                                      },
                                                       child: Icon(
-                                                        Icons.send_rounded,
+                                                        Icons.close,
                                                         color: blackColor,
                                                         size: 30,
-                                                      ),
-                                                    ),
-                                              const SizedBox(
-                                                width: 5,
-                                              ),
-                                              Expanded(
-                                                child: GestureDetector(
-                                                    onTap: () {
-                                                      note.removeVoiceNote();
+                                                      )),
+                                                ),
+                                                const SizedBox(
+                                                  width: 4,
+                                                )
+                                              ],
+                                            )
+                                          : Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: TextFormField(
+                                                readOnly: true,
+                                                decoration: InputDecoration(
+                                                  hintText: 'Add a reply',
+                                                  hintStyle: TextStyle(
+                                                      fontFamily: fontFamily,
+                                                      color: Colors.grey,
+                                                      fontSize: 13),
+                                                  // label: Text(
+                                                  //   'Add a reply',
+                                                  //   style: TextStyle(
+                                                  //       fontFamily: fontFamily,
+                                                  //       color: Colors.grey,
+                                                  //       fontSize: 13),
+                                                  // ),
+                                                  suffixIcon: GestureDetector(
+                                                    onTap: () async {
+                                                      // try {
+                                                      //   if (note.recorder.) {
+                                                      //     recorderController
+                                                      //         .reset();
+
+                                                      //     String? path =
+                                                      //         await recorderController
+                                                      //             .stop(false);
+
+                                                      //     if (path != null) {
+                                                      //       note.setVoiceNote(
+                                                      //           File(path));
+                                                      //       debugPrint(path);
+                                                      //       debugPrint(
+                                                      //           "Recorded file size: ${File(path).lengthSync()}");
+                                                      //     }
+                                                      //   } else {
+                                                      //     var id =
+                                                      //         const Uuid().v4();
+                                                      //     Directory appDocDir =
+                                                      //         await getApplicationDocumentsDirectory();
+                                                      //     String appDocPath =
+                                                      //         appDocDir.path;
+                                                      //     String? path =
+                                                      //         '$appDocPath/$id.flac';
+                                                      //     await recorderController
+                                                      //         .record(
+                                                      //             path:
+                                                      //                 path); // Path is optional
+                                                      //   }
+                                                      // } catch (e) {
+                                                      //   debugPrint(e.toString());
+                                                      // } finally {
+                                                      //   note.setRecording(
+                                                      //       !note.isRecording);
+                                                      //   // setState(() {
+                                                      //   //   isRecording =
+                                                      //   //       !isRecording;
+                                                      //   // });
+                                                      // }
+                                                      if (await note.recorder
+                                                          .isRecording()) {
+                                                        note.stop();
+                                                      } else {
+                                                        note.record(context);
+                                                      }
                                                     },
                                                     child: Icon(
-                                                      Icons.close,
+                                                      note.isRecording
+                                                          ? Icons.stop
+                                                          : Icons
+                                                              .mic_none_rounded,
                                                       color: blackColor,
                                                       size: 30,
-                                                    )),
-                                              ),
-                                              const SizedBox(
-                                                width: 4,
-                                              )
-                                            ],
-                                          )
-                                        : Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: TextFormField(
-                                              readOnly: true,
-                                              decoration: InputDecoration(
-                                                hintText: 'Add a reply',
-                                                hintStyle: TextStyle(
-                                                    fontFamily: fontFamily,
-                                                    color: Colors.grey,
-                                                    fontSize: 13),
-                                                // label: Text(
-                                                //   'Add a reply',
-                                                //   style: TextStyle(
-                                                //       fontFamily: fontFamily,
-                                                //       color: Colors.grey,
-                                                //       fontSize: 13),
-                                                // ),
-                                                suffixIcon: GestureDetector(
-                                                  onTap: () async {
-                                                    // try {
-                                                    //   if (note.recorder.) {
-                                                    //     recorderController
-                                                    //         .reset();
-
-                                                    //     String? path =
-                                                    //         await recorderController
-                                                    //             .stop(false);
-
-                                                    //     if (path != null) {
-                                                    //       note.setVoiceNote(
-                                                    //           File(path));
-                                                    //       debugPrint(path);
-                                                    //       debugPrint(
-                                                    //           "Recorded file size: ${File(path).lengthSync()}");
-                                                    //     }
-                                                    //   } else {
-                                                    //     var id =
-                                                    //         const Uuid().v4();
-                                                    //     Directory appDocDir =
-                                                    //         await getApplicationDocumentsDirectory();
-                                                    //     String appDocPath =
-                                                    //         appDocDir.path;
-                                                    //     String? path =
-                                                    //         '$appDocPath/$id.flac';
-                                                    //     await recorderController
-                                                    //         .record(
-                                                    //             path:
-                                                    //                 path); // Path is optional
-                                                    //   }
-                                                    // } catch (e) {
-                                                    //   debugPrint(e.toString());
-                                                    // } finally {
-                                                    //   note.setRecording(
-                                                    //       !note.isRecording);
-                                                    //   // setState(() {
-                                                    //   //   isRecording =
-                                                    //   //       !isRecording;
-                                                    //   // });
-                                                    // }
-                                                    if (await note.recorder
-                                                        .isRecording()) {
-                                                      note.stop();
-                                                    } else {
-                                                      note.record(context);
-                                                    }
-                                                  },
-                                                  child: Icon(
-                                                    note.isRecording
-                                                        ? Icons.stop
-                                                        : Icons
-                                                            .mic_none_rounded,
-                                                    color: blackColor,
-                                                    size: 30,
+                                                    ),
                                                   ),
-                                                ),
-                                                constraints:
-                                                    const BoxConstraints(
-                                                        maxHeight: 45),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                        borderSide:
-                                                            const BorderSide(
-                                                                color: Colors
-                                                                    .grey),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(19)),
-                                                border: OutlineInputBorder(
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                          maxHeight: 45),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                          borderSide:
+                                                              const BorderSide(
+                                                                  color: Colors
+                                                                      .grey),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      19)),
+                                                  border: OutlineInputBorder(
+                                                      borderSide:
+                                                          const BorderSide(
+                                                              color:
+                                                                  Colors.grey),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              19)),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
                                                     borderSide:
                                                         const BorderSide(
                                                             color: Colors.grey),
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            19)),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: const BorderSide(
-                                                      color: Colors.grey),
-                                                  borderRadius:
-                                                      BorderRadius.circular(19),
+                                                            19),
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                  )
-                                ],
-                              ),
-                            );
-                          }),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              )
-            ],
+                                    )
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),

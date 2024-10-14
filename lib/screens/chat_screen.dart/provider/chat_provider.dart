@@ -13,6 +13,7 @@ class ChatProvider with ChangeNotifier {
 
   final List<UserModel> _users = [];
   List<UserModel> get users => _users;
+  TextEditingController searchController = TextEditingController();
 
   //  getting search text
 
@@ -133,6 +134,7 @@ class ChatProvider with ChangeNotifier {
           .get()
           .then((value) {
         _users.clear();
+
         for (var user in value.docs) {
           _users.add(UserModel.fromMap(user.data()));
           notifyListeners();
