@@ -265,12 +265,13 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
             //  blur filter above that
 
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(
-                color: Colors.white.withOpacity(0.1), // Transparent color
+            if (_isBlurred)
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(
+                  color: Colors.white.withOpacity(0.1), // Transparent color
+                ),
               ),
-            ),
             Positioned.fill(
               top: 0,
               bottom: 0,
