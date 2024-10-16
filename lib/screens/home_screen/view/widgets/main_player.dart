@@ -924,6 +924,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
+import 'package:social_notes/screens/home_screen/controller/audio_handler.dart';
 // import 'package:social_notes/screens/home_screen/controller/play_count_service.dart';
 import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/most_listened_waves.dart';
@@ -948,6 +949,7 @@ class MainPlayer extends StatefulWidget {
     required this.width,
     required this.mainWidth,
     required this.mainHeight,
+    // required this.audioHandler,
     required this.playPause,
     this.backgroundColor = Colors.white,
     this.size = 35,
@@ -1004,6 +1006,7 @@ class MainPlayer extends StatefulWidget {
   bool isProfilePlayer;
   final String title;
   List<double> waveforms;
+  // AudioPlayerHandler audioHandler;
   // double price;
 
   @override
@@ -1390,7 +1393,14 @@ class _MainPlayerState extends State<MainPlayer> {
                       child: InkWell(
                         splashColor: Colors.transparent,
                         onTap: () {
-                          widget.playPause();
+                          // if (widget.audioHandler.player.playing) {
+                          //   widget.audioHandler.pause();
+                          // } else {
+                          //   widget.audioHandler.play();
+                          // }
+                          widget
+                              .playPause(); // Call the existing playPause method to update UI
+
                           // scrollToPosition(widget.position);
                         },
                         child: Consumer<FilterProvider>(

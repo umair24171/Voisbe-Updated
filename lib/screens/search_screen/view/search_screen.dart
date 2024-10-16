@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -405,7 +406,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           // contentPadding: EdgeInsets.all(0),
                           horizontalTitleGap: 8,
                           leading: CircleAvatar(
-                            backgroundImage: NetworkImage(
+                            backgroundImage: CachedNetworkImageProvider(
                                 searchPro.searchedUSers[index].photoUrl),
                           ),
                           title: Row(

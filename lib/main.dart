@@ -6,6 +6,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:ui';
 
+// import 'package:audio_service/audio_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,6 +19,7 @@ import 'package:flutter_notification_channel/flutter_notification_channel.dart'
 import 'package:flutter_notification_channel/notification_importance.dart';
 import 'package:flutter_notification_channel/notification_visibility.dart'
     as notiVi;
+// import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:social_notes/firebase_options.dart';
@@ -37,6 +39,7 @@ import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dar
 import 'package:social_notes/screens/chat_screen.dart/view/users_screen.dart';
 
 import 'package:social_notes/screens/custom_bottom_bar.dart';
+import 'package:social_notes/screens/home_screen/controller/audio_handler.dart';
 import 'package:social_notes/screens/home_screen/controller/video_download_methods.dart';
 import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/comments_provider.dart';
@@ -156,6 +159,11 @@ void main() async {
   }
   flutterNotificationChannel();
   _initializeNotifications();
+  // await JustAudioBackground.init(
+  //   androidNotificationChannelId: 'com.app.social_notes.audio',
+  //   androidNotificationChannelName: 'Audio playback',
+  //   androidNotificationOngoing: true,
+  // );
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(
       create: (context) => UserProvider(),
@@ -241,6 +249,7 @@ class _MyAppState extends State<MyApp> {
     // SpotifyClass().getToken(context);
     // SpotifyClass().getRefreshToken();
     // getALlPostsANdUpdate();
+
     _removeChatNotifications();
     CheckNotificationClickDataSourceImpl().checkNotificationClick(context);
     CheckNotificationClickDataSourceImpl().setupInteractedMessage();

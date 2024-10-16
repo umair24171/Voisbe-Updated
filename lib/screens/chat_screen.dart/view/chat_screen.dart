@@ -263,11 +263,8 @@ class _ChatScreenState extends State<ChatScreen> {
         ? widget.rectoken!
         : widget.receiverUser!.token;
 
-   return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) async {
-        if (didPop) return;
-
+    return WillPopScope(
+      onWillPop: () async {
         setState(() {
           _isBlurred = false;
         });
@@ -278,6 +275,7 @@ class _ChatScreenState extends State<ChatScreen> {
         if (mounted) {
           Navigator.of(context).pop();
         }
+        return false;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -721,7 +719,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                                                       userProvider
                                                                           .name,
                                                                       'chat',
-                                                                      '');
+                                                                      '',
+                                                                      context);
                                                                   note.setIsLoading(
                                                                       false);
 

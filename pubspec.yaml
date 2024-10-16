@@ -153,6 +153,10 @@ dependencies:
   record: ^5.1.2
   in_app_review: ^2.0.9
   purchases_flutter: ^8.1.4
+  googleapis_auth: ^1.6.0
+  # audio_service: ^0.18.15
+  # just_audio_background: ^0.0.1-beta.13
+  # just_audio: ^0.9.41
   # media_scanner_scan_file: ^0.0.4
   # cropper_and_trimmer:
   #   path: ./local_packages/cropper_and_trimmer

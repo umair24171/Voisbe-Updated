@@ -129,6 +129,27 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
   getData() async {}
 
+  Future<void> _handlePopGesture() async {
+    setState(() {
+      _isBlurred = false;
+    });
+
+    if (widget.previousId != null) {
+      Provider.of<UserProfileProvider>(context, listen: false)
+          .otherUserProfile(widget.previousId!);
+      setState(() {
+        _isBlurred = true;
+      });
+    }
+
+    // Uncomment if you need to stop and dispose audio
+    // await _stopAndDisposeAudio();
+
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
   //  getting the format in k and millions
 
   String formatCount(int count) {
@@ -153,29 +174,10 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
     var currentUSer = Provider.of<UserProvider>(context, listen: false).user;
 
     // userProvider.otherUser;
-    return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) async {
-        if (didPop) return;
-
-        setState(() {
-          _isBlurred = false;
-        });
-
-        if (widget.previousId != null) {
-          Provider.of<UserProfileProvider>(context, listen: false)
-              .otherUserProfile(widget.previousId!);
-          setState(() {
-            _isBlurred = true;
-          });
-        }
-
-        // Stop and dispose of audio before navigating
-        // await _stopAndDisposeAudio();
-
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
+    return WillPopScope(
+      onWillPop: () async {
+        await _handlePopGesture();
+        return false;
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -199,18 +201,29 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
             Consumer<UserProfileProvider>(builder: (context, userProvider, _) {
               return Row(
                 children: [
-                  InkWell(
-                    onTap: () {
+                  IconButton(
+                    padding: EdgeInsets.all(0),
+                    onPressed: () {
                       navPop(context);
                     },
-                    child: const Icon(
+                    icon: const Icon(
                       Icons.arrow_back_ios,
                       size: 20,
                     ),
                   ),
-                  const SizedBox(
-                    width: 5,
-                  ),
+                  // InkWell(
+                  //   onTap: () {
+                  //     navPop(context);
+                  //   },
+                  //   child:
+                  // const Icon(
+                  //     Icons.arrow_back_ios,
+                  //     size: 20,
+                  //   ),
+                  // ),
+                  // const SizedBox(
+                  //   width: 5,
+                  // ),
                   if (userProvider.otherUser != null)
                     Text(
                       userProvider.otherUser!.name,

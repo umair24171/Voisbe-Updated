@@ -426,7 +426,8 @@ class _UiHideScreenState extends State<UiHideScreen> {
                                                 'replied',
                                                 userProvider.username,
                                                 'notification',
-                                                '');
+                                                '',
+                                                context);
 
                                         CommentNotoficationModel noti =
                                             CommentNotoficationModel(

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
@@ -123,7 +124,8 @@ class SearchUsers extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 6),
                     child: CircleAvatar(
                       radius: 25,
-                      backgroundImage: NetworkImage(user.photoUrl),
+                      backgroundImage:
+                          CachedNetworkImageProvider(user.photoUrl),
                     ),
                   ),
                   const SizedBox(

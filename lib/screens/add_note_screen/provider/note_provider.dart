@@ -521,6 +521,11 @@ class NoteProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  setClearTags() {
+    tags.clear();
+    notifyListeners();
+  }
+
   //  after recording comment in reply section save the recording comment
 
   setCommentNoteFile(File file) {

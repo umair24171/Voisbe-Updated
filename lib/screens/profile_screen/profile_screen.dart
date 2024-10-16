@@ -234,11 +234,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context,
     );
 
-    return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) async {
-        if (didPop) return;
-
+    return WillPopScope(
+      onWillPop: () async {
         setState(() {
           _isBlurred = false;
         });
@@ -249,6 +246,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (mounted) {
           Navigator.of(context).pop();
         }
+        return false;
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -1741,7 +1739,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                         .user!
                                                                         .name,
                                                                     'subscription',
-                                                                    '');
+                                                                    '',
+                                                                    context);
                                                               }
                                                             }
                                                             userProvider

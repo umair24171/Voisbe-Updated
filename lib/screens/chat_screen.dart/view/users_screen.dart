@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 // import 'package:flutter/widgets.dart';
 import 'package:social_notes/resources/colors.dart';
@@ -183,6 +184,7 @@ class _UsersScreenState extends State<UsersScreen> {
                                             onTap: () async {
                                               FirebaseAuth auth =
                                                   FirebaseAuth.instance;
+                                              await GoogleSignIn().signOut();
                                               UserCredential credential =
                                                   await auth
                                                       .signInWithEmailAndPassword(
@@ -234,12 +236,20 @@ class _UsersScreenState extends State<UsersScreen> {
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               child: InkWell(
-                                onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(
-                                    builder: (context) {
-                                      return AuthScreen();
-                                    },
-                                  ));
+                                onTap: () async {
+                                  Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => AuthScreen()),
+                                      (route) => false);
+                                  await GoogleSignIn().signOut();
+                                  await FirebaseAuth.instance.signOut();
+
+                                  // Navigator.push(context, MaterialPageRoute(
+                                  //   builder: (context) {
+                                  //     return AuthScreen();
+                                  //   },
+                                  // ));
                                 },
                                 child: Row(
                                   children: [

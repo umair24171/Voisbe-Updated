@@ -382,7 +382,8 @@ class DisplayNotesProvider with ChangeNotifier {
       String userToken,
       String userName,
       String userId,
-      String currentUserID) async {
+      String currentUserID,
+      context) async {
     if (likes.contains(FirebaseAuth.instance.currentUser!.uid)) {
       likes.remove(FirebaseAuth.instance.currentUser!.uid);
     } else {
@@ -396,8 +397,8 @@ class DisplayNotesProvider with ChangeNotifier {
       UserModel toNotiUser = UserModel.fromMap(userModel.data()!);
       if (toNotiUser.isLike && currentUserID != userId) {
         addLikeNotification(commentNotoficationModel);
-        NotificationMethods.sendPushNotification(
-            userId, userToken, 'liked your post', userName, 'notification', '');
+        NotificationMethods.sendPushNotification(userId, userToken,
+            'liked your post', userName, 'notification', '', context);
       }
     }
     await _firestore.collection('notes').doc(postId).update({

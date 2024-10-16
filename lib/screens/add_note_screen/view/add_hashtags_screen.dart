@@ -725,8 +725,15 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                             noteProvider.setEmptySelectedImage();
                             noteProvider.setEmptySelectedVideo();
                             noteProvider.setIsGalleryVideo(false);
+                            noteProvider.setClearTags();
 
-                            navPush(BottomBar.routeName, context);
+                            Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const BottomBar()),
+                                (route) => false);
+
+                            // navPush(BottomBar.routeName, context);
 
                             //  after adding the post and navigating
                             //  notifiying the users who enabled the user notification icon
@@ -738,7 +745,8 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                                   'Added a Post',
                                   userProvider.username,
                                   'home',
-                                  noteId);
+                                  noteId,
+                                  context);
                             }
                             log('Noti send');
                           });

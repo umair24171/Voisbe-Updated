@@ -555,7 +555,8 @@ class _CircleCommentsState extends State<CircleComments> {
                                                 'replied',
                                                 userProvider.name,
                                                 'notification',
-                                                '');
+                                                '',
+                                                context);
 
                                         CommentNotoficationModel noti =
                                             CommentNotoficationModel(

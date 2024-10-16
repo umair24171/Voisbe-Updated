@@ -1,5 +1,6 @@
 import 'dart:io';
 
+// import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,6 +17,7 @@ import 'package:social_notes/screens/add_note_screen/view/widgets/custom_video_p
 import 'package:social_notes/screens/auth_screens/controller/notifications_methods.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
+import 'package:social_notes/screens/home_screen/controller/audio_handler.dart';
 import 'package:social_notes/screens/home_screen/model/comment_modal.dart';
 import 'package:social_notes/screens/home_screen/model/feed_detail_model.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
@@ -255,6 +257,7 @@ class _FeedDetailScreenState extends State<FeedDetailScreen> {
                           Consumer<DisplayNotesProvider>(
                               builder: (context, displayPro, _) {
                             return MainPlayer(
+                                // audioHandler: AudioPlayerHandler(),
                                 waveforms:
                                     widget.feedModel.note.waveforms ?? [],
                                 lockPosts: [],
@@ -375,7 +378,8 @@ class _FeedDetailScreenState extends State<FeedDetailScreen> {
                                                   'replied',
                                                   userProvider.name,
                                                   'notification',
-                                                  '');
+                                                  '',
+                                                  context);
 
                                           CommentNotoficationModel noti =
                                               CommentNotoficationModel(

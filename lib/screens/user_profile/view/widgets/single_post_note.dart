@@ -19,15 +19,12 @@ import 'package:provider/provider.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
+import 'package:social_notes/screens/home_screen/controller/audio_handler.dart';
 import 'package:social_notes/screens/home_screen/view/widgets/main_player.dart';
 import 'package:social_notes/screens/search_screen/view/widgets/search_player.dart';
 import 'package:social_notes/screens/subscribe_screen.dart/view/subscribe_screen.dart';
 import 'package:social_notes/screens/user_profile/other_user_profile.dart';
 import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
-import 'package:social_notes/screens/user_profile/view/widgets/custom_player.dart';
-import 'package:social_notes/screens/user_profile/view/widgets/custom_video_thumbnail.dart';
-import 'package:social_notes/screens/user_profile/view/widgets/thumbnail_video_player.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
 
 class SinglePostNote extends StatefulWidget {
   SinglePostNote(
@@ -318,6 +315,7 @@ class _SinglePostNoteState extends State<SinglePostNote> {
 
                 if (widget.isFirstPost)
                   MainPlayer(
+                      // audioHandler: AudioPlayerHandler(),
                       waveforms: widget.note.waveforms ?? [],
                       audioPlayer: widget.audioPlayer,
                       changeIndex: widget.changeIndex,

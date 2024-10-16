@@ -1,5 +1,6 @@
 import 'dart:async';
 
+// import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,6 +20,7 @@ import 'package:social_notes/screens/add_note_screen/model/note_model.dart';
 import 'package:social_notes/screens/auth_screens/controller/notifications_methods.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
+import 'package:social_notes/screens/home_screen/controller/audio_handler.dart';
 import 'package:social_notes/screens/home_screen/controller/play_count_service.dart';
 import 'package:social_notes/screens/home_screen/controller/share_services.dart';
 import 'package:social_notes/screens/home_screen/controller/video_download_methods.dart';
@@ -83,24 +85,34 @@ class SingleNotePost extends StatefulWidget {
 }
 
 class _SingleNotePostState extends State<SingleNotePost> {
+  // late AudioPlayerHandler _audioHandler;
+
   @override
   void initState() {
-    //  automatically playing post for the zero index
-
-    playPauseForIndexZero();
-
     super.initState();
+    // _initAudioHandler();
+    playPauseForIndexZero();
   }
 
-  stopMainPlayer() {
-    Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
+  // Future<void> _initAudioHandler() async {
+  //   _audioHandler = AudioPlayerHandler();
+  //   await _audioHandler.setAudioSource(
+  //     widget.note.noteUrl,
+  //     title: widget.note.title ?? 'Unknown Title',
+  //     artist: widget.note.username ?? 'Unknown Artist',
+  //   );
+  //   setState(() {});
+  // }
+
+  void stopMainPlayer() {
+    // _audioHandler.pause();
     Provider.of<DisplayNotesProvider>(context, listen: false)
         .setIsPlaying(false);
     Provider.of<DisplayNotesProvider>(context, listen: false)
         .setChangeIndex(-1);
   }
 
-  playPauseForIndexZero() {
+  void playPauseForIndexZero() {
     SchedulerBinding.instance.scheduleFrameCallback((timeStamp) {
       if (widget.pageController.page == 0) {
         widget.playPause();
@@ -256,10 +268,13 @@ class _SingleNotePostState extends State<SingleNotePost> {
           const Expanded(child: SizedBox()),
 
           //  showing the player  and passing the required data
-
+          // if (!_isAudioHandlerInitialized)
+          //   Center(child: CircularProgressIndicator())
+          // else
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: MainPlayer(
+                // audioHandler: _audioHandler!,
                 waveforms: widget.note.waveforms ?? [],
                 lockPosts: [],
                 title: '',
@@ -365,7 +380,8 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                 widget.note.userToken,
                                 userProvider.name,
                                 widget.note.userUid,
-                                userProvider.uid);
+                                userProvider.uid,
+                                context);
                       },
 
                       //  changing the value of the like realtime
@@ -514,6 +530,7 @@ class _SingleNotePostState extends State<SingleNotePost> {
                         'assets/icons/User_box.svg',
                         height: 30,
                         width: 25,
+                        color: whiteColor,
                       ),
                     ),
                   ),
@@ -717,7 +734,8 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                                           FontWeight.w600,
                                                       fontFamily: khulaRegular,
                                                       fontSize: 12,
-                                                      color: Color(0xff6C6C6C)),
+                                                      color: const Color(
+                                                          0xff6C6C6C)),
                                                 ),
                                               )
                                             ],

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 // import 'package:flutter/widgets.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 // import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
@@ -303,15 +304,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 10),
                                     child: InkWell(
-                                      onTap: () {
-                                        FirebaseAuth.instance.signOut();
-
-                                        Navigator.pushReplacement(context,
+                                      onTap: () async {
+                                        Navigator.pushAndRemoveUntil(
+                                            context,
                                             MaterialPageRoute(
-                                          builder: (context) {
-                                            return AuthScreen();
-                                          },
-                                        ));
+                                                builder: (context) =>
+                                                    AuthScreen()),
+                                            (route) => false);
+                                        await GoogleSignIn().signOut();
+                                        await FirebaseAuth.instance.signOut();
                                       },
                                       child: Row(
                                         children: [

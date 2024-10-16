@@ -615,6 +615,9 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                                         .removeVoiceNote();
                                                     noteProvider
                                                         .clearAudioFiles();
+                                                    noteProvider
+                                                        .setIsGalleryVideo(
+                                                            false);
 
                                                     Provider.of<UserProvider>(
                                                             context,
@@ -696,6 +699,9 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                                           .setNullSelectedVideo();
                                                       noteProvider
                                                           .setEmptySelectedImage();
+                                                      noteProvider
+                                                          .setIsGalleryVideo(
+                                                              false);
                                                       Provider.of<UserProvider>(
                                                               context,
                                                               listen: false)
