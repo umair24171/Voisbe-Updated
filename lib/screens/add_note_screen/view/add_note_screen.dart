@@ -771,60 +771,75 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                             ),
 
                             // button to navigate to next screen to select the post topic and also passing user  selected data to next screen
-                            Consumer<NoteProvider>(
-                                builder: (context, noteProvider, _) {
-                              return ElevatedButton.icon(
-                                style: ButtonStyle(
-                                    fixedSize: const WidgetStatePropertyAll(
-                                        Size(110, 10)),
-                                    backgroundColor:
-                                        WidgetStatePropertyAll(whiteColor)),
-                                onPressed: () {
-                                  if ((noteProvider.voiceNote != null ||
-                                      noteProvider.audioFiles.isNotEmpty)) {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
+                            Consumer<UserProvider>(
+                                builder: (context, userPro, _) {
+                              return Consumer<NoteProvider>(
+                                  builder: (context, noteProvider, _) {
+                                return ElevatedButton.icon(
+                                  style: ButtonStyle(
+                                      fixedSize: const WidgetStatePropertyAll(
+                                          Size(110, 10)),
+                                      backgroundColor:
+                                          WidgetStatePropertyAll(whiteColor)),
+                                  onPressed: () {
+                                    if ((noteProvider.voiceNote != null ||
+                                        noteProvider.audioFiles.isNotEmpty)) {
+                                      if (noteProvider.isGalleryVideo &&
+                                          userPro.imageFile == null) {
+                                        showWhiteOverlayPopup(context, null,
+                                            'assets/icons/Info (1).svg', null,
+                                            title: 'Error',
+                                            message:
+                                                'Please add a cover photo.',
+                                            isUsernameRes: false);
+                                      } else {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
 
-                                              //  carries data to the next screen
-                                              SelectTopicScreen(
-                                            backImage: '',
-                                            type: '',
-                                            path: noteProvider
-                                                    .audioFiles.isEmpty
-                                                ? noteProvider.voiceNote!.path
-                                                : noteProvider
-                                                    .audioFiles.first.path,
-                                            title: titleController.text.isEmpty
-                                                ? ''
-                                                : titleController.text,
-                                            taggedPeople: const [],
-                                          ),
-                                        ));
-                                  } else {
-                                    showWhiteOverlayPopup(context, null,
-                                        'assets/icons/Info (1).svg', null,
-                                        title: 'Error',
-                                        message:
-                                            'Please record a voice note first.',
-                                        isUsernameRes: false);
-                                  }
-                                },
-                                label: Text(
-                                  'Next',
-                                  style: TextStyle(
-                                      color: blackColor,
-                                      fontWeight: FontWeight.w600,
-                                      fontFamily: fontFamily,
-                                      fontSize: 10),
-                                ),
-                                icon: Icon(
-                                  Icons.arrow_forward_ios,
-                                  color: blackColor,
-                                  size: 17,
-                                ),
-                              );
+                                                  //  carries data to the next screen
+                                                  SelectTopicScreen(
+                                                backImage: '',
+                                                type: '',
+                                                path: noteProvider
+                                                        .audioFiles.isEmpty
+                                                    ? noteProvider
+                                                        .voiceNote!.path
+                                                    : noteProvider
+                                                        .audioFiles.first.path,
+                                                title:
+                                                    titleController.text.isEmpty
+                                                        ? ''
+                                                        : titleController.text,
+                                                taggedPeople: const [],
+                                              ),
+                                            ));
+                                      }
+                                    } else {
+                                      showWhiteOverlayPopup(context, null,
+                                          'assets/icons/Info (1).svg', null,
+                                          title: 'Error',
+                                          message:
+                                              'Please record a voice note first.',
+                                          isUsernameRes: false);
+                                    }
+                                  },
+                                  label: Text(
+                                    'Next',
+                                    style: TextStyle(
+                                        color: blackColor,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: fontFamily,
+                                        fontSize: 10),
+                                  ),
+                                  icon: Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: blackColor,
+                                    size: 17,
+                                  ),
+                                );
+                              });
                             }),
                           ],
                         ),
