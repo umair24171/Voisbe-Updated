@@ -130,16 +130,16 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
   getData() async {}
 
   Future<void> _handlePopGesture() async {
-    setState(() {
-      _isBlurred = false;
-    });
+    // setState(() {
+    //   _isBlurred = false;
+    // });
 
     if (widget.previousId != null) {
       Provider.of<UserProfileProvider>(context, listen: false)
           .otherUserProfile(widget.previousId!);
-      setState(() {
-        _isBlurred = true;
-      });
+      // setState(() {
+      //   _isBlurred = true;
+      // });
     }
 
     // Uncomment if you need to stop and dispose audio
@@ -174,10 +174,10 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
     var currentUSer = Provider.of<UserProvider>(context, listen: false).user;
 
     // userProvider.otherUser;
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) async {
         await _handlePopGesture();
-        return false;
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -278,11 +278,14 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
 
             //  blur filter above that
 
-            if (_isBlurred)
-              BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                child: Container(
-                  color: Colors.white.withOpacity(0.1), // Transparent color
+            // if (_isBlurred)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(0),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: Container(
+                    color: Colors.white.withOpacity(0.1), // Transparent color
+                  ),
                 ),
               ),
             Positioned.fill(

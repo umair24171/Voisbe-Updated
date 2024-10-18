@@ -263,19 +263,11 @@ class _ChatScreenState extends State<ChatScreen> {
         ? widget.rectoken!
         : widget.receiverUser!.token;
 
-    return WillPopScope(
-      onWillPop: () async {
-        setState(() {
-          _isBlurred = false;
-        });
-
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didpop,result) async {
         // Stop and dispose of audio before navigating
         await _stopAndDisposeAudio();
-
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-        return false;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -401,12 +393,14 @@ class _ChatScreenState extends State<ChatScreen> {
                     }),
 
                 //  above that there is a blur filter
-
-                if (_isBlurred)
-                  BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                    child: Container(
-                      color: Colors.white.withOpacity(0.1), // Transparent color
+                // if (_isBlurred)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(0),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                      child: Container(
+                        color: Colors.white.withOpacity(0.1), // Transparent color
+                      ),
                     ),
                   ),
                 SizedBox(
