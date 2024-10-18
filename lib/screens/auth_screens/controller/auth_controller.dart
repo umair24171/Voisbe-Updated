@@ -437,12 +437,86 @@ class AuthController {
     try {
       // creating the instance of googlesignin which is coming from googlesignin package
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if(googleUser == null) return;
       final GoogleSignInAuthentication? googleAuth =
           await googleUser?.authentication;
       final credentials = GoogleAuthProvider.credential(
           idToken: googleAuth?.idToken, accessToken: googleAuth?.accessToken);
       final UserCredential userCredential =
           await auth.signInWithCredential(credentials);
+      User? user = userCredential.user;
+
+      if (user != null) {
+        if (userCredential.additionalUserInfo!.isNewUser) {
+          //  getting user token and saving in database to send the push notifications
+          NotificationMethods notificationMethods = NotificationMethods();
+          String token = await notificationMethods.getFirebaseMessagingToken();
+
+          UserModel userModel = UserModel(
+              isOtpVerified: true,
+              notificationsEnable: [],
+              isTwoFa: false,
+              // deactivate: false,
+              isFollows: true,
+              isLike: true,
+              isReply: true,
+              followTo: [],
+              followReq: [],
+              dateOfBirth: DateTime.now(),
+              isVerified: false,
+              blockedByUsers: [],
+              closeFriends: [],
+              isPrivate: false,
+              blockedUsers: [],
+              token: token,
+              name: '',
+              uid: userCredential.user!.uid,
+              subscribedSoundPacks: [],
+              username: userCredential.user!.displayName!,
+              password: '',
+              email: userCredential.user!.email!,
+              photoUrl: userCredential.user!.photoURL!,
+              following: [],
+              pushToken: '',
+              followers: [],
+              subscribedUsers: [],
+              bio: '',
+              mutedAccouts: [],
+              contact: '',
+              isSubscriptionEnable: false,
+              link: '',
+              price: 0.00,
+              soundPacks: []);
+
+          //  saving the required data of user throgh user model in the firestore database
+          await firestore
+              .collection('users')
+              .doc(user.uid)
+              .set(userModel.toMap());
+
+          // after saving the data.. pushing the user to the profile screen if it is is first time the user is using the email for google
+
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => ProfileScreen()));
+        } else {
+          //if not the first time user using the email for google then just directly push the user to bottombar screen which is home
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const BottomBar()));
+        }
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
+  signInWithApple(BuildContext context) async {
+    final auth = FirebaseAuth.instance;
+    final firestore = FirebaseFirestore.instance;
+    try {
+      final appleAuthProvider = AppleAuthProvider();
+      final UserCredential userCredential =
+          await auth.signInWithProvider(appleAuthProvider);
+      // creating the instance of googlesignin which is coming from googlesignin package
       User? user = userCredential.user;
 
       if (user != null) {

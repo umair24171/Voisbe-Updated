@@ -340,7 +340,9 @@ class AuthScreen extends StatelessWidget {
                             backgroundColor: WidgetStatePropertyAll(
                               whiteColor,
                             )),
-                        onPressed: () {},
+                        onPressed: () async {
+                          await AuthController().signInWithApple(context);
+                        },
                         label: Text(
                           'Continue with Apple',
                           style: TextStyle(
