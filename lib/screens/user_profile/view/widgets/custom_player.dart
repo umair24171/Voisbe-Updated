@@ -628,7 +628,7 @@ class _CustomProgressPlayerState extends State<CustomProgressPlayer> {
                                 },
                                 onHorizontalDragEnd: (details) {
                                   if (!widget.lockPosts.contains(0)) {
-                                    final position = details.localPosition.dx /
+                                    final position = details.primaryVelocity! /
                                         widget.width *
                                         duration.inMilliseconds;
                                     final seekPosition = Duration(

@@ -1051,13 +1051,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                     style:
                                                                         ButtonStyle(
                                                                       backgroundColor:
-                                                                          const WidgetStatePropertyAll(
+                                                                          const MaterialStatePropertyAll(
                                                                               Colors.transparent),
                                                                       elevation:
-                                                                          const WidgetStatePropertyAll(
+                                                                          const MaterialStatePropertyAll(
                                                                               0),
                                                                       shape:
-                                                                          WidgetStatePropertyAll(
+                                                                          MaterialStatePropertyAll(
                                                                         RoundedRectangleBorder(
                                                                           borderRadius:
                                                                               BorderRadius.circular(18),
@@ -1091,10 +1091,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                 ElevatedButton(
                                                                     style: ButtonStyle(
                                                                         backgroundColor:
-                                                                            WidgetStatePropertyAll(
+                                                                            MaterialStatePropertyAll(
                                                                                 blackColor),
                                                                         elevation:
-                                                                            const WidgetStatePropertyAll(
+                                                                            const MaterialStatePropertyAll(
                                                                                 0)),
                                                                     onPressed:
                                                                         () async {
@@ -1607,10 +1607,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               child: ElevatedButton.icon(
                                                   style: ButtonStyle(
                                                       fixedSize:
-                                                          const WidgetStatePropertyAll(
+                                                          const MaterialStatePropertyAll(
                                                               Size(145, 40)),
                                                       backgroundColor:
-                                                          WidgetStatePropertyAll(
+                                                          MaterialStatePropertyAll(
                                                               whiteColor)),
                                                   onPressed: () async {
                                                     //  function to update the the user data after getting all the data based on different checks
@@ -1618,8 +1618,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     if (_formKey.currentState!
                                                         .validate()) {
                                                       if (userProvider
-                                                          .user!.isVerified) {
-                                                        if (userNameError ==
+                                                          .user!.isVerified)
+                                                      {
+                                                        if (name!=""&& userNameError ==
                                                                 null &&
                                                             linkError == null &&
                                                             passError == null &&
@@ -1750,10 +1751,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                 .removeImage();
                                                           });
                                                         }
-                                                      } else {
+                                                      }
+                                                      else {
                                                         //  else would run when user is not verified
 
-                                                        if (userNameError ==
+                                                        if (name!=""&& userNameError ==
                                                                 null &&
                                                             linkError == null &&
                                                             passError == null &&

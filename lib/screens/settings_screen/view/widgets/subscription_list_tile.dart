@@ -122,7 +122,7 @@ class SubsccriptionListTile extends StatelessWidget {
         //     minimumSize: const MaterialStatePropertyAll(Size(33, 33)),
         //     alignment: Alignment.center,
         //     elevation: const MaterialStatePropertyAll(0),
-        //     backgroundColor: MaterialStateProperty.all(whiteColor),
+        //     backgroundColor: MaterialStatePropertyAll.all(whiteColor),
         //     side: const MaterialStatePropertyAll(
         //       BorderSide(color: Color(0xff868686), width: 1),
         //     ),

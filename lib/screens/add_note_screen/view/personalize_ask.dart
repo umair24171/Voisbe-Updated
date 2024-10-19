@@ -55,13 +55,13 @@ class PersonalizeAsk extends StatelessWidget {
                       ),
                       child: ElevatedButton(
                           style: ButtonStyle(
-                              minimumSize: WidgetStatePropertyAll(Size(30, 40)),
-                              fixedSize: WidgetStatePropertyAll(Size(110, 40)),
+                              minimumSize: MaterialStatePropertyAll(Size(30, 40)),
+                              fixedSize: MaterialStatePropertyAll(Size(110, 40)),
                               backgroundColor:
-                                  WidgetStatePropertyAll(whiteColor),
-                              padding: const WidgetStatePropertyAll(
+                                  MaterialStatePropertyAll(whiteColor),
+                              padding: const MaterialStatePropertyAll(
                                   EdgeInsets.all(0)),
-                              elevation: const WidgetStatePropertyAll(0)),
+                              elevation: const MaterialStatePropertyAll(0)),
                           onPressed: () {
                             Navigator.push(
                                 context,
@@ -80,12 +80,12 @@ class PersonalizeAsk extends StatelessWidget {
                     ),
                     ElevatedButton(
                         style: ButtonStyle(
-                            // minimumSize: WidgetStatePropertyAll(Size(20, 40)),
-                            fixedSize: WidgetStatePropertyAll(Size(120, 40)),
+                            // minimumSize: MaterialStatePropertyAll(Size(20, 40)),
+                            fixedSize: MaterialStatePropertyAll(Size(120, 40)),
                             padding:
-                                const WidgetStatePropertyAll(EdgeInsets.all(0)),
-                            backgroundColor: WidgetStatePropertyAll(blackColor),
-                            elevation: const WidgetStatePropertyAll(0),
+                                const MaterialStatePropertyAll(EdgeInsets.all(0)),
+                            backgroundColor: MaterialStatePropertyAll(blackColor),
+                            elevation: const MaterialStatePropertyAll(0),
                             alignment: Alignment.center),
                         onPressed: () {
                           Navigator.of(context).push(MaterialPageRoute(

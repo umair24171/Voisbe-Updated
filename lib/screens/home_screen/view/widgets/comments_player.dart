@@ -463,7 +463,8 @@ class _CommentsPlayerState extends State<CommentsPlayer> {
                           widget.player.seek(seekPosition);
                         },
                         onHorizontalDragEnd: (details) {
-                          final position = details.localPosition.dx /
+                          // localPosition.dx
+                          final position = details.primaryVelocity! /
                               widget.width *
                               duration.inMilliseconds;
                           final seekPosition =

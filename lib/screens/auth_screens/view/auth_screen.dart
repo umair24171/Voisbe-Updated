@@ -232,9 +232,9 @@ class AuthScreen extends StatelessWidget {
                     return ElevatedButton(
                         style: ButtonStyle(
                             fixedSize:
-                                const WidgetStatePropertyAll(Size(175, 45)),
+                                const MaterialStatePropertyAll(Size(175, 45)),
                             backgroundColor:
-                                WidgetStatePropertyAll(blackColor)),
+                                MaterialStatePropertyAll(blackColor)),
                         onPressed: () {
                           // if following conditions would met the user would be login or register and then the related functions would run
 
@@ -336,8 +336,8 @@ class AuthScreen extends StatelessWidget {
                       ElevatedButton.icon(
                         style: ButtonStyle(
                             fixedSize:
-                                const WidgetStatePropertyAll(Size(170, 20)),
-                            backgroundColor: WidgetStatePropertyAll(
+                                const MaterialStatePropertyAll(Size(170, 20)),
+                            backgroundColor: MaterialStatePropertyAll(
                               whiteColor,
                             )),
                         onPressed: () async {

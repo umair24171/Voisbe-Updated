@@ -192,8 +192,8 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                         //  back button to to move to back screen
                         ElevatedButton.icon(
                           style: ButtonStyle(
-                            backgroundColor: WidgetStatePropertyAll(blackColor),
-                            fixedSize: const WidgetStatePropertyAll(
+                            backgroundColor: MaterialStatePropertyAll(blackColor),
+                            fixedSize: const MaterialStatePropertyAll(
                               Size(100, 10),
                             ),
                           ),
@@ -226,11 +226,11 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                                 builder: (context, notePro, _) {
                               return ElevatedButton.icon(
                                 style: ButtonStyle(
-                                    fixedSize: const WidgetStatePropertyAll(
+                                    fixedSize: const MaterialStatePropertyAll(
                                       Size(100, 10),
                                     ),
                                     backgroundColor:
-                                        WidgetStatePropertyAll(whiteColor)),
+                                        MaterialStatePropertyAll(whiteColor)),
                                 onPressed: () {
                                   if (_selectedOption.isNotEmpty) {
                                     Navigator.of(context)

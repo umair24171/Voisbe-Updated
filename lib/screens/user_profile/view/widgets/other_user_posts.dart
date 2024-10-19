@@ -224,9 +224,7 @@ class _OtherUserPostsState extends State<OtherUserPosts> {
     var size = MediaQuery.of(context).size;
 
     return PopScope(
-      onPopInvokedWithResult: (val, va) {
-        stopPlayer();
-      },
+      onPopInvoked:(didPop) => stopPlayer(),
       child: Container(
         color: userPosts.isEmpty
             ? null

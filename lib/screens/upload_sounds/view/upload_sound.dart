@@ -101,7 +101,7 @@
 //                               ElevatedButton(
 //                                 style: ButtonStyle(
 //                                     backgroundColor:
-//                                         MaterialStateProperty.all<Color>(
+//                                         MaterialStatePropertyAll.all<Color>(
 //                                             blackColor)),
 //                                 onPressed: () {
 //                                   // Provider.of<UpdateProfileProvider>(context,
@@ -129,7 +129,7 @@
 //                               ElevatedButton(
 //                                 style: ButtonStyle(
 //                                     backgroundColor:
-//                                         MaterialStateProperty.all<Color>(
+//                                         MaterialStatePropertyAll.all<Color>(
 //                                             blackColor)),
 //                                 onPressed: () {
 //                                   // Navigator.of(context).push(

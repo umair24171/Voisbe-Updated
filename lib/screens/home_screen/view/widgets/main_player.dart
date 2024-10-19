@@ -1453,7 +1453,7 @@ class _MainPlayerState extends State<MainPlayer> {
                               widget.audioPlayer.seek(seekPosition);
                             },
                             onHorizontalDragEnd: (details) {
-                              final position = details.localPosition.dx /
+                              final position = details.primaryVelocity! /
                                   widget.width *
                                   widget.duration.inMilliseconds;
                               final seekPosition =
@@ -1555,7 +1555,7 @@ class _MainPlayerState extends State<MainPlayer> {
                               widget.audioPlayer.seek(seekPosition);
                             },
                             onHorizontalDragEnd: (details) {
-                              final position = details.localPosition.dx /
+                              final position = details.primaryVelocity! /
                                   widget.width *
                                   widget.duration.inMilliseconds;
                               final seekPosition =

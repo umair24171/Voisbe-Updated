@@ -1071,33 +1071,37 @@ class _HomeScreenState extends State<HomeScreen>
 
                                                   KeyedSubtree(
                                                     key: key,
-                                                    child: SingleNotePost(
-                                                      isSecondHome:
-                                                          widget.note != null,
-                                                      duration:
-                                                          provider.duration,
-                                                      stopMainPlayer:
-                                                          stopMainPlayer,
-                                                      playPause: () {
-                                                        provider.playPause(
-                                                          note.noteUrl,
-                                                          index,
+                                                    child: Consumer<DisplayNotesProvider>(
+                                                      builder: (context,notPro,_) {
+                                                        return SingleNotePost(
+                                                          isSecondHome:
+                                                              widget.note != null,
+                                                          duration:
+                                                              provider.duration,
+                                                          stopMainPlayer:
+                                                              stopMainPlayer,
+                                                          playPause: () {
+                                                            provider.playPause(
+                                                              note.noteUrl,
+                                                              index,
+                                                            );
+                                                          },
+                                                          audioPlayer:
+                                                              provider.audioPlayer,
+                                                          position:
+                                                              provider.position,
+                                                          changeIndex:
+                                                              provider.changeIndex,
+                                                          isPlaying:
+                                                          notPro.isPlaying,
+                                                          postIndex: index,
+                                                          pageController:
+                                                              _pageController,
+                                                          currentIndex: index,
+                                                          size: size,
+                                                          note: note,
                                                         );
-                                                      },
-                                                      audioPlayer:
-                                                          provider.audioPlayer,
-                                                      position:
-                                                          provider.position,
-                                                      changeIndex:
-                                                          provider.changeIndex,
-                                                      isPlaying:
-                                                          provider.isPlaying,
-                                                      postIndex: index,
-                                                      pageController:
-                                                          _pageController,
-                                                      currentIndex: index,
-                                                      size: size,
-                                                      note: note,
+                                                      }
                                                     ),
                                                   ),
                                                 ],

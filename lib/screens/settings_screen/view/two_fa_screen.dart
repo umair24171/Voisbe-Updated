@@ -68,7 +68,7 @@ class _TwoFaScreenState extends State<TwoFaScreen> {
                       UserModel user =
                           UserModel.fromMap(snapshot.data!.data()!);
                       return Switch(
-                        thumbColor: WidgetStatePropertyAll(whiteColor),
+                        thumbColor: MaterialStatePropertyAll(whiteColor),
                         value: user.isTwoFa,
                         onChanged: (value) async {
                           await FirebaseFirestore.instance

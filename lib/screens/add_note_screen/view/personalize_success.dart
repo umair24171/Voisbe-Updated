@@ -45,10 +45,10 @@ class PersonalizeSuccess extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    padding: const WidgetStatePropertyAll(
+                    padding: const MaterialStatePropertyAll(
                         EdgeInsets.symmetric(vertical: 4, horizontal: 18)),
-                    backgroundColor: WidgetStatePropertyAll(blackColor),
-                    elevation: const WidgetStatePropertyAll(0),
+                    backgroundColor: MaterialStatePropertyAll(blackColor),
+                    elevation: const MaterialStatePropertyAll(0),
                   ),
                   onPressed: () {
                     Navigator.pushReplacementNamed(

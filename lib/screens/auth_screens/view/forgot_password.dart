@@ -77,7 +77,7 @@ class ForgotPasswordScreen extends StatelessWidget {
           //  button to send the link to the user added email  to reset the password
           ElevatedButton(
               style: ButtonStyle(
-                  backgroundColor: WidgetStatePropertyAll(blackColor)),
+                  backgroundColor: MaterialStatePropertyAll(blackColor)),
               onPressed: () async {
                 FirebaseAuth auth = FirebaseAuth.instance;
 
