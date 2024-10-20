@@ -726,7 +726,6 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                             noteProvider.setEmptySelectedVideo();
                             noteProvider.setIsGalleryVideo(false);
                             noteProvider.setClearTags();
-
                             Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(
