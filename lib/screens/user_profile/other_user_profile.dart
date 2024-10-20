@@ -145,9 +145,9 @@ class _OtherUserProfileState extends State<OtherUserProfile> {
     // Uncomment if you need to stop and dispose audio
     // await _stopAndDisposeAudio();
 
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
+    // if (mounted) {
+    //   Navigator.of(context).pop();
+    // }
   }
 
   //  getting the format in k and millions
