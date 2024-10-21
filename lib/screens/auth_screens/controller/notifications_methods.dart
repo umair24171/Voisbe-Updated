@@ -77,8 +77,7 @@ class NotificationMethods {
 
       const String fcmEndpoint =
           'https://fcm.googleapis.com/v1/projects/voisbe/messages:send';
-      const String serverKey =
-          'AAAA85SWX3k:APA91bE_OIa581mRQF-gHU5nj0jSnDXIKk-CM4nCRMeDHCGa0gJVZ0V2DBCGv5eDJIQ94XK6A8id3WzUbEMvF3eo8BzklIbz6IQgGDBO2_0v9_DyKW7QQ-67KD1aViOGAhYVVGiBdkwP'; // Get this from Firebase Console
+      // Get this from Firebase Console
 
       final body = {
         "message": {
