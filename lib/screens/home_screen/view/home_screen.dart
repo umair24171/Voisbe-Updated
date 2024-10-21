@@ -1147,7 +1147,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildBackgroundContent(NoteModel note, BuildContext context) {
-    if (note.backgroundType.contains('video')) {
+    if (note.backgroundType.contains('video')) { 
       return VisibilityDetector(
         key: Key(note.noteId),
         onVisibilityChanged: (VisibilityInfo info) {

@@ -41,21 +41,7 @@ class NotificationMethods {
     }
   }
 
-  static Map firebaseJson = {
-    "type": "service_account",
-    "project_id": "voisbe",
-    "private_key_id": "d97133ec43473c5ca9f3a29388cc71fedddad288",
-    "private_key":
-        "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC+ZxM3eaaZ1AYf\n2JqewevVjGZMefaso7ObTyqaj306ceGcd0ZZhi4/wMw1EMZDlw18dxm6cVNRghcJ\nLIlnAhbDHVNOOneH5a2wG43JAUcPMOigN28687wu+pyzeHc+VXckjDyWDqjR0G3n\nIWiasqQqOdiprNTAZ9xCzF/T4VuL5YHRemf/zubcQDqbSITg9Dx42Ia49G1FOSQk\nFin8f8E69v76J5dcCMC0tBhJ3MnFzazhiGO+v+URa2IvDB7nhx+99pXWHU7dfcxM\ni0XTNvspvi18rcUD9sQpT3bARr5Fjaqr67lJhinyN6ekBORRYZP38khwoGV9JTcM\n2ix4mU2PAgMBAAECggEAB+0x70ZLju3fuhBXZ4flMdpgITZBSbCgTTU/gyMOxecb\nIFtq0gFJsvJreJi+gu5/65A9waBEJV7dZ06zravNl3PaFaX4zJndiuOqxGp0MzKz\nDIXM8KRYT5Berliz23l4C00h8eahqpJwcNsth/srOxggvUzqUn7rEYYr8HMvpM7n\nv33mutRNw/7WFuV/KbSXbgfWt2wkSlf+1b7q9BsWWKqQfrtYKCBH+Ff82f+n5P0w\nAFn65Vgp6VZ+4g/jaOsoLqbSy2g+dgUHEFx94ojL99LzI7KPaB7G2U8MUlraoON3\nPHW4V8lt7XIotSIrum/SgDG1B+LV3rMXR7kzX/eSMQKBgQDN1M6pFOXPw4Qj6Y+j\nuYeLgWTJm71hz+7C5IN+izsAgaLh/07NMZj8TstNw7I9JFSZ8ojSdJoT6lP5p2WF\nY7HGCxJmamtrNZYUWnkWXjryVMGJ+R/ifEA4qOQhFequcUh5SVWJkkvUqJbMLrXw\nOBeycxGlf+zbMz0QaBHejlSvWQKBgQDsz5JMCD6zi8bPAHQIqzdqEQLifx/dR4mC\nxR3RGPBzblXZfPkb6QbzKSSC5tOEKCSQrZGzUc4P0MLAtY4g1hG8fRhIG49vSB8K\nCrI8jzlqM2NC1t9R17ulXAXYVUU7O/GcG7e7ybPWuO8g5Xpo7ELRePkK4TNcGvbS\nVsu0TKNvJwKBgQCdxcB/VHhvkCOqz23+BsmCQrW53/oDjroqg7TTe+/HDJeI+gUy\nPhFRXShzPE1UlpOOyZzdDOnJ2DV0ST8FRwzOjFAXVv1t2U5n3Y2xepteg18y3lX1\nal5jz/nF7qHMAyOVbIP3hr8/i9bDPg7Ryn1HmPJu1Kb+wsDM4ajI2nrJSQKBgQDW\nMOUlSivUYDABGWraUGr9z8cpMEyU69iP5FSUxRbvgTO7VNNIkFwN4f+5OqjEFz8D\ncUqgw/Q6z9rnTQ/x2U4Pi6JDzlHNGJGilowiRHVs/m/gi9NQBm4eIf7TbkUBT7W4\nOkXUX5r/MyRvP8CZWGETcHTph0naHDV1iLYVLWCB7wKBgGTV06I7xVhYwonU/F9n\nrtIoEydtFy0bN1s2Kaj/vxZtY5mipmsuqgnRIpd9+8gTWqjPwXZXlmEr676OGfkr\nlZ4ra6MWekLjkLWp/0jzLLEjlgKROV5G+ChGwmfCTDzENyw4Tqoo842gc/TrTvEM\nEdAGS+nF9HHhj2IwSkvFXh33\n-----END PRIVATE KEY-----\n",
-    "client_email": "firebase-adminsdk-rd1kl@voisbe.iam.gserviceaccount.com",
-    "client_id": "101314687151559877402",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url":
-        "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-rd1kl%40voisbe.iam.gserviceaccount.com",
-    "universe_domain": "googleapis.com"
-  };
+  static Map firebaseJson = {};
 
   static Future<String> setToken(BuildContext context) async {
     String scope = 'https://www.googleapis.com/auth/firebase.messaging';

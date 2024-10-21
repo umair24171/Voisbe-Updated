@@ -644,54 +644,13 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                                   context)
                               : soundPro.voiceUrl!;
 
-                          List<double> waveformData =
-                              await controller.extractWaveformData(
-                            path: widget.filePath != null
-                                ? widget.filePath!
-                                : noteProvider.audioFiles.isEmpty
-                                    ? noteProvider.voiceNote!.path
-                                    : noteProvider.audioFiles.first.path,
-                            noOfSamples: 200,
-                          );
-
                           // uploading thumbail if the certain conditions met
-
-                          String? videoThumbnail;
-                          if (widget.backgroundType.contains('video') &&
-                                  widget.isGalleryThumbnail != null
-                              ? widget.isGalleryThumbnail!
-                              : noteProvider.isGalleryVideo) {
-                            videoThumbnail = await AddNoteController()
-                                .uploadFile(
-                                    'galleryThumbnails',
-                                    widget.thumbnailPath != null
-                                        ? File(widget.thumbnailPath!)
-                                        : loadingPro.imageFile!,
-                                    context);
-                          } else if (widget.backgroundType.contains('video') &&
-                              widget.backGroundImage.isNotEmpty) {
-                            final uint8list =
-                                await VideoThumbnail.thumbnailData(
-                              video: widget.backGroundImage,
-                              imageFormat: ImageFormat.JPEG,
-                              maxHeight:
-                                  (MediaQuery.of(context).size.height * 1.5)
-                                      .toInt(), // Further reduced dimensions
-                              maxWidth:
-                                  (MediaQuery.of(context).size.width * 1.5)
-                                      .toInt(), // Further reduced dimensions
-                              quality:
-                                  100, // Reduced quality for faster generation
-                            );
-                            videoThumbnail = await AddNoteController()
-                                .uploadUint('Thumbnails', uint8list!, context);
-                          }
 
                           //  creating the post model with the requird data to craete the post
 
                           NoteModel note = NoteModel(
-                              waveforms: waveformData,
-                              videoThumbnail: videoThumbnail ?? '',
+                              waveforms: [],
+                              videoThumbnail: '',
                               mostListenedWaves: [],
                               backgroundType: widget.backgroundType,
                               backgroundImage: widget.backGroundImage,
@@ -717,6 +676,58 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                           AddNoteController()
                               .addNote(note, noteId, context)
                               .then((value) async {
+                            List<double> waveformData =
+                                await controller.extractWaveformData(
+                              path: widget.filePath != null
+                                  ? widget.filePath!
+                                  : noteProvider.audioFiles.isEmpty
+                                      ? noteProvider.voiceNote!.path
+                                      : noteProvider.audioFiles.first.path,
+                              noOfSamples: 200,
+                            );
+
+                            String? videoThumbnail;
+                            if (widget.backgroundType.contains('video') &&
+                                    widget.isGalleryThumbnail != null
+                                ? widget.isGalleryThumbnail!
+                                : noteProvider.isGalleryVideo) {
+                              videoThumbnail = await AddNoteController()
+                                  .uploadFile(
+                                      'galleryThumbnails',
+                                      widget.thumbnailPath != null
+                                          ? File(widget.thumbnailPath!)
+                                          : loadingPro.imageFile!,
+                                      context);
+                            } else if (widget.backgroundType
+                                    .contains('video') &&
+                                widget.backGroundImage.isNotEmpty) {
+                              final uint8list =
+                                  await VideoThumbnail.thumbnailData(
+                                video: widget.backGroundImage,
+                                imageFormat: ImageFormat.JPEG,
+                                maxHeight:
+                                    (MediaQuery.of(context).size.height * 1.5)
+                                        .toInt(), // Further reduced dimensions
+                                maxWidth:
+                                    (MediaQuery.of(context).size.width * 1.5)
+                                        .toInt(), // Further reduced dimensions
+                                quality:
+                                    100, // Reduced quality for faster generation
+                              );
+                              videoThumbnail = await AddNoteController()
+                                  .uploadUint(
+                                      'Thumbnails', uint8list!, context);
+                            }
+
+                            await FirebaseFirestore.instance
+                                .collection('notes')
+                                .doc(noteId)
+                                .update({
+                              'waveforms': waveformData,
+                              'videoThumbnail': videoThumbnail ?? ''
+                            });
+                            log("waves updated  with background");
+
                             //clearing everything from providers
 
                             noteProvider.removeVoiceNote();

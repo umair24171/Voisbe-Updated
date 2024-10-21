@@ -130,7 +130,7 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _displayNotesProvider.disposePlayer();
+    // _displayNotesProvider.disposePlayer();
     super.dispose();
   }
 
