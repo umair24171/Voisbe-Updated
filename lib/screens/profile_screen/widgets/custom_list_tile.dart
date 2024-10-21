@@ -20,6 +20,7 @@ class CustomListTile extends StatefulWidget {
     // required this.validate,
     this.textCapitalization = TextCapitalization.none,
     this.userNameError,
+    this.nameError,
     this.linkError,
     this.contactError,
     this.passError,
@@ -49,6 +50,7 @@ class CustomListTile extends StatefulWidget {
   TextCapitalization textCapitalization;
 
   String? userNameError;
+  String? nameError;
   String? linkError;
   String? contactError;
   String? priceError;
@@ -108,6 +110,7 @@ class _CustomListTileState extends State<CustomListTile> {
                       left: 8,
                       top: widget.contactError != null ||
                               widget.userNameError != null ||
+                              widget.nameError != null ||
                               widget.linkError != null ||
                               widget.priceError != null
                           ? 14
@@ -138,6 +141,15 @@ class _CustomListTileState extends State<CustomListTile> {
                             if (widget.userNameError != null)
                               Text(
                                 widget.userNameError!,
+                                style: TextStyle(
+                                    height: 0,
+                                    color: greenColor,
+                                    fontSize: 12,
+                                    fontFamily: fontFamily),
+                              ),
+                            if (widget.nameError != null)
+                              Text(
+                                widget.nameError!,
                                 style: TextStyle(
                                     height: 0,
                                     color: greenColor,

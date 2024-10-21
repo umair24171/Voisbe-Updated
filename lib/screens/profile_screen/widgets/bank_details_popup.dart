@@ -146,8 +146,8 @@ class _BankDetailsState extends State<BankDetails> {
 
                     ElevatedButton(
                       style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(blackColor),
-                        elevation: const WidgetStatePropertyAll(0),
+                        backgroundColor: MaterialStatePropertyAll(blackColor),
+                        elevation: const MaterialStatePropertyAll(0),
                       ),
                       onPressed: () {
                         if (nameController.text.isNotEmpty &&

@@ -166,12 +166,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   //  varibles to show error if the certain conditions met
 
   String? userNameError;
+  String? nameError;
   String? linkError;
   String? contactError;
   String? priceError;
   String? passError;
 
-  Widget _buildBackground(UserProvider userProvider, bool isBlur) {
+  Widget _buildBackground(UserProvider userProvider) {
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -200,10 +201,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
 
         // Blur filter
-        if (isBlur)
-          if (userProvider.userImage != null ||
-              userProvider.user!.photoUrl.isNotEmpty)
-            BackdropFilter(
+        // if (isBlur)
+        if (userProvider.userImage != null ||
+            userProvider.user!.photoUrl.isNotEmpty)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(0),
+            child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
               child: Container(
                 decoration: const BoxDecoration(
@@ -215,11 +218,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
+          ),
       ],
     );
   }
 
-  bool _isBlurred = true;
+  // bool _isBlurred = true;
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -234,1113 +238,534 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context,
     );
 
-    return WillPopScope(
-      onWillPop: () async {
-        setState(() {
-          _isBlurred = false;
-        });
-
-        // Stop and dispose of audio before navigating
-        // await _stopAndDisposeAudio();
-
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-        return false;
-      },
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          surfaceTintColor: whiteColor,
-          backgroundColor: whiteColor,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (widget.isMainPro)
-                InkWell(
-                  onTap: () {
-                    navPop(context);
-                  },
-                  child: const Icon(
-                    Icons.arrow_back_ios,
-                    size: 20,
-                  ),
-                ),
-              if (!widget.isMainPro) const SizedBox(),
-              Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Edit Profile',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontFamily: fontFamily,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16),
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        surfaceTintColor: whiteColor,
+        backgroundColor: whiteColor,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (widget.isMainPro)
+              InkWell(
+                onTap: () {
+                  navPop(context);
+                },
+                child: const Icon(
+                  Icons.arrow_back_ios,
+                  size: 20,
                 ),
               ),
-              const SizedBox()
-            ],
-          ),
-          centerTitle: true,
+            if (!widget.isMainPro) const SizedBox(),
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                'Edit Profile',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontFamily: fontFamily,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16),
+              ),
+            ),
+            const SizedBox()
+          ],
         ),
-        body:
+        centerTitle: true,
+      ),
+      body:
 
-            //  while the data is loading show the loader
+          //  while the data is loading show the loader
 
-            userProvider.user == null
-                ? SpinKitThreeBounce(
-                    color: whiteColor,
-                    size: 20,
-                  )
+          userProvider.user == null
+              ? SpinKitThreeBounce(
+                  color: whiteColor,
+                  size: 20,
+                )
 
-                //  body starts
+              //  body starts
 
-                : SizedBox(
-                    height: size.height,
-                    child: Stack(children: [
-                      _buildBackground(userProvider, _isBlurred),
-                      // if (userProvider.user!.photoUrl.isNotEmpty ||
-                      //     userProvider.userImage != null)
+              : SizedBox(
+                  height: size.height,
+                  child: Stack(children: [
+                    _buildBackground(userProvider),
+                    // if (userProvider.user!.photoUrl.isNotEmpty ||
+                    //     userProvider.userImage != null)
 
-                      //   //  background of the screen if the profile pic is selected or empty
-                      //   Positioned.fill(
-                      //     child: Container(
-                      //       height: size.height,
-                      //       decoration: BoxDecoration(
-                      //         image: userProvider.userImage == null
-                      //             ? DecorationImage(
-                      //                 fit: BoxFit.cover,
-                      //                 image: NetworkImage(
-                      //                   userProvider.user!.photoUrl.isNotEmpty
-                      //                       ? userProvider.user!.photoUrl
-                      //                       : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D',
-                      //                 ),
-                      //               )
-                      //             : DecorationImage(
-                      //                 image: FileImage(userProvider.userImage!),
-                      //                 fit: BoxFit.cover),
-                      //       ),
-                      //     ),
-                      //   ),
-                      // if (userProvider.user!.photoUrl.isEmpty &&
-                      //     userProvider.userImage == null)
+                    //   //  background of the screen if the profile pic is selected or empty
+                    //   Positioned.fill(
+                    //     child: Container(
+                    //       height: size.height,
+                    //       decoration: BoxDecoration(
+                    //         image: userProvider.userImage == null
+                    //             ? DecorationImage(
+                    //                 fit: BoxFit.cover,
+                    //                 image: NetworkImage(
+                    //                   userProvider.user!.photoUrl.isNotEmpty
+                    //                       ? userProvider.user!.photoUrl
+                    //                       : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D',
+                    //                 ),
+                    //               )
+                    //             : DecorationImage(
+                    //                 image: FileImage(userProvider.userImage!),
+                    //                 fit: BoxFit.cover),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // if (userProvider.user!.photoUrl.isEmpty &&
+                    //     userProvider.userImage == null)
 
-                      //   //  default background of the screen if the profile pic is empty
+                    //   //  default background of the screen if the profile pic is empty
 
-                      //   Container(
-                      //     height: MediaQuery.of(context).size.height,
-                      //     decoration: const BoxDecoration(
-                      //         gradient: LinearGradient(
-                      //             stops: [
-                      //               0.25,
-                      //               0.75,
-                      //             ],
-                      //             begin: Alignment.topCenter,
-                      //             end: Alignment.bottomCenter,
-                      //             colors: [
-                      //               Color(0xffee856d),
-                      //               Color(0xffed6a5a)
-                      //             ])),
-                      //   ),
+                    //   Container(
+                    //     height: MediaQuery.of(context).size.height,
+                    //     decoration: const BoxDecoration(
+                    //         gradient: LinearGradient(
+                    //             stops: [
+                    //               0.25,
+                    //               0.75,
+                    //             ],
+                    //             begin: Alignment.topCenter,
+                    //             end: Alignment.bottomCenter,
+                    //             colors: [
+                    //               Color(0xffee856d),
+                    //               Color(0xffed6a5a)
+                    //             ])),
+                    //   ),
 
-                      // // above the image show the blur filter
+                    // // above the image show the blur filter
 
-                      // Positioned.fill(
-                      //   child: BackdropFilter(
-                      //     filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                      //     child: Container(
-                      //       height: size.height,
-                      //       decoration: const BoxDecoration(
-                      //         gradient: LinearGradient(
-                      //           begin: Alignment.topCenter,
-                      //           end: Alignment.bottomCenter,
-                      //           colors: [Colors.transparent, Color(0xffED695A)],
-                      //         ),
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
+                    // Positioned.fill(
+                    //   child: BackdropFilter(
+                    //     filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                    //     child: Container(
+                    //       height: size.height,
+                    //       decoration: const BoxDecoration(
+                    //         gradient: LinearGradient(
+                    //           begin: Alignment.topCenter,
+                    //           end: Alignment.bottomCenter,
+                    //           colors: [Colors.transparent, Color(0xffED695A)],
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
 
-                      //  content of the body
+                    //  content of the body
 
-                      SafeArea(
-                          child: CustomScrollView(slivers: [
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom,
-                            ),
-                            child: Column(
-                              // mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (userProvider.user!.photoUrl.isNotEmpty ||
-                                    userProvider.userImage != null)
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 15),
-                                    child: Align(
-                                      alignment: Alignment.center,
-                                      child: Stack(
-                                        children: [
-                                          //  showing the image if user already added or changing it and managing through provider
+                    SafeArea(
+                        child: CustomScrollView(slivers: [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                          ),
+                          child: Column(
+                            // mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (userProvider.user!.photoUrl.isNotEmpty ||
+                                  userProvider.userImage != null)
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 15),
+                                  child: Align(
+                                    alignment: Alignment.center,
+                                    child: Stack(
+                                      children: [
+                                        //  showing the image if user already added or changing it and managing through provider
 
-                                          Container(
-                                            decoration: BoxDecoration(
-                                                border: Border.all(
-                                                    color: whiteColor,
-                                                    width: 1),
-                                                borderRadius:
-                                                    BorderRadius.circular(50)),
-                                            child: userProvider.userImage ==
-                                                    null
-                                                ? CircleAvatar(
-                                                    backgroundImage:
-                                                        NetworkImage(userProvider
-                                                                .user!
-                                                                .photoUrl
-                                                                .isNotEmpty
-                                                            ? userProvider
-                                                                .user!.photoUrl
-                                                            : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D'),
-                                                    radius: 50,
-                                                  )
-                                                : CircleAvatar(
-                                                    backgroundImage: FileImage(
-                                                        userProvider
-                                                            .userImage!),
-                                                    radius: 50,
-                                                  ),
-                                          ),
-
-                                          //  calling the pick image function to change the profile pic
-
-                                          Positioned(
-                                            left: 70,
-                                            bottom: 5,
-                                            child: Container(
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                                decoration: BoxDecoration(
-                                                  color: primaryColor,
-                                                  borderRadius:
-                                                      BorderRadius.circular(18),
-                                                ),
-                                                child: GestureDetector(
-                                                  onTap: () {
-                                                    userProvider
-                                                        .pickUserImage();
-                                                  },
-                                                  child: const Icon(
-                                                    Icons.edit_outlined,
-                                                    color: Colors.white,
-                                                    size: 15,
-                                                  ),
-                                                )),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                if (userProvider.user!.photoUrl.isEmpty &&
-                                    userProvider.userImage == null)
-                                  InkWell(
-                                    splashColor: Colors.transparent,
-                                    onTap: () {
-                                      //  calling the pick image function to change the profile pic
-
-                                      userProvider.pickUserImage();
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 15),
-                                      child: Container(
+                                        Container(
                                           decoration: BoxDecoration(
                                               border: Border.all(
                                                   color: whiteColor, width: 1),
                                               borderRadius:
                                                   BorderRadius.circular(50)),
-                                          child: CircleAvatar(
-                                            backgroundColor: primaryColor,
-                                            radius: 50,
-                                            child: SvgPicture.asset(
-                                              'assets/icons/Add profile picture.svg',
-                                              // color: primar,
-                                              height: 64,
-                                              width: 64,
-                                            ),
-                                          )),
+                                          child: userProvider.userImage == null
+                                              ? CircleAvatar(
+                                                  backgroundImage: NetworkImage(
+                                                      userProvider
+                                                              .user!
+                                                              .photoUrl
+                                                              .isNotEmpty
+                                                          ? userProvider
+                                                              .user!.photoUrl
+                                                          : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D'),
+                                                  radius: 50,
+                                                )
+                                              : CircleAvatar(
+                                                  backgroundImage: FileImage(
+                                                      userProvider.userImage!),
+                                                  radius: 50,
+                                                ),
+                                        ),
+
+                                        //  calling the pick image function to change the profile pic
+
+                                        Positioned(
+                                          left: 70,
+                                          bottom: 5,
+                                          child: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: primaryColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(18),
+                                              ),
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  userProvider.pickUserImage();
+                                                },
+                                                child: const Icon(
+                                                  Icons.edit_outlined,
+                                                  color: Colors.white,
+                                                  size: 15,
+                                                ),
+                                              )),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                Expanded(
-                                  child: Form(
-                                    key: _formKey,
-                                    child: Column(
-                                      children: [
-                                        //  custom list tile is the global widget or design of the field or you can say template
+                                ),
+                              if (userProvider.user!.photoUrl.isEmpty &&
+                                  userProvider.userImage == null)
+                                InkWell(
+                                  splashColor: Colors.transparent,
+                                  onTap: () {
+                                    //  calling the pick image function to change the profile pic
 
-                                        //  first the name of user field if its exist in the database show that or user will add
+                                    userProvider.pickUserImage();
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 15),
+                                    child: Container(
+                                        decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: whiteColor, width: 1),
+                                            borderRadius:
+                                                BorderRadius.circular(50)),
+                                        child: CircleAvatar(
+                                          backgroundColor: primaryColor,
+                                          radius: 50,
+                                          child: SvgPicture.asset(
+                                            'assets/icons/Add profile picture.svg',
+                                            // color: primar,
+                                            height: 64,
+                                            width: 64,
+                                          ),
+                                        )),
+                                  ),
+                                ),
+                              Expanded(
+                                child: Form(
+                                  key: _formKey,
+                                  child: Column(
+                                    children: [
+                                      //  custom list tile is the global widget or design of the field or you can say template
 
-                                        CustomListTile(
-                                          textCapitalization:
-                                              TextCapitalization.words,
+                                      //  first the name of user field if its exist in the database show that or user will add
+
+                                      CustomListTile(
+                                        nameError: nameError,
+                                        textCapitalization:
+                                            TextCapitalization.words,
+                                        username: name.isEmpty
+                                            ? userProvider.user!.username
+                                            : name,
+                                        name: 'Name',
+                                        subtitile: name.isEmpty
+                                            ? userProvider.user!.username
+                                            : name,
+                                        isLink: false,
+                                        inputText: '',
+                                        onChanged: (value) {
+                                          if (value.isNotEmpty) {
+                                            setState(() {
+                                              name = value;
+                                              nameError = null;
+                                            });
+                                          } else {
+                                            setState(() {
+                                              nameError =
+                                                  'Name should not be empty.';
+                                            });
+                                          }
+                                        },
+                                      ),
+
+                                      //  first the username of user field if its exist in the database show that or user will add
+
+                                      Consumer<UpdateProfileProvider>(
+                                          builder: (context, allUserPro, _) {
+                                        // _bioController.text=
+                                        return CustomListTile(
+                                          isUserName: true,
+                                          userNameError: userNameError,
                                           username: name.isEmpty
                                               ? userProvider.user!.username
                                               : name,
-                                          name: 'Name',
-                                          subtitile: name.isEmpty
-                                              ? userProvider.user!.username
-                                              : name,
+                                          name: 'Username',
+                                          isBio: false,
+                                          subtitile: username.isEmpty
+                                              ? userProvider.user!.name
+                                              : username,
                                           isLink: false,
                                           inputText: '',
                                           onChanged: (value) {
-                                            setState(() {
-                                              name = value;
-                                            });
-                                          },
-                                        ),
+                                            // conditions to display errors if certain conditions met in entering username
 
-                                        //  first the username of user field if its exist in the database show that or user will add
-
-                                        Consumer<UpdateProfileProvider>(
-                                            builder: (context, allUserPro, _) {
-                                          // _bioController.text=
-                                          return CustomListTile(
-                                            isUserName: true,
-                                            userNameError: userNameError,
-                                            username: name.isEmpty
-                                                ? userProvider.user!.username
-                                                : name,
-                                            name: 'Username',
-                                            isBio: false,
-                                            subtitile: username.isEmpty
-                                                ? userProvider.user!.name
-                                                : username,
-                                            isLink: false,
-                                            inputText: '',
-                                            onChanged: (value) {
-                                              // conditions to display errors if certain conditions met in entering username
-
-                                              if (reservedNames
-                                                  .contains(value)) {
-                                                if (value.isNotEmpty) {
-                                                  showWhiteOverlayPopup(
-                                                      context,
-                                                      null,
-                                                      'assets/icons/Info (1).svg',
-                                                      null,
-                                                      title:
-                                                          'Username reserved',
-                                                      isUsernameRes: true,
-                                                      message:
-                                                          'The requested username has been reserved. If you are the rightful owner of the verified username on a different platform, kindly contact us via the email below.');
-                                                  setState(() {
-                                                    userNameError =
-                                                        'Username reserved.';
-                                                  });
-                                                } else {
-                                                  setState(() {
-                                                    userNameError =
-                                                        'Username should not be empty.';
-                                                  });
-                                                }
-                                              } else if (allUserPro.userNames
-                                                  .contains(value)) {
-                                                if (value.isNotEmpty) {
-                                                  showWhiteOverlayPopup(
-                                                      context,
-                                                      null,
-                                                      'assets/icons/Info (1).svg',
-                                                      null,
-                                                      title: 'Username taken',
-                                                      isUsernameRes: false,
-                                                      message:
-                                                          'The chosen username is unavailable. Please select a different username.');
-                                                  setState(() {
-                                                    userNameError =
-                                                        'Username taken';
-                                                  });
-                                                } else {
-                                                  setState(() {
-                                                    userNameError =
-                                                        'Username should not be empty.';
-                                                  });
-                                                }
+                                            if (reservedNames.contains(value)) {
+                                              if (value.isNotEmpty) {
+                                                showWhiteOverlayPopup(
+                                                    context,
+                                                    null,
+                                                    'assets/icons/Info (1).svg',
+                                                    null,
+                                                    title: 'Username reserved',
+                                                    isUsernameRes: true,
+                                                    message:
+                                                        'The requested username has been reserved. If you are the rightful owner of the verified username on a different platform, kindly contact us via the email below.');
+                                                setState(() {
+                                                  userNameError =
+                                                      'Username reserved.';
+                                                });
                                               } else {
                                                 setState(() {
-                                                  userNameError = null;
-                                                  username = value;
+                                                  userNameError =
+                                                      'Username should not be empty.';
                                                 });
                                               }
-                                            },
-                                          );
-                                        }),
+                                            } else if (allUserPro.userNames
+                                                .contains(value)) {
+                                              if (value.isNotEmpty) {
+                                                showWhiteOverlayPopup(
+                                                    context,
+                                                    null,
+                                                    'assets/icons/Info (1).svg',
+                                                    null,
+                                                    title: 'Username taken',
+                                                    isUsernameRes: false,
+                                                    message:
+                                                        'The chosen username is unavailable. Please select a different username.');
+                                                setState(() {
+                                                  userNameError =
+                                                      'Username taken';
+                                                });
+                                              } else {
+                                                setState(() {
+                                                  userNameError =
+                                                      'Username should not be empty.';
+                                                });
+                                              }
+                                            } else {
+                                              setState(() {
+                                                userNameError = null;
+                                                username = value;
+                                              });
+                                            }
+                                          },
+                                        );
+                                      }),
 
-                                        // biod field with the mention user feature
+                                      // biod field with the mention user feature
 
-                                        Consumer<UpdateProfileProvider>(
-                                            builder: (context, profilePro, _) {
-                                          if (_bioController.text.isEmpty) {
-                                            _bioController.text =
-                                                userProvider.user!.bio;
-                                          }
+                                      Consumer<UpdateProfileProvider>(
+                                          builder: (context, profilePro, _) {
+                                        if (_bioController.text.isEmpty) {
+                                          _bioController.text =
+                                              userProvider.user!.bio;
+                                        }
 
-                                          return Column(
-                                            children: [
-                                              CustomListTile(
-                                                // validate: _validate,
-                                                bioController: _bioController,
-                                                username: name.isEmpty
-                                                    ? userProvider
-                                                        .user!.username
-                                                    : name,
-                                                isLink: false,
-                                                name: 'Biography',
-                                                isBio: true,
-                                                subtitile: _bioController
-                                                        .text.isNotEmpty
-                                                    ? _bioController.text
-                                                    : userProvider.user!.bio,
-                                                inputText: '',
-                                                onChanged: (value) {
-                                                  String text = value;
-                                                  if (text.contains('@')) {
-                                                    String query =
-                                                        text.split('@').last;
-                                                    if (query.isNotEmpty) {
-                                                      List<String> users =
-                                                          profilePro.userNames;
-                                                      setState(() {
-                                                        _suggestions = users
-                                                            .where((user) => user
-                                                                .toLowerCase()
-                                                                .contains(query
-                                                                    .toLowerCase()))
-                                                            .toList();
-                                                      });
-                                                    } else {
-                                                      setState(() {
-                                                        _suggestions = [];
-                                                      });
-                                                    }
+                                        return Column(
+                                          children: [
+                                            CustomListTile(
+                                              // validate: _validate,
+                                              bioController: _bioController,
+                                              username: name.isEmpty
+                                                  ? userProvider.user!.username
+                                                  : name,
+                                              isLink: false,
+                                              name: 'Biography',
+                                              isBio: true,
+                                              subtitile:
+                                                  _bioController.text.isNotEmpty
+                                                      ? _bioController.text
+                                                      : userProvider.user!.bio,
+                                              inputText: '',
+                                              onChanged: (value) {
+                                                String text = value;
+                                                if (text.contains('@')) {
+                                                  String query =
+                                                      text.split('@').last;
+                                                  if (query.isNotEmpty) {
+                                                    List<String> users =
+                                                        profilePro.userNames;
+                                                    setState(() {
+                                                      _suggestions = users
+                                                          .where((user) => user
+                                                              .toLowerCase()
+                                                              .contains(query
+                                                                  .toLowerCase()))
+                                                          .toList();
+                                                    });
                                                   } else {
                                                     setState(() {
                                                       _suggestions = [];
                                                     });
                                                   }
-                                                },
-                                              ),
-                                              ..._suggestions.map((user) =>
-                                                  ListTile(
-                                                    title: Text(
-                                                      user,
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                          color: whiteColor,
-                                                          fontFamily:
-                                                              fontFamily),
+                                                } else {
+                                                  setState(() {
+                                                    _suggestions = [];
+                                                  });
+                                                }
+                                              },
+                                            ),
+                                            ..._suggestions.map((user) =>
+                                                ListTile(
+                                                  title: Text(
+                                                    user,
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        color: whiteColor,
+                                                        fontFamily: fontFamily),
+                                                  ),
+                                                  onTap: () {
+                                                    // Replace @mention with the selected user
+                                                    String text =
+                                                        _bioController.text;
+                                                    String updatedText =
+                                                        text.replaceAll(
+                                                            RegExp(r'@\w*$'),
+                                                            '@$user ');
+                                                    _bioController.text =
+                                                        updatedText;
+                                                    _bioController.selection =
+                                                        TextSelection.fromPosition(
+                                                            TextPosition(
+                                                                offset:
+                                                                    updatedText
+                                                                        .length));
+                                                    setState(() {
+                                                      _suggestions = [];
+                                                    });
+                                                  },
+                                                )),
+                                          ],
+                                        );
+                                      }),
+
+                                      //  user date of birth selection field
+
+                                      Column(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  flex: 4,
+                                                  child: Padding(
+                                                    padding: EdgeInsets.only(
+                                                      left: 20,
+                                                      top: dateOfBirth !=
+                                                                  null &&
+                                                              (DateTime.now()
+                                                                              .difference(dateOfBirth ?? userProvider.user!.dateOfBirth)
+                                                                              .inDays /
+                                                                          365)
+                                                                      .floor() <
+                                                                  12
+                                                          ? 20
+                                                          : 0,
                                                     ),
-                                                    onTap: () {
-                                                      // Replace @mention with the selected user
-                                                      String text =
-                                                          _bioController.text;
-                                                      String updatedText =
-                                                          text.replaceAll(
-                                                              RegExp(r'@\w*$'),
-                                                              '@$user ');
-                                                      _bioController.text =
-                                                          updatedText;
-                                                      _bioController.selection =
-                                                          TextSelection.fromPosition(
-                                                              TextPosition(
-                                                                  offset: updatedText
-                                                                      .length));
-                                                      setState(() {
-                                                        _suggestions = [];
-                                                      });
-                                                    },
-                                                  )),
-                                            ],
-                                          );
-                                        }),
-
-                                        //  user date of birth selection field
-
-                                        Column(
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 8),
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    flex: 4,
-                                                    child: Padding(
-                                                      padding: EdgeInsets.only(
-                                                        left: 20,
-                                                        top: dateOfBirth !=
+                                                    child: Text(
+                                                      'Date of birth',
+                                                      style: TextStyle(
+                                                        // height: 1,
+                                                        fontFamily: fontFamily,
+                                                        color: whiteColor,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  flex: 9,
+                                                  child: Stack(
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                // vertical: ,
+                                                                horizontal: 4),
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            if (dateOfBirth !=
                                                                     null &&
                                                                 (DateTime.now().difference(dateOfBirth ?? userProvider.user!.dateOfBirth).inDays /
                                                                             365)
                                                                         .floor() <
-                                                                    12
-                                                            ? 20
-                                                            : 0,
-                                                      ),
-                                                      child: Text(
-                                                        'Date of birth',
-                                                        style: TextStyle(
-                                                          // height: 1,
-                                                          fontFamily:
-                                                              fontFamily,
-                                                          color: whiteColor,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          fontSize: 14,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Expanded(
-                                                    flex: 9,
-                                                    child: Stack(
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  // vertical: ,
-                                                                  horizontal:
-                                                                      4),
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              if (dateOfBirth !=
-                                                                      null &&
-                                                                  (DateTime.now().difference(dateOfBirth ?? userProvider.user!.dateOfBirth).inDays /
-                                                                              365)
-                                                                          .floor() <
-                                                                      12)
-                                                                Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                          .only(
-                                                                          bottom:
-                                                                              8),
-                                                                  child: Text(
-                                                                    'Must be over 12 years.',
-                                                                    style: TextStyle(
-                                                                        height:
-                                                                            0,
-                                                                        color:
-                                                                            greenColor,
-                                                                        fontSize:
-                                                                            12,
-                                                                        fontFamily:
-                                                                            fontFamily),
-                                                                  ),
-                                                                ),
-                                                              Container(
-                                                                height: 34,
-                                                                width: MediaQuery.of(
-                                                                            context)
-                                                                        .size
-                                                                        .width *
-                                                                    0.59,
+                                                                    12)
+                                                              Padding(
                                                                 padding:
                                                                     const EdgeInsets
                                                                         .only(
-                                                                        right:
-                                                                            30,
-                                                                        left:
-                                                                            13,
                                                                         bottom:
-                                                                            8,
-                                                                        top: 8),
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  color:
-                                                                      blackColor,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              20),
-                                                                ),
+                                                                            8),
                                                                 child: Text(
-                                                                  dateOfBirth ==
-                                                                              null &&
-                                                                          (DateTime.now().difference(userProvider.user!.dateOfBirth).inDays / 365).floor() <
-                                                                              12
-                                                                      ? ''
-                                                                      : DateFormat.yMMMd().format(dateOfBirth ??
-                                                                          userProvider
-                                                                              .user!
-                                                                              .dateOfBirth),
-                                                                  // textAlign:
-                                                                  //     TextAlign.center,
+                                                                  'Must be over 12 years.',
                                                                   style: TextStyle(
+                                                                      height: 0,
                                                                       color:
-                                                                          whiteColor,
+                                                                          greenColor,
                                                                       fontSize:
-                                                                          14,
+                                                                          12,
                                                                       fontFamily:
                                                                           fontFamily),
                                                                 ),
                                                               ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Positioned(
-                                                          left:
-                                                              size.width * 0.52,
-                                                          bottom: 1,
-                                                          child: Container(
-                                                            // height: 20,
-                                                            // width: 20,
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(9),
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color:
-                                                                  primaryColor,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          18),
-                                                            ),
-                                                            child: InkWell(
-                                                              onTap: () {
-                                                                //  show date picker popup
-
-                                                                showDatPicker(
-                                                                    userProvider
-                                                                        .user!);
-                                                              },
-                                                              child: const Icon(
-                                                                Icons
-                                                                    .edit_outlined,
-                                                                color: Colors
-                                                                    .white,
-                                                                size: 15,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Divider(
-                                              endIndent: 10,
-                                              indent: 10,
-                                              height: 1,
-                                              color:
-                                                  Colors.white.withOpacity(0.2),
-                                            )
-                                          ],
-                                        ),
-
-                                        // field to enter link
-                                        //  with the checks if certain conditions met then add the link
-
-                                        CustomListTile(
-                                          username: name.isEmpty
-                                              ? userProvider.user!.username
-                                              : name,
-                                          name: 'Link',
-                                          linkError: linkError,
-                                          subtitile: link.isNotEmpty
-                                              ? link
-                                              : userProvider.user!.link,
-                                          isLink: true,
-                                          inputText: '',
-                                          onChanged: (value) {
-                                            if (value.isNotEmpty) {
-                                              if ((!value.startsWith('www')) ||
-                                                  !value.contains('.')) {
-                                                setState(() {
-                                                  linkError =
-                                                      'Please add valid link.';
-                                                });
-                                              } else {
-                                                setState(() {
-                                                  linkError = null;
-                                                  link = value;
-                                                });
-                                              }
-                                            }
-                                          },
-                                        ),
-
-                                        //  user contact field with the checks to enter the valid contact email
-
-                                        CustomListTile(
-                                          username: name.isEmpty
-                                              ? userProvider.user!.username
-                                              : name,
-                                          name: 'Contact',
-                                          contactError: contactError,
-                                          subtitile: contact.isNotEmpty
-                                              ? contact
-                                              : userProvider.user!.contact,
-                                          isLink: true,
-                                          inputText: '',
-                                          onChanged: (value) {
-                                            if (value.isNotEmpty) {
-                                              if (!value.contains('@') ||
-                                                  !value.contains('.')) {
-                                                setState(() {
-                                                  contactError =
-                                                      'Invalid email address.';
-                                                });
-                                              } else {
-                                                setState(() {
-                                                  contactError = null;
-                                                  contact = value;
-                                                });
-                                              }
-                                            }
-                                          },
-                                        ),
-
-                                        //  user password update field
-
-                                        CustomListTile(
-                                          isPassword: true,
-                                          username: '',
-                                          name: 'Account Password',
-                                          passError: passError,
-                                          subtitile: pass.isNotEmpty
-                                              ? pass
-                                              : userProvider.user!.password,
-                                          isLink: true,
-                                          inputText: '',
-                                          onChanged: (value) {
-                                            if (value.isNotEmpty) {
-                                              if (value.length < 8) {
-                                                setState(() {
-                                                  passError =
-                                                      'Password must be above 8 characters.';
-                                                });
-                                              } else {
-                                                setState(() {
-                                                  passError = null;
-                                                  pass = value;
-                                                });
-                                              }
-                                            }
-                                          },
-                                        ),
-
-                                        //  verified users section
-
-                                        Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 25, vertical: 5),
-                                            child: Text(
-                                              'Verified Users Only',
-                                              style: TextStyle(
-                                                  fontFamily: fontFamily,
-                                                  color: whiteColor,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 13),
-                                            ),
-                                          ),
-                                        ),
-                                        Row(
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 25),
-                                              child: Text(
-                                                'Subscription',
-                                                style: TextStyle(
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontFamily: fontFamily,
-                                                    color: userProvider.user!
-                                                            .isSubscriptionEnable
-                                                        ? whiteColor
-                                                        : Colors.grey),
-                                              ),
-                                            ),
-                                            Consumer<UserProvider>(
-                                                builder: (context, sub, child) {
-                                              return GestureDetector(
-                                                onTap: () async {
-                                                  //  if the toggle is already ON then show the alert popup
-
-                                                  if (userProvider.user!
-                                                          .isSubscriptionEnable ==
-                                                      true) {
-                                                    showDialog(
-                                                      context: context,
-                                                      builder: (context) =>
-                                                          AlertDialog(
-                                                        content: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Icon(
-                                                              Icons
-                                                                  .error_outline,
-                                                              color: blackColor,
-                                                              size: 30,
-                                                            ),
-                                                            Padding(
-                                                              padding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      vertical:
-                                                                          10)
-                                                                  .copyWith(
-                                                                      left: 5),
-                                                              child: Text(
-                                                                'Are you sure?',
-                                                                style: TextStyle(
-                                                                    fontFamily:
-                                                                        khulaRegular,
-                                                                    fontSize:
-                                                                        18,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600),
-                                                              ),
-                                                            ),
-                                                            Padding(
+                                                            Container(
+                                                              height: 34,
+                                                              width: MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width *
+                                                                  0.59,
                                                               padding:
                                                                   const EdgeInsets
-                                                                          .only(
-                                                                          bottom:
-                                                                              10)
-                                                                      .copyWith(
-                                                                          left:
-                                                                              5),
-                                                              child: Text(
-                                                                'When you deactivate the subscription feature you will lose all your subscribers.',
-                                                                style: TextStyle(
-                                                                    fontFamily:
-                                                                        khulaRegular,
-                                                                    fontSize:
-                                                                        12,
-                                                                    color: const Color(
-                                                                        0xff6C6C6C),
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w400),
+                                                                      .only(
+                                                                      right: 30,
+                                                                      left: 13,
+                                                                      bottom: 8,
+                                                                      top: 8),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color:
+                                                                    blackColor,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            20),
                                                               ),
-                                                            ),
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              children: [
-                                                                ElevatedButton(
-                                                                    style:
-                                                                        ButtonStyle(
-                                                                      backgroundColor:
-                                                                          const WidgetStatePropertyAll(
-                                                                              Colors.transparent),
-                                                                      elevation:
-                                                                          const WidgetStatePropertyAll(
-                                                                              0),
-                                                                      shape:
-                                                                          WidgetStatePropertyAll(
-                                                                        RoundedRectangleBorder(
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(18),
-                                                                          side: BorderSide(
-                                                                              color: blackColor,
-                                                                              width: 1),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {
-                                                                      navPop(
-                                                                          context);
-                                                                    },
-                                                                    child: Text(
-                                                                      'Cancel',
-                                                                      style: TextStyle(
-                                                                          color:
-                                                                              blackColor,
-                                                                          fontFamily:
-                                                                              fontFamily,
-                                                                          fontSize:
-                                                                              14,
-                                                                          fontWeight:
-                                                                              FontWeight.w600),
-                                                                    )),
-
-                                                                //  on confirm remove the user subscribers
-                                                                // also turn off the toggle
-
-                                                                ElevatedButton(
-                                                                    style: ButtonStyle(
-                                                                        backgroundColor:
-                                                                            WidgetStatePropertyAll(
-                                                                                blackColor),
-                                                                        elevation:
-                                                                            const WidgetStatePropertyAll(
-                                                                                0)),
-                                                                    onPressed:
-                                                                        () async {
-                                                                      navPop(
-                                                                          context);
-                                                                      await FirebaseFirestore
-                                                                          .instance
-                                                                          .collection(
-                                                                              'users')
-                                                                          .doc(userProvider
-                                                                              .user!
-                                                                              .uid)
-                                                                          .update({
-                                                                        'isSubscriptionEnable':
-                                                                            false,
-                                                                        'subscribedUsers':
-                                                                            []
-                                                                      });
-                                                                    },
-                                                                    child: Text(
-                                                                      'Confirm',
-                                                                      style: TextStyle(
-                                                                          color:
-                                                                              whiteColor,
-                                                                          fontSize:
-                                                                              14,
-                                                                          fontWeight:
-                                                                              FontWeight.w400),
-                                                                    ))
-                                                              ],
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    );
-
-                                                    //  else show the popup to enter bank details if the user is verified
-                                                  } else if (userProvider
-                                                          .user!.isVerified &&
-                                                      !userProvider.user!
-                                                          .isSubscriptionEnable) {
-                                                    showCustomDialog(
-                                                        navigatorKey
-                                                            .currentState!
-                                                            .context,
-                                                        userProvider.user!);
-                                                  } else if (!userProvider
-                                                      .user!.isVerified) {}
-                                                },
-                                                child: Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 10),
-                                                  child: Container(
-                                                    // width: 100,
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            10),
-                                                    decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(10)),
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal:
-                                                                      14,
-                                                                  vertical: 7),
-                                                          decoration: BoxDecoration(
-                                                              color: userProvider
-                                                                      .user!
-                                                                      .isSubscriptionEnable
-                                                                  ? primaryColor
-                                                                  : const Color(
-                                                                      0xff6f6f6f),
-                                                              borderRadius: const BorderRadius
-                                                                  .only(
-                                                                  topLeft: Radius
-                                                                      .circular(
-                                                                          18),
-                                                                  bottomLeft: Radius
-                                                                      .circular(
-                                                                          18))),
-                                                          child: Text(
-                                                            'ON',
-                                                            style: TextStyle(
-                                                                color:
-                                                                    whiteColor),
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          decoration: BoxDecoration(
-                                                              color: userProvider
-                                                                      .user!
-                                                                      .isSubscriptionEnable
-                                                                  ? const Color(
-                                                                      0xff6f6f6f)
-                                                                  : const Color(
-                                                                      0xffcdcdcd),
-                                                              borderRadius: const BorderRadius
-                                                                  .only(
-                                                                  topRight: Radius
-                                                                      .circular(
-                                                                          18),
-                                                                  bottomRight: Radius
-                                                                      .circular(
-                                                                          18))),
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal:
-                                                                      14,
-                                                                  vertical: 7),
-                                                          child: Text(
-                                                            'OFF',
-                                                            style: TextStyle(
-                                                                color:
-                                                                    whiteColor),
-                                                          ),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            })
-                                          ],
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 25, vertical: 5),
-                                          child: Text(
-                                            'If enabled users will be able to subscribe to you for a monthly payment (starting from USD 4.00) and receive the subscriber special for the time of being subscribed.',
-                                            style: TextStyle(
-                                                color: userProvider.user!
-                                                        .isSubscriptionEnable
-                                                    ? whiteColor
-                                                    : Colors.grey,
-                                                fontFamily: fontFamily,
-                                                fontSize: 12),
-                                          ),
-                                        ),
-                                        Divider(
-                                          endIndent: 25,
-                                          indent: 25,
-                                          height: 1,
-                                          color: Colors.white.withOpacity(0.2),
-                                        ),
-
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 8),
-                                          child: Row(
-                                            children: [
-                                              //  setting the price if the user is verified and subscription toggle is turned on
-
-                                              Expanded(
-                                                flex: 4,
-                                                child: Padding(
-                                                  // ignore: prefer_const_constructors
-                                                  padding: EdgeInsets.only(
-                                                    left: 23,
-                                                  ),
-                                                  child: Text(
-                                                    'Price per month',
-                                                    style: TextStyle(
-                                                      // height: 1,
-                                                      fontFamily: fontFamily,
-                                                      color: userProvider.user!
-                                                              .isSubscriptionEnable
-                                                          ? whiteColor
-                                                          : Colors.grey,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      fontSize: 14,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 9,
-                                                child: Stack(
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          // vertical: ,
-                                                          horizontal: 4),
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Container(
-                                                            height: 34,
-                                                            width: MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .width *
-                                                                0.59,
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .only(
-                                                                    right: 30,
-                                                                    left: 13,
-                                                                    bottom: 8,
-                                                                    top: 8),
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: userProvider
-                                                                      .user!
-                                                                      .isSubscriptionEnable
-                                                                  ? blackColor
-                                                                  : const Color(
-                                                                      0xff6f6f6f),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          20),
-                                                            ),
-                                                            child: Consumer<
-                                                                    UpdateProfileProvider>(
-                                                                builder: (context,
-                                                                    updatePro,
-                                                                    _) {
-                                                              //  selected price
-
-                                                              return Text(
-                                                                updatePro.price
-                                                                        .isNotEmpty
-                                                                    ? updatePro
-                                                                        .price
-                                                                    : userProvider.user!.price ==
-                                                                                0.00 &&
-                                                                            userProvider
-                                                                                .user!.isSubscriptionEnable &&
-                                                                            updatePro
-                                                                                .price.isEmpty
-                                                                        ? '4.00'
-                                                                        : userProvider
+                                                              child: Text(
+                                                                dateOfBirth ==
+                                                                            null &&
+                                                                        (DateTime.now().difference(userProvider.user!.dateOfBirth).inDays / 365).floor() <
+                                                                            12
+                                                                    ? ''
+                                                                    : DateFormat.yMMMd().format(dateOfBirth ??
+                                                                        userProvider
                                                                             .user!
-                                                                            .price
-                                                                            .toStringAsFixed(2),
+                                                                            .dateOfBirth),
                                                                 // textAlign:
                                                                 //     TextAlign.center,
                                                                 style: TextStyle(
@@ -1350,569 +775,1135 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                         14,
                                                                     fontFamily:
                                                                         fontFamily),
-                                                              );
-                                                            }),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      Positioned(
+                                                        left: size.width * 0.52,
+                                                        bottom: 1,
+                                                        child: Container(
+                                                          // height: 20,
+                                                          // width: 20,
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(9),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: primaryColor,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        18),
                                                           ),
+                                                          child: InkWell(
+                                                            onTap: () {
+                                                              //  show date picker popup
+
+                                                              showDatPicker(
+                                                                  userProvider
+                                                                      .user!);
+                                                            },
+                                                            child: const Icon(
+                                                              Icons
+                                                                  .edit_outlined,
+                                                              color:
+                                                                  Colors.white,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Divider(
+                                            endIndent: 10,
+                                            indent: 10,
+                                            height: 1,
+                                            color:
+                                                Colors.white.withOpacity(0.2),
+                                          )
+                                        ],
+                                      ),
+
+                                      // field to enter link
+                                      //  with the checks if certain conditions met then add the link
+
+                                      CustomListTile(
+                                        username: name.isEmpty
+                                            ? userProvider.user!.username
+                                            : name,
+                                        name: 'Link',
+                                        linkError: linkError,
+                                        subtitile: link.isNotEmpty
+                                            ? link
+                                            : userProvider.user!.link,
+                                        isLink: true,
+                                        inputText: '',
+                                        onChanged: (value) {
+                                          if (value.isNotEmpty) {
+                                            if ((!value.startsWith('www')) ||
+                                                !value.contains('.')) {
+                                              setState(() {
+                                                linkError =
+                                                    'Please add valid link.';
+                                              });
+                                            } else {
+                                              setState(() {
+                                                linkError = null;
+                                                link = value;
+                                              });
+                                            }
+                                          }
+                                        },
+                                      ),
+
+                                      //  user contact field with the checks to enter the valid contact email
+
+                                      CustomListTile(
+                                        username: name.isEmpty
+                                            ? userProvider.user!.username
+                                            : name,
+                                        name: 'Contact',
+                                        contactError: contactError,
+                                        subtitile: contact.isNotEmpty
+                                            ? contact
+                                            : userProvider.user!.contact,
+                                        isLink: true,
+                                        inputText: '',
+                                        onChanged: (value) {
+                                          if (value.isNotEmpty) {
+                                            if (!value.contains('@') ||
+                                                !value.contains('.')) {
+                                              setState(() {
+                                                contactError =
+                                                    'Invalid email address.';
+                                              });
+                                            } else {
+                                              setState(() {
+                                                contactError = null;
+                                                contact = value;
+                                              });
+                                            }
+                                          }
+                                        },
+                                      ),
+
+                                      //  user password update field
+
+                                      CustomListTile(
+                                        isPassword: true,
+                                        username: '',
+                                        name: 'Account Password',
+                                        passError: passError,
+                                        subtitile: pass.isNotEmpty
+                                            ? pass
+                                            : userProvider.user!.password,
+                                        isLink: true,
+                                        inputText: '',
+                                        onChanged: (value) {
+                                          if (value.isNotEmpty) {
+                                            if (value.length < 8) {
+                                              setState(() {
+                                                passError =
+                                                    'Password must be above 8 characters.';
+                                              });
+                                            } else {
+                                              setState(() {
+                                                passError = null;
+                                                pass = value;
+                                              });
+                                            }
+                                          }
+                                        },
+                                      ),
+
+                                      //  verified users section
+
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 25, vertical: 5),
+                                          child: Text(
+                                            'Verified Users Only',
+                                            style: TextStyle(
+                                                fontFamily: fontFamily,
+                                                color: whiteColor,
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 13),
+                                          ),
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(left: 25),
+                                            child: Text(
+                                              'Subscription',
+                                              style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontFamily: fontFamily,
+                                                  color: userProvider.user!
+                                                          .isSubscriptionEnable
+                                                      ? whiteColor
+                                                      : Colors.grey),
+                                            ),
+                                          ),
+                                          Consumer<UserProvider>(
+                                              builder: (context, sub, child) {
+                                            return GestureDetector(
+                                              onTap: () async {
+                                                //  if the toggle is already ON then show the alert popup
+
+                                                if (userProvider.user!
+                                                        .isSubscriptionEnable ==
+                                                    true) {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) =>
+                                                        AlertDialog(
+                                                      content: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Icon(
+                                                            Icons.error_outline,
+                                                            color: blackColor,
+                                                            size: 30,
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .symmetric(
+                                                                        vertical:
+                                                                            10)
+                                                                    .copyWith(
+                                                                        left:
+                                                                            5),
+                                                            child: Text(
+                                                              'Are you sure?',
+                                                              style: TextStyle(
+                                                                  fontFamily:
+                                                                      khulaRegular,
+                                                                  fontSize: 18,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600),
+                                                            ),
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .only(
+                                                                        bottom:
+                                                                            10)
+                                                                    .copyWith(
+                                                                        left:
+                                                                            5),
+                                                            child: Text(
+                                                              'When you deactivate the subscription feature you will lose all your subscribers.',
+                                                              style: TextStyle(
+                                                                  fontFamily:
+                                                                      khulaRegular,
+                                                                  fontSize: 12,
+                                                                  color: const Color(
+                                                                      0xff6C6C6C),
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400),
+                                                            ),
+                                                          ),
+                                                          Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            children: [
+                                                              ElevatedButton(
+                                                                  style:
+                                                                      ButtonStyle(
+                                                                    backgroundColor:
+                                                                        const MaterialStatePropertyAll(
+                                                                            Colors.transparent),
+                                                                    elevation:
+                                                                        const MaterialStatePropertyAll(
+                                                                            0),
+                                                                    shape:
+                                                                        MaterialStatePropertyAll(
+                                                                      RoundedRectangleBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(18),
+                                                                        side: BorderSide(
+                                                                            color:
+                                                                                blackColor,
+                                                                            width:
+                                                                                1),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                  onPressed:
+                                                                      () {
+                                                                    navPop(
+                                                                        context);
+                                                                  },
+                                                                  child: Text(
+                                                                    'Cancel',
+                                                                    style: TextStyle(
+                                                                        color:
+                                                                            blackColor,
+                                                                        fontFamily:
+                                                                            fontFamily,
+                                                                        fontSize:
+                                                                            14,
+                                                                        fontWeight:
+                                                                            FontWeight.w600),
+                                                                  )),
+
+                                                              //  on confirm remove the user subscribers
+                                                              // also turn off the toggle
+
+                                                              ElevatedButton(
+                                                                  style: ButtonStyle(
+                                                                      backgroundColor:
+                                                                          MaterialStatePropertyAll(
+                                                                              blackColor),
+                                                                      elevation:
+                                                                          const MaterialStatePropertyAll(
+                                                                              0)),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    navPop(
+                                                                        context);
+                                                                    await FirebaseFirestore
+                                                                        .instance
+                                                                        .collection(
+                                                                            'users')
+                                                                        .doc(userProvider
+                                                                            .user!
+                                                                            .uid)
+                                                                        .update({
+                                                                      'isSubscriptionEnable':
+                                                                          false,
+                                                                      'subscribedUsers':
+                                                                          []
+                                                                    });
+                                                                  },
+                                                                  child: Text(
+                                                                    'Confirm',
+                                                                    style: TextStyle(
+                                                                        color:
+                                                                            whiteColor,
+                                                                        fontSize:
+                                                                            14,
+                                                                        fontWeight:
+                                                                            FontWeight.w400),
+                                                                  ))
+                                                            ],
+                                                          )
                                                         ],
                                                       ),
                                                     ),
-                                                    Positioned(
-                                                      left: size.width * 0.52,
-                                                      bottom: 1,
-                                                      child: Container(
+                                                  );
+
+                                                  //  else show the popup to enter bank details if the user is verified
+                                                } else if (userProvider
+                                                        .user!.isVerified &&
+                                                    !userProvider.user!
+                                                        .isSubscriptionEnable) {
+                                                  showCustomDialog(
+                                                      navigatorKey.currentState!
+                                                          .context,
+                                                      userProvider.user!);
+                                                } else if (!userProvider
+                                                    .user!.isVerified) {}
+                                              },
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 10),
+                                                child: Container(
+                                                  // width: 100,
+                                                  padding:
+                                                      const EdgeInsets.all(10),
+                                                  decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10)),
+                                                  child: Row(
+                                                    children: [
+                                                      Container(
                                                         padding:
                                                             const EdgeInsets
-                                                                .all(9),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: userProvider
-                                                                  .user!
-                                                                  .isSubscriptionEnable
-                                                              ? primaryColor
-                                                              : const Color(
-                                                                  0xffcdcdcd),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(18),
+                                                                .symmetric(
+                                                                horizontal: 14,
+                                                                vertical: 7),
+                                                        decoration: BoxDecoration(
+                                                            color: userProvider
+                                                                    .user!
+                                                                    .isSubscriptionEnable
+                                                                ? primaryColor
+                                                                : const Color(
+                                                                    0xff6f6f6f),
+                                                            borderRadius: const BorderRadius
+                                                                .only(
+                                                                topLeft: Radius
+                                                                    .circular(
+                                                                        18),
+                                                                bottomLeft: Radius
+                                                                    .circular(
+                                                                        18))),
+                                                        child: Text(
+                                                          'ON',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  whiteColor),
                                                         ),
-                                                        child: InkWell(
-                                                          onTap: () {
-                                                            if (userProvider
+                                                      ),
+                                                      Container(
+                                                        decoration: BoxDecoration(
+                                                            color: userProvider
                                                                     .user!
-                                                                    .isVerified &&
-                                                                userProvider
-                                                                    .user!
-                                                                    .isSubscriptionEnable) {
-                                                              //  dialog to select the price
+                                                                    .isSubscriptionEnable
+                                                                ? const Color(
+                                                                    0xff6f6f6f)
+                                                                : const Color(
+                                                                    0xffcdcdcd),
+                                                            borderRadius: const BorderRadius
+                                                                .only(
+                                                                topRight: Radius
+                                                                    .circular(
+                                                                        18),
+                                                                bottomRight: Radius
+                                                                    .circular(
+                                                                        18))),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 14,
+                                                                vertical: 7),
+                                                        child: Text(
+                                                          'OFF',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  whiteColor),
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          })
+                                        ],
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 25, vertical: 5),
+                                        child: Text(
+                                          'If enabled users will be able to subscribe to you for a monthly payment (starting from USD 4.00) and receive the subscriber special for the time of being subscribed.',
+                                          style: TextStyle(
+                                              color: userProvider.user!
+                                                      .isSubscriptionEnable
+                                                  ? whiteColor
+                                                  : Colors.grey,
+                                              fontFamily: fontFamily,
+                                              fontSize: 12),
+                                        ),
+                                      ),
+                                      Divider(
+                                        endIndent: 25,
+                                        indent: 25,
+                                        height: 1,
+                                        color: Colors.white.withOpacity(0.2),
+                                      ),
 
-                                                              showDialog(
-                                                                context:
-                                                                    context,
-                                                                builder:
-                                                                    (context) =>
-                                                                        AlertDialog(
-                                                                  backgroundColor:
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 8),
+                                        child: Row(
+                                          children: [
+                                            //  setting the price if the user is verified and subscription toggle is turned on
+
+                                            Expanded(
+                                              flex: 4,
+                                              child: Padding(
+                                                // ignore: prefer_const_constructors
+                                                padding: EdgeInsets.only(
+                                                  left: 23,
+                                                ),
+                                                child: Text(
+                                                  'Price per month',
+                                                  style: TextStyle(
+                                                    // height: 1,
+                                                    fontFamily: fontFamily,
+                                                    color: userProvider.user!
+                                                            .isSubscriptionEnable
+                                                        ? whiteColor
+                                                        : Colors.grey,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 9,
+                                              child: Stack(
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        // vertical: ,
+                                                        horizontal: 4),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Container(
+                                                          height: 34,
+                                                          width: MediaQuery.of(
+                                                                      context)
+                                                                  .size
+                                                                  .width *
+                                                              0.59,
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  right: 30,
+                                                                  left: 13,
+                                                                  bottom: 8,
+                                                                  top: 8),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: userProvider
+                                                                    .user!
+                                                                    .isSubscriptionEnable
+                                                                ? blackColor
+                                                                : const Color(
+                                                                    0xff6f6f6f),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        20),
+                                                          ),
+                                                          child: Consumer<
+                                                                  UpdateProfileProvider>(
+                                                              builder: (context,
+                                                                  updatePro,
+                                                                  _) {
+                                                            //  selected price
+
+                                                            return Text(
+                                                              updatePro.price
+                                                                      .isNotEmpty
+                                                                  ? updatePro
+                                                                      .price
+                                                                  : userProvider.user!.price ==
+                                                                              0.00 &&
+                                                                          userProvider
+                                                                              .user!
+                                                                              .isSubscriptionEnable &&
+                                                                          updatePro
+                                                                              .price
+                                                                              .isEmpty
+                                                                      ? '4.00'
+                                                                      : userProvider
+                                                                          .user!
+                                                                          .price
+                                                                          .toStringAsFixed(
+                                                                              2),
+                                                              // textAlign:
+                                                              //     TextAlign.center,
+                                                              style: TextStyle(
+                                                                  color:
                                                                       whiteColor,
-                                                                  elevation: 0,
-                                                                  contentPadding:
+                                                                  fontSize: 14,
+                                                                  fontFamily:
+                                                                      fontFamily),
+                                                            );
+                                                          }),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Positioned(
+                                                    left: size.width * 0.52,
+                                                    bottom: 1,
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              9),
+                                                      decoration: BoxDecoration(
+                                                        color: userProvider
+                                                                .user!
+                                                                .isSubscriptionEnable
+                                                            ? primaryColor
+                                                            : const Color(
+                                                                0xffcdcdcd),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(18),
+                                                      ),
+                                                      child: InkWell(
+                                                        onTap: () {
+                                                          if (userProvider.user!
+                                                                  .isVerified &&
+                                                              userProvider.user!
+                                                                  .isSubscriptionEnable) {
+                                                            //  dialog to select the price
+
+                                                            showDialog(
+                                                              context: context,
+                                                              builder:
+                                                                  (context) =>
+                                                                      AlertDialog(
+                                                                backgroundColor:
+                                                                    whiteColor,
+                                                                elevation: 0,
+                                                                contentPadding:
+                                                                    const EdgeInsets
+                                                                        .all(0),
+                                                                content:
+                                                                    Container(
+                                                                  padding:
                                                                       const EdgeInsets
                                                                           .all(
-                                                                          0),
-                                                                  content:
+                                                                          8),
+                                                                  decoration: BoxDecoration(
+                                                                      color:
+                                                                          whiteColor,
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              15)),
+                                                                  child: Column(
+                                                                    mainAxisSize:
+                                                                        MainAxisSize
+                                                                            .min,
+                                                                    children: [
+                                                                      Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            vertical:
+                                                                                8),
+                                                                        child:
+                                                                            InkWell(
+                                                                          onTap:
+                                                                              () {
+                                                                            Provider.of<UpdateProfileProvider>(context, listen: false).setPrice('4.00');
+                                                                            navPop(context);
+                                                                          },
+                                                                          child:
+                                                                              Padding(
+                                                                            padding:
+                                                                                const EdgeInsets.all(8.0),
+                                                                            child:
+                                                                                Text(
+                                                                              '\$4.00',
+                                                                              style: TextStyle(fontSize: 15, fontFamily: fontFamily),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ),
                                                                       Container(
-                                                                    padding:
-                                                                        const EdgeInsets
-                                                                            .all(
-                                                                            8),
-                                                                    decoration: BoxDecoration(
-                                                                        color:
-                                                                            whiteColor,
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(15)),
-                                                                    child:
-                                                                        Column(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .min,
-                                                                      children: [
-                                                                        Padding(
-                                                                          padding: const EdgeInsets
-                                                                              .symmetric(
-                                                                              vertical: 8),
+                                                                        width: double
+                                                                            .infinity,
+                                                                        height:
+                                                                            1,
+                                                                        color: Colors
+                                                                            .grey
+                                                                            .withOpacity(0.5),
+                                                                      ),
+                                                                      Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            vertical:
+                                                                                8),
+                                                                        child:
+                                                                            InkWell(
+                                                                          onTap:
+                                                                              () {
+                                                                            Provider.of<UpdateProfileProvider>(context, listen: false).setPrice('10.00');
+                                                                            navPop(context);
+                                                                          },
                                                                           child:
-                                                                              InkWell(
-                                                                            onTap:
-                                                                                () {
-                                                                              Provider.of<UpdateProfileProvider>(context, listen: false).setPrice('4.00');
-                                                                              navPop(context);
-                                                                            },
+                                                                              Padding(
+                                                                            padding:
+                                                                                const EdgeInsets.all(8.0),
                                                                             child:
-                                                                                Padding(
-                                                                              padding: const EdgeInsets.all(8.0),
-                                                                              child: Text(
-                                                                                '\$4.00',
-                                                                                style: TextStyle(fontSize: 15, fontFamily: fontFamily),
-                                                                              ),
+                                                                                Text(
+                                                                              '\$10.00',
+                                                                              style: TextStyle(fontSize: 15, fontFamily: fontFamily),
                                                                             ),
                                                                           ),
                                                                         ),
-                                                                        Container(
-                                                                          width:
-                                                                              double.infinity,
-                                                                          height:
-                                                                              1,
-                                                                          color: Colors
-                                                                              .grey
-                                                                              .withOpacity(0.5),
-                                                                        ),
-                                                                        Padding(
-                                                                          padding: const EdgeInsets
-                                                                              .symmetric(
-                                                                              vertical: 8),
+                                                                      ),
+                                                                      Container(
+                                                                        width: double
+                                                                            .infinity,
+                                                                        height:
+                                                                            1,
+                                                                        color: Colors
+                                                                            .grey
+                                                                            .withOpacity(0.5),
+                                                                      ),
+                                                                      Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            vertical:
+                                                                                8),
+                                                                        child:
+                                                                            InkWell(
+                                                                          onTap:
+                                                                              () {
+                                                                            Provider.of<UpdateProfileProvider>(context, listen: false).setPrice('20.00');
+                                                                            navPop(context);
+                                                                          },
                                                                           child:
-                                                                              InkWell(
-                                                                            onTap:
-                                                                                () {
-                                                                              Provider.of<UpdateProfileProvider>(context, listen: false).setPrice('10.00');
-                                                                              navPop(context);
-                                                                            },
+                                                                              Padding(
+                                                                            padding:
+                                                                                const EdgeInsets.all(8.0),
                                                                             child:
-                                                                                Padding(
-                                                                              padding: const EdgeInsets.all(8.0),
-                                                                              child: Text(
-                                                                                '\$10.00',
-                                                                                style: TextStyle(fontSize: 15, fontFamily: fontFamily),
-                                                                              ),
+                                                                                Text(
+                                                                              '\$20.00',
+                                                                              style: TextStyle(fontSize: 15, fontFamily: fontFamily),
                                                                             ),
                                                                           ),
                                                                         ),
-                                                                        Container(
-                                                                          width:
-                                                                              double.infinity,
-                                                                          height:
-                                                                              1,
-                                                                          color: Colors
-                                                                              .grey
-                                                                              .withOpacity(0.5),
-                                                                        ),
-                                                                        Padding(
-                                                                          padding: const EdgeInsets
-                                                                              .symmetric(
-                                                                              vertical: 8),
+                                                                      ),
+                                                                      Container(
+                                                                        width: double
+                                                                            .infinity,
+                                                                        height:
+                                                                            1,
+                                                                        color: Colors
+                                                                            .grey
+                                                                            .withOpacity(0.5),
+                                                                      ),
+                                                                      Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            vertical:
+                                                                                8),
+                                                                        child:
+                                                                            InkWell(
+                                                                          onTap:
+                                                                              () {
+                                                                            Provider.of<UpdateProfileProvider>(context, listen: false).setPrice('50.00');
+                                                                            navPop(context);
+                                                                          },
                                                                           child:
-                                                                              InkWell(
-                                                                            onTap:
-                                                                                () {
-                                                                              Provider.of<UpdateProfileProvider>(context, listen: false).setPrice('20.00');
-                                                                              navPop(context);
-                                                                            },
+                                                                              Padding(
+                                                                            padding:
+                                                                                const EdgeInsets.all(8.0),
                                                                             child:
-                                                                                Padding(
-                                                                              padding: const EdgeInsets.all(8.0),
-                                                                              child: Text(
-                                                                                '\$20.00',
-                                                                                style: TextStyle(fontSize: 15, fontFamily: fontFamily),
-                                                                              ),
+                                                                                Text(
+                                                                              '\$50.00',
+                                                                              style: TextStyle(fontSize: 15, fontFamily: fontFamily),
                                                                             ),
                                                                           ),
                                                                         ),
-                                                                        Container(
-                                                                          width:
-                                                                              double.infinity,
-                                                                          height:
-                                                                              1,
-                                                                          color: Colors
-                                                                              .grey
-                                                                              .withOpacity(0.5),
-                                                                        ),
-                                                                        Padding(
-                                                                          padding: const EdgeInsets
-                                                                              .symmetric(
-                                                                              vertical: 8),
+                                                                      ),
+                                                                      Container(
+                                                                        width: double
+                                                                            .infinity,
+                                                                        height:
+                                                                            1,
+                                                                        color: Colors
+                                                                            .grey
+                                                                            .withOpacity(0.5),
+                                                                      ),
+                                                                      Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            vertical:
+                                                                                8),
+                                                                        child:
+                                                                            InkWell(
+                                                                          onTap:
+                                                                              () {
+                                                                            Provider.of<UpdateProfileProvider>(context, listen: false).setPrice('100.00');
+                                                                            navPop(context);
+                                                                          },
                                                                           child:
-                                                                              InkWell(
-                                                                            onTap:
-                                                                                () {
-                                                                              Provider.of<UpdateProfileProvider>(context, listen: false).setPrice('50.00');
-                                                                              navPop(context);
-                                                                            },
+                                                                              Padding(
+                                                                            padding:
+                                                                                const EdgeInsets.all(8.0),
                                                                             child:
-                                                                                Padding(
-                                                                              padding: const EdgeInsets.all(8.0),
-                                                                              child: Text(
-                                                                                '\$50.00',
-                                                                                style: TextStyle(fontSize: 15, fontFamily: fontFamily),
-                                                                              ),
+                                                                                Text(
+                                                                              '\$100.00',
+                                                                              style: TextStyle(fontSize: 15, fontFamily: fontFamily),
                                                                             ),
                                                                           ),
                                                                         ),
-                                                                        Container(
-                                                                          width:
-                                                                              double.infinity,
-                                                                          height:
-                                                                              1,
-                                                                          color: Colors
-                                                                              .grey
-                                                                              .withOpacity(0.5),
-                                                                        ),
-                                                                        Padding(
-                                                                          padding: const EdgeInsets
-                                                                              .symmetric(
-                                                                              vertical: 8),
-                                                                          child:
-                                                                              InkWell(
-                                                                            onTap:
-                                                                                () {
-                                                                              Provider.of<UpdateProfileProvider>(context, listen: false).setPrice('100.00');
-                                                                              navPop(context);
-                                                                            },
-                                                                            child:
-                                                                                Padding(
-                                                                              padding: const EdgeInsets.all(8.0),
-                                                                              child: Text(
-                                                                                '\$100.00',
-                                                                                style: TextStyle(fontSize: 15, fontFamily: fontFamily),
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
+                                                                      ),
+                                                                    ],
                                                                   ),
                                                                 ),
-                                                              );
-                                                            } else {
-                                                              showWhiteOverlayPopup(
-                                                                  context,
-                                                                  null,
-                                                                  'assets/icons/Info (1).svg',
-                                                                  null,
-                                                                  title:
-                                                                      'Error',
-                                                                  message:
-                                                                      'You need to be verified to add the price',
-                                                                  isUsernameRes:
-                                                                      false);
-                                                            }
-                                                          },
-                                                          child: const Icon(
-                                                            Icons.edit_outlined,
-                                                            color: Colors.white,
-                                                            size: 15,
-                                                          ),
+                                                              ),
+                                                            );
+                                                          } else {
+                                                            showWhiteOverlayPopup(
+                                                                context,
+                                                                null,
+                                                                'assets/icons/Info (1).svg',
+                                                                null,
+                                                                title: 'Error',
+                                                                message:
+                                                                    'You need to be verified to add the price',
+                                                                isUsernameRes:
+                                                                    false);
+                                                          }
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.edit_outlined,
+                                                          color: Colors.white,
+                                                          size: 15,
                                                         ),
                                                       ),
                                                     ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
+                                      ),
 
-                                        Divider(
-                                          endIndent: 10,
-                                          indent: 10,
-                                          height: 1,
-                                          color: Colors.white.withOpacity(0.2),
-                                        ),
+                                      Divider(
+                                        endIndent: 10,
+                                        indent: 10,
+                                        height: 1,
+                                        color: Colors.white.withOpacity(0.2),
+                                      ),
 
-                                        Consumer<UpdateProfileProvider>(
-                                            builder: (context, updatePro, _) {
-                                          return Padding(
-                                            padding: const EdgeInsets.only(
-                                                bottom: 10, right: 20, top: 5),
-                                            child: Align(
-                                              alignment: Alignment.centerRight,
-                                              child: ElevatedButton.icon(
-                                                  style: ButtonStyle(
-                                                      fixedSize:
-                                                          const WidgetStatePropertyAll(
-                                                              Size(145, 40)),
-                                                      backgroundColor:
-                                                          WidgetStatePropertyAll(
-                                                              whiteColor)),
-                                                  onPressed: () async {
-                                                    //  function to update the the user data after getting all the data based on different checks
+                                      Consumer<UpdateProfileProvider>(
+                                          builder: (context, updatePro, _) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 10, right: 20, top: 5),
+                                          child: Align(
+                                            alignment: Alignment.centerRight,
+                                            child: ElevatedButton.icon(
+                                                style: ButtonStyle(
+                                                    fixedSize:
+                                                        const MaterialStatePropertyAll(
+                                                            Size(145, 40)),
+                                                    backgroundColor:
+                                                        MaterialStatePropertyAll(
+                                                            whiteColor)),
+                                                onPressed: () async {
+                                                  //  function to update the the user data after getting all the data based on different checks
 
-                                                    if (_formKey.currentState!
-                                                        .validate()) {
-                                                      if (userProvider
-                                                          .user!.isVerified) {
-                                                        if (userNameError ==
-                                                                null &&
-                                                            linkError == null &&
-                                                            passError == null &&
-                                                            contactError ==
-                                                                null &&
-                                                            (DateTime.now()
-                                                                            .difference(dateOfBirth ??
-                                                                                userProvider.user!.dateOfBirth)
-                                                                            .inDays /
-                                                                        365)
-                                                                    .floor() >=
-                                                                12) {
-                                                          userProvider
-                                                              .setUserLoading(
-                                                                  true);
+                                                  if (_formKey.currentState!
+                                                      .validate()) {
+                                                    if (userProvider
+                                                        .user!.isVerified) {
+                                                      if (name != "" &&
+                                                          userNameError ==
+                                                              null &&
+                                                          nameError == null &&
+                                                          linkError == null &&
+                                                          passError == null &&
+                                                          contactError ==
+                                                              null &&
+                                                          (DateTime.now()
+                                                                          .difference(dateOfBirth ??
+                                                                              userProvider.user!.dateOfBirth)
+                                                                          .inDays /
+                                                                      365)
+                                                                  .floor() >=
+                                                              12) {
+                                                        userProvider
+                                                            .setUserLoading(
+                                                                true);
 
-                                                          String? image;
-                                                          if (userProvider
-                                                                  .userImage !=
-                                                              null) {
-                                                            //  uploading the user image to storage
+                                                        String? image;
+                                                        if (userProvider
+                                                                .userImage !=
+                                                            null) {
+                                                          //  uploading the user image to storage
 
-                                                            image = await AddNoteController()
-                                                                .uploadFile(
-                                                                    'profile',
-                                                                    userProvider
-                                                                        .userImage!,
-                                                                    context);
-                                                          }
-
-                                                          //  pushing the user to home screen
-
-                                                          navPush(
-                                                              BottomBar
-                                                                  .routeName,
-                                                              context);
-
-                                                          //  in the background we are updating the date in the firestore database
-
-                                                          UpdateProfileController()
-                                                              .updateProfile(
-                                                                  pass.isEmpty
-                                                                      ? userProvider
-                                                                          .user!
-                                                                          .password
-                                                                      : pass,
-                                                                  name.isEmpty
-                                                                      ? userProvider
-                                                                          .user!
-                                                                          .username
-                                                                      : name,
-                                                                  username.isEmpty
-                                                                      ? userProvider
-                                                                          .user!
-                                                                          .name
-                                                                      : username,
-                                                                  _bioController
-                                                                          .text
-                                                                          .isNotEmpty
-                                                                      ? _bioController
-                                                                          .text
-                                                                      : userProvider
-                                                                          .user!
-                                                                          .bio,
-                                                                  link.isEmpty
-                                                                      ? userProvider
-                                                                          .user!
-                                                                          .link
-                                                                      : link,
-                                                                  contact.isEmpty
-                                                                      ? userProvider
-                                                                          .user!
-                                                                          .contact
-                                                                      : contact,
+                                                          image = await AddNoteController()
+                                                              .uploadFile(
+                                                                  'profile',
                                                                   userProvider
-                                                                      .user!
-                                                                      .isSubscriptionEnable,
-                                                                  updatePro.price
-                                                                          .isNotEmpty
-                                                                      ? double.parse(updatePro
-                                                                          .price)
-                                                                      : userProvider.user!.price == 0.0 &&
-                                                                              userProvider
-                                                                                  .user!.isSubscriptionEnable &&
-                                                                              updatePro
-                                                                                  .price.isEmpty
-                                                                          ? 4.0
-                                                                          : userProvider
-                                                                              .user!
-                                                                              .price,
-                                                                  updatePro
-                                                                      .fileUrls,
-                                                                  image ??
-                                                                      userProvider
-                                                                          .user!
-                                                                          .photoUrl,
-                                                                  dateOfBirth ??
-                                                                      userProvider
-                                                                          .user!
-                                                                          .dateOfBirth,
-                                                                  context,
-                                                                  userProvider.user!.uid)
-                                                              .then((value) async {
-                                                            if (updatePro.price
-                                                                .isNotEmpty) {
-                                                              //  notifying the subscribed users about changed price
+                                                                      .userImage!,
+                                                                  context);
+                                                        }
 
-                                                              for (var userId
-                                                                  in userProvider
-                                                                      .user!
-                                                                      .subscribedUsers) {
-                                                                NotificationMethods.sendPushNotification(
-                                                                    userId,
-                                                                    '',
-                                                                    '${userProvider.user!.name} has changed the subscription price which is \$${updatePro.price}',
+                                                        //  pushing the user to home screen
+
+                                                        navPush(
+                                                            BottomBar.routeName,
+                                                            context);
+
+                                                        //  in the background we are updating the date in the firestore database
+
+                                                        UpdateProfileController()
+                                                            .updateProfile(
+                                                                pass.isEmpty
+                                                                    ? userProvider
+                                                                        .user!
+                                                                        .password
+                                                                    : pass,
+                                                                name.isEmpty
+                                                                    ? userProvider
+                                                                        .user!
+                                                                        .username
+                                                                    : name,
+                                                                username.isEmpty
+                                                                    ? userProvider
+                                                                        .user!
+                                                                        .name
+                                                                    : username,
+                                                                _bioController
+                                                                        .text
+                                                                        .isNotEmpty
+                                                                    ? _bioController
+                                                                        .text
+                                                                    : userProvider
+                                                                        .user!
+                                                                        .bio,
+                                                                link.isEmpty
+                                                                    ? userProvider
+                                                                        .user!
+                                                                        .link
+                                                                    : link,
+                                                                contact.isEmpty
+                                                                    ? userProvider
+                                                                        .user!
+                                                                        .contact
+                                                                    : contact,
+                                                                userProvider
+                                                                    .user!
+                                                                    .isSubscriptionEnable,
+                                                                updatePro.price
+                                                                        .isNotEmpty
+                                                                    ? double.parse(
+                                                                        updatePro
+                                                                            .price)
+                                                                    : userProvider.user!.price == 0.0 &&
+                                                                            userProvider
+                                                                                .user!.isSubscriptionEnable &&
+                                                                            updatePro
+                                                                                .price.isEmpty
+                                                                        ? 4.0
+                                                                        : userProvider
+                                                                            .user!
+                                                                            .price,
+                                                                updatePro
+                                                                    .fileUrls,
+                                                                image ??
                                                                     userProvider
                                                                         .user!
-                                                                        .name,
-                                                                    'subscription',
-                                                                    '',
-                                                                    context);
-                                                              }
-                                                            }
-                                                            userProvider
-                                                                .setUserLoading(
-                                                                    false);
-                                                            userProvider
-                                                                .removeImage();
-                                                          });
-                                                        }
-                                                      } else {
-                                                        //  else would run when user is not verified
+                                                                        .photoUrl,
+                                                                dateOfBirth ??
+                                                                    userProvider
+                                                                        .user!
+                                                                        .dateOfBirth,
+                                                                context,
+                                                                userProvider
+                                                                    .user!.uid)
+                                                            .then(
+                                                                (value) async {
+                                                          if (updatePro.price
+                                                              .isNotEmpty) {
+                                                            //  notifying the subscribed users about changed price
 
-                                                        if (userNameError ==
-                                                                null &&
-                                                            linkError == null &&
-                                                            passError == null &&
-                                                            contactError ==
-                                                                null &&
-                                                            (DateTime.now()
-                                                                            .difference(dateOfBirth ??
-                                                                                userProvider.user!.dateOfBirth)
-                                                                            .inDays /
-                                                                        365)
-                                                                    .floor() >=
-                                                                12) {
+                                                            for (var userId
+                                                                in userProvider
+                                                                    .user!
+                                                                    .subscribedUsers) {
+                                                              NotificationMethods
+                                                                  .sendPushNotification(
+                                                                      userId,
+                                                                      '',
+                                                                      '${userProvider.user!.name} has changed the subscription price which is \$${updatePro.price}',
+                                                                      userProvider
+                                                                          .user!
+                                                                          .name,
+                                                                      'subscription',
+                                                                      '',
+                                                                      context);
+                                                            }
+                                                          }
                                                           userProvider
                                                               .setUserLoading(
-                                                                  true);
-
-                                                          String? image;
-                                                          if (userProvider
-                                                                  .userImage !=
-                                                              null) {
-                                                            //  uploading the user image
-
-                                                            image = await AddNoteController()
-                                                                .uploadFile(
-                                                                    'profile',
-                                                                    userProvider
-                                                                        .userImage!,
-                                                                    context);
-                                                          }
-
-                                                          // pushing to home screen
-
-                                                          navPush(
-                                                              BottomBar
-                                                                  .routeName,
-                                                              context);
-
-                                                          //  in the background we are updating the date in the firestore database
-
-                                                          UpdateProfileController()
-                                                              .updateProfile(
-                                                                  pass.isEmpty
-                                                                      ? userProvider
-                                                                          .user!
-                                                                          .password
-                                                                      : pass,
-                                                                  name.isEmpty
-                                                                      ? userProvider
-                                                                          .user!
-                                                                          .username
-                                                                      : name,
-                                                                  username.isEmpty
-                                                                      ? userProvider
-                                                                          .user!
-                                                                          .name
-                                                                      : username,
-                                                                  _bioController
-                                                                          .text
-                                                                          .isNotEmpty
-                                                                      ? _bioController
-                                                                          .text
-                                                                      : userProvider
-                                                                          .user!
-                                                                          .bio,
-                                                                  link.isEmpty
-                                                                      ? userProvider
-                                                                          .user!
-                                                                          .link
-                                                                      : link,
-                                                                  contact.isEmpty
-                                                                      ? userProvider
-                                                                          .user!
-                                                                          .contact
-                                                                      : contact,
-                                                                  userProvider
-                                                                      .user!
-                                                                      .isSubscriptionEnable,
-                                                                  updatePro
-                                                                          .price
-                                                                          .isNotEmpty
-                                                                      ? double.parse(
-                                                                          updatePro
-                                                                              .price)
-                                                                      : userProvider
-                                                                          .user!
-                                                                          .price,
-                                                                  updatePro
-                                                                      .fileUrls,
-                                                                  image ??
-                                                                      userProvider
-                                                                          .user!
-                                                                          .photoUrl,
-                                                                  dateOfBirth ??
-                                                                      userProvider
-                                                                          .user!
-                                                                          .dateOfBirth,
-                                                                  context,
-                                                                  userProvider
-                                                                      .user!
-                                                                      .uid)
-                                                              .then((value) {
-                                                            userProvider
-                                                                .setUserLoading(
-                                                                    false);
-                                                            userProvider
-                                                                .removeImage();
-                                                          });
-                                                        }
+                                                                  false);
+                                                          userProvider
+                                                              .removeImage();
+                                                        });
                                                       }
                                                     } else {
-                                                      setState(() {
-                                                        _formKey.currentState!
-                                                            .validate();
-                                                      });
+                                                      //  else would run when user is not verified
+
+                                                      if (name != "" &&
+                                                          userNameError ==
+                                                              null &&
+                                                          nameError == null &&
+                                                          linkError == null &&
+                                                          passError == null &&
+                                                          contactError ==
+                                                              null &&
+                                                          (DateTime.now()
+                                                                          .difference(dateOfBirth ??
+                                                                              userProvider.user!.dateOfBirth)
+                                                                          .inDays /
+                                                                      365)
+                                                                  .floor() >=
+                                                              12) {
+                                                        userProvider
+                                                            .setUserLoading(
+                                                                true);
+
+                                                        String? image;
+                                                        if (userProvider
+                                                                .userImage !=
+                                                            null) {
+                                                          //  uploading the user image
+
+                                                          image = await AddNoteController()
+                                                              .uploadFile(
+                                                                  'profile',
+                                                                  userProvider
+                                                                      .userImage!,
+                                                                  context);
+                                                        }
+
+                                                        // pushing to home screen
+
+                                                        navPush(
+                                                            BottomBar.routeName,
+                                                            context);
+
+                                                        //  in the background we are updating the date in the firestore database
+
+                                                        UpdateProfileController()
+                                                            .updateProfile(
+                                                                pass.isEmpty
+                                                                    ? userProvider
+                                                                        .user!
+                                                                        .password
+                                                                    : pass,
+                                                                name.isEmpty
+                                                                    ? userProvider
+                                                                        .user!
+                                                                        .username
+                                                                    : name,
+                                                                username.isEmpty
+                                                                    ? userProvider
+                                                                        .user!
+                                                                        .name
+                                                                    : username,
+                                                                _bioController
+                                                                        .text
+                                                                        .isNotEmpty
+                                                                    ? _bioController
+                                                                        .text
+                                                                    : userProvider
+                                                                        .user!
+                                                                        .bio,
+                                                                link.isEmpty
+                                                                    ? userProvider
+                                                                        .user!
+                                                                        .link
+                                                                    : link,
+                                                                contact.isEmpty
+                                                                    ? userProvider
+                                                                        .user!
+                                                                        .contact
+                                                                    : contact,
+                                                                userProvider
+                                                                    .user!
+                                                                    .isSubscriptionEnable,
+                                                                updatePro.price
+                                                                        .isNotEmpty
+                                                                    ? double.parse(
+                                                                        updatePro
+                                                                            .price)
+                                                                    : userProvider
+                                                                        .user!
+                                                                        .price,
+                                                                updatePro
+                                                                    .fileUrls,
+                                                                image ??
+                                                                    userProvider
+                                                                        .user!
+                                                                        .photoUrl,
+                                                                dateOfBirth ??
+                                                                    userProvider
+                                                                        .user!
+                                                                        .dateOfBirth,
+                                                                context,
+                                                                userProvider
+                                                                    .user!.uid)
+                                                            .then((value) {
+                                                          userProvider
+                                                              .setUserLoading(
+                                                                  false);
+                                                          userProvider
+                                                              .removeImage();
+                                                        });
+                                                      }
                                                     }
-                                                  },
-                                                  icon: Icon(
-                                                    Icons.check,
-                                                    color: blackColor,
-                                                    size: 25,
-                                                  ),
-                                                  label: userProvider
-                                                          .userLoading
-                                                      ? SpinKitThreeBounce(
-                                                          color: blackColor,
-                                                          size: 13,
-                                                        )
-                                                      : Text(
-                                                          'Save profile',
-                                                          style: TextStyle(
-                                                              fontSize: 13,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              color: blackColor,
-                                                              fontFamily:
-                                                                  fontFamily),
-                                                        )),
-                                            ),
-                                          );
-                                        })
-                                      ],
-                                    ),
+                                                  } else {
+                                                    setState(() {
+                                                      _formKey.currentState!
+                                                          .validate();
+                                                    });
+                                                  }
+                                                },
+                                                icon: Icon(
+                                                  Icons.check,
+                                                  color: blackColor,
+                                                  size: 25,
+                                                ),
+                                                label: userProvider.userLoading
+                                                    ? SpinKitThreeBounce(
+                                                        color: blackColor,
+                                                        size: 13,
+                                                      )
+                                                    : Text(
+                                                        'Save profile',
+                                                        style: TextStyle(
+                                                            fontSize: 13,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: blackColor,
+                                                            fontFamily:
+                                                                fontFamily),
+                                                      )),
+                                          ),
+                                        );
+                                      })
+                                    ],
                                   ),
-                                )
-                              ],
-                            ),
+                                ),
+                              )
+                            ],
                           ),
                         ),
-                      ])),
-
-                      // CustomScrollView(slivers: [
-                      //   SliverFillRemaining(
-                      //     hasScrollBody: false,
-                      //     child:
-                      //   ),
-                      // ])
+                      ),
                     ])),
-      ),
+
+                    // CustomScrollView(slivers: [
+                    //   SliverFillRemaining(
+                    //     hasScrollBody: false,
+                    //     child:
+                    //   ),
+                    // ])
+                  ])),
     );
   }
 }

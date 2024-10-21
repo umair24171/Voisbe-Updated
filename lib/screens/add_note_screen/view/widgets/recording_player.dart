@@ -455,7 +455,7 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
                         player.seek(seekPosition);
                       },
                       onHorizontalDragEnd: (details) {
-                        final position = details.localPosition.dx /
+                        final position = details.primaryVelocity! /
                             widget.width *
                             duration.inMilliseconds;
                         final seekPosition =

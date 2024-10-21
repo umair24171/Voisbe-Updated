@@ -180,7 +180,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                   children: [
                     ElevatedButton(
                       style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(whiteColor),
+                        backgroundColor: MaterialStatePropertyAll(whiteColor),
                       ),
                       onPressed: () {
                         Provider.of<PexelsProvider>(context, listen: false)
@@ -197,7 +197,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: ElevatedButton(
                         style: ButtonStyle(
-                          backgroundColor: WidgetStatePropertyAll(whiteColor),
+                          backgroundColor: MaterialStatePropertyAll(whiteColor),
                         ),
                         onPressed: _progressVisibility
                             ? null
@@ -239,6 +239,8 @@ class _TrimmerViewState extends State<TrimmerView> {
                     onChangeEnd: (value) => _endValue = value,
                     onChangePlaybackState: (value) =>
                         setState(() => _isPlaying = value),
+                    areaProperties:
+                        const TrimAreaProperties(thumbnailFit: BoxFit.fitWidth),
                   ),
                 ),
 

@@ -355,17 +355,7 @@ class NoteProvider with ChangeNotifier {
 
     if (result != null) {
       audioFiles = result.paths.map((path) => File(path!)).toList();
-      // File audioFIle=result.p
 
-      // Upload selected files to Firebase Storage
-      // FirebaseStorage storage = FirebaseStorage.instance;
-
-      // for (var file in files) {
-      //   String fileName = file.path.split('/').last;
-      //   Reference ref = storage.ref().child('mp3_files/$fileName');
-      //   await ref.putFile(file);
-      //   String downloadUrl = await ref.getDownloadURL();
-      //   fileUrls.add(downloadUrl);
       // }
 
       notifyListeners();
@@ -376,6 +366,7 @@ class NoteProvider with ChangeNotifier {
 
   clearAudioFiles() {
     audioFiles.clear();
+
     notifyListeners();
   }
 

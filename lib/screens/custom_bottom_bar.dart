@@ -1,36 +1,26 @@
 import 'dart:developer';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-// import 'package:flutter/widgets.dart';
 import 'package:social_notes/resources/colors.dart';
 import 'package:social_notes/screens/add_note_screen/view/add_note_screen.dart';
 import 'package:social_notes/screens/auth_screens/controller/notifications_methods.dart';
 import 'package:social_notes/screens/auth_screens/providers/auth_provider.dart';
 import 'package:social_notes/screens/chat_screen.dart/provider/chat_provider.dart';
-// import 'package:social_notes/screens/chat_screen.dart/view/chat_screen.dart';
 import 'package:social_notes/screens/chat_screen.dart/view/users_screen.dart';
 import 'package:social_notes/screens/home_screen/controller/share_services.dart';
 import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
-// import 'package:social_notes/screens/home_screen/provider/filter_provider.dart';
-// import 'package:social_notes/screens/home_screen/provider/display_notes_provider.dart';
 import 'package:social_notes/screens/home_screen/view/home_screen.dart';
-// import 'package:social_notes/screens/profile_screen/profile_screen.dart';
 import 'package:social_notes/screens/search_screen/view/search_screen.dart';
-// import 'package:social_notes/screens/upload_sounds/provider/sound_provider.dart';
 import 'package:social_notes/screens/user_profile/provider/user_profile_provider.dart';
 import 'package:social_notes/screens/user_profile/view/user_profile_screen.dart';
-
 import '../resources/review_pop_up.dart';
-// import 'package:service';
-// import 'package:social_notes/screens/user_profile/view/widgets/custom_player.dart';
-
-// import 'add_note_screen/provider/note_provider.dart';
 
 class BottomBar extends StatefulWidget {
   const BottomBar({
@@ -45,7 +35,7 @@ class BottomBar extends StatefulWidget {
   State<BottomBar> createState() => _BottomBarState();
 }
 
-class _BottomBarState extends State<BottomBar> {
+class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
   int _page = 0;
   PageController pageController = PageController(initialPage: 0);
 
@@ -73,9 +63,40 @@ class _BottomBarState extends State<BottomBar> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+    } else if (state == AppLifecycleState.paused) {
+      Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
+      stopMainPlayer();
+      print("Close");
+    } else if (state == AppLifecycleState.inactive) {
+      Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
+      stopMainPlayer();
+    } else if (state == AppLifecycleState.detached) {
+      Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
+      stopMainPlayer();
+    }
+  }
+
+  late DisplayNotesProvider _displayNotesProvider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _displayNotesProvider =
+        Provider.of<DisplayNotesProvider>(context, listen: false);
+  }
+
+  @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     SchedulerBinding.instance.scheduleFrameCallback(
       (timeStamp) {
+        Provider.of<DisplayNotesProvider>(context, listen: false).audioPlayer =
+            AudioPlayer();
+        // context.read<DeepLinkPostService>().initDynamicLinks(context);
+        DeepLinkPostService().initDynamicLinks(context);
+        DeepLinkPostService().initDynamicLinksForProfile(context);
         updateUserToken();
         Provider.of<DisplayNotesProvider>(context, listen: false)
             .getAllNotes(context);
@@ -85,8 +106,6 @@ class _BottomBarState extends State<BottomBar> {
             .geUserAccounts();
         Provider.of<ChatProvider>(context, listen: false).getAllUsersForChat();
 
-        DeepLinkPostService().initDynamicLinks(context);
-        DeepLinkPostService().initDynamicLinksForProfile(context);
         Future.delayed(
           const Duration(seconds: 120),
           () {
@@ -106,6 +125,13 @@ class _BottomBarState extends State<BottomBar> {
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .update({'token': token});
     log("updated");
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _displayNotesProvider.disposePlayer();
+    super.dispose();
   }
 
   // setIndex() {

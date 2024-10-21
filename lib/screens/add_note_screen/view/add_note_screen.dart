@@ -207,11 +207,14 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                       }),
 
                       // above the image or video there would be a blur filter
-                      BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                        child: Container(
-                          color: Colors.white
-                              .withOpacity(0.1), // Transparent color
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(0),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                          child: Container(
+                            color: Colors.white
+                                .withOpacity(0.1), // Transparent color
+                          ),
                         ),
                       ),
 
@@ -536,8 +539,8 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                             ElevatedButton.icon(
                               style: ButtonStyle(
                                 backgroundColor:
-                                    WidgetStatePropertyAll(blackColor),
-                                fixedSize: const WidgetStatePropertyAll(
+                                    MaterialStatePropertyAll(blackColor),
+                                fixedSize: const MaterialStatePropertyAll(
                                   Size(115, 10),
                                 ),
                               ),
@@ -586,13 +589,13 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                               return ElevatedButton(
                                                   style: ButtonStyle(
                                                     backgroundColor:
-                                                        const WidgetStatePropertyAll(
+                                                        const MaterialStatePropertyAll(
                                                             Colors.transparent),
                                                     elevation:
-                                                        const WidgetStatePropertyAll(
+                                                        const MaterialStatePropertyAll(
                                                             0),
                                                     shape:
-                                                        WidgetStatePropertyAll(
+                                                        MaterialStatePropertyAll(
                                                       RoundedRectangleBorder(
                                                         borderRadius:
                                                             BorderRadius
@@ -644,10 +647,10 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                                 return ElevatedButton(
                                                     style: ButtonStyle(
                                                         backgroundColor:
-                                                            WidgetStatePropertyAll(
+                                                            MaterialStatePropertyAll(
                                                                 blackColor),
                                                         elevation:
-                                                            const WidgetStatePropertyAll(
+                                                            const MaterialStatePropertyAll(
                                                                 0)),
                                                     onPressed: () async {
                                                       // shared prefs to save the post in local storage
@@ -743,10 +746,10 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
 
                             ElevatedButton.icon(
                               style: ButtonStyle(
-                                  fixedSize: const WidgetStatePropertyAll(
+                                  fixedSize: const MaterialStatePropertyAll(
                                       Size(120, 10)),
                                   backgroundColor:
-                                      WidgetStatePropertyAll(blackColor)),
+                                      MaterialStatePropertyAll(blackColor)),
                               onPressed: () {
                                 showModalBottomSheet(
                                   context: context,
@@ -777,10 +780,10 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                   builder: (context, noteProvider, _) {
                                 return ElevatedButton.icon(
                                   style: ButtonStyle(
-                                      fixedSize: const WidgetStatePropertyAll(
+                                      fixedSize: const MaterialStatePropertyAll(
                                           Size(110, 10)),
                                       backgroundColor:
-                                          WidgetStatePropertyAll(whiteColor)),
+                                          MaterialStatePropertyAll(whiteColor)),
                                   onPressed: () {
                                     if ((noteProvider.voiceNote != null ||
                                         noteProvider.audioFiles.isNotEmpty)) {

@@ -72,7 +72,7 @@ class NotificationSettings extends StatelessWidget {
                 Consumer<UserProvider>(builder: (context, userPro, _) {
                   return Switch(
                     value: userPro.user!.isLike,
-                    thumbColor: WidgetStatePropertyAll(whiteColor),
+                    thumbColor: MaterialStatePropertyAll(whiteColor),
                     onChanged: (value) async {
                       currentUser.updateUserLike(value);
                       await FirebaseFirestore.instance
@@ -133,7 +133,7 @@ class NotificationSettings extends StatelessWidget {
                 Consumer<UserProvider>(builder: (context, userPro, _) {
                   return Switch(
                     // activeThumbImage: NetworkImage(''),
-                    thumbColor: WidgetStatePropertyAll(whiteColor),
+                    thumbColor: MaterialStatePropertyAll(whiteColor),
                     value: userPro.user!.isReply,
                     onChanged: (value) async {
                       currentUser.updateUserReply(value);
@@ -194,7 +194,7 @@ class NotificationSettings extends StatelessWidget {
 
                 Consumer<UserProvider>(builder: (context, userPro, _) {
                   return Switch(
-                    thumbColor: WidgetStatePropertyAll(whiteColor),
+                    thumbColor: MaterialStatePropertyAll(whiteColor),
                     value: userPro.user!.isFollows,
                     onChanged: (value) async {
                       // userPro.updateUserField(value);

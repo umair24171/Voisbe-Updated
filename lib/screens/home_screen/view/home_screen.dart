@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'dart:ui';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
@@ -50,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen>
   void _initializeHomeScreen() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        // Provider.of<Audio>(context)
         // getting specific post if the user is coming from the notification
         getNoteUsingId();
 
@@ -84,6 +86,18 @@ class _HomeScreenState extends State<HomeScreen>
       }
     });
   }
+
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   if (state == AppLifecycleState.paused) {
+  //     // App is in background or minimized
+  //   Provider.of
+  //   } else if (state == AppLifecycleState.resumed) {
+  //     // App is in foreground
+  //     // Optionally resume playback here
+  //     // audioPlayer.resume();
+  //   }
+  // }
 
   getNoteUsingId() async {
     if (widget.noteId != null) {
@@ -190,13 +204,19 @@ class _HomeScreenState extends State<HomeScreen>
     Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
   }
 
-// disposing the player when no longer needs it
+  late DisplayNotesProvider _displayNotesProvider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _displayNotesProvider =
+        Provider.of<DisplayNotesProvider>(context, listen: false);
+  }
+
   @override
   void dispose() {
-    // Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
-    // Provider.of<DisplayNotesProvider>(context, listen: false)
-    //     .setHomeActive(false);
-    // stopMainPlayer();
+    // Use the stored reference instead of accessing Provider directly
+    // _displayNotesProvider.disposePlayer();
     super.dispose();
   }
 
@@ -880,6 +900,11 @@ class _HomeScreenState extends State<HomeScreen>
                                       return PageView.builder(
                                           controller: _pageController,
                                           onPageChanged: (value) {
+                                            if (provider.audioPlayer!.state ==
+                                                PlayerState.playing) {
+                                              provider.pausePlayer();
+                                            }
+
                                             final currentNote =
                                                 currentNotes[value];
                                             provider.playPause(
@@ -1071,34 +1096,39 @@ class _HomeScreenState extends State<HomeScreen>
 
                                                   KeyedSubtree(
                                                     key: key,
-                                                    child: SingleNotePost(
-                                                      isSecondHome:
-                                                          widget.note != null,
-                                                      duration:
-                                                          provider.duration,
-                                                      stopMainPlayer:
-                                                          stopMainPlayer,
-                                                      playPause: () {
-                                                        provider.playPause(
-                                                          note.noteUrl,
-                                                          index,
-                                                        );
-                                                      },
-                                                      audioPlayer:
-                                                          provider.audioPlayer,
-                                                      position:
-                                                          provider.position,
-                                                      changeIndex:
-                                                          provider.changeIndex,
-                                                      isPlaying:
-                                                          provider.isPlaying,
-                                                      postIndex: index,
-                                                      pageController:
-                                                          _pageController,
-                                                      currentIndex: index,
-                                                      size: size,
-                                                      note: note,
-                                                    ),
+                                                    child: Consumer<
+                                                            DisplayNotesProvider>(
+                                                        builder: (context,
+                                                            notPro, _) {
+                                                      return SingleNotePost(
+                                                        isSecondHome:
+                                                            widget.note != null,
+                                                        duration:
+                                                            provider.duration,
+                                                        stopMainPlayer:
+                                                            stopMainPlayer,
+                                                        playPause: () {
+                                                          provider.playPause(
+                                                            note.noteUrl,
+                                                            index,
+                                                          );
+                                                        },
+                                                        audioPlayer: provider
+                                                            .audioPlayer,
+                                                        position:
+                                                            provider.position,
+                                                        changeIndex: provider
+                                                            .changeIndex,
+                                                        isPlaying:
+                                                            notPro.isPlaying,
+                                                        postIndex: index,
+                                                        pageController:
+                                                            _pageController,
+                                                        currentIndex: index,
+                                                        size: size,
+                                                        note: note,
+                                                      );
+                                                    }),
                                                   ),
                                                 ],
                                               ),
@@ -1172,61 +1202,67 @@ class _CustomNotificationIconState extends State<CustomNotificationIcon> {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-        onPressed: () {
-          stopMainPlayer();
-          Navigator.push(context, MaterialPageRoute(
-            builder: (context) {
-              return const NotificationScreen();
+      onPressed: () {
+        stopMainPlayer();
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const NotificationScreen(),
+            ));
+      },
+      icon: Stack(
+        clipBehavior: Clip.none, // Allow child to overflow
+        children: [
+          Icon(
+            Icons.favorite_border_outlined,
+            color: blackColor,
+            size: 27,
+          ),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('commentNotifications')
+                .where('toId',
+                    isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                int unreadCount = snapshot.data!.docs
+                    .where((doc) => (doc['isRead']).isEmpty)
+                    .length;
+
+                if (unreadCount > 0) {
+                  return Positioned(
+                    right: -5,
+                    top: -5,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 14,
+                        minHeight: 14,
+                      ),
+                      child: Text(
+                        unreadCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }
+              }
+              return const SizedBox.shrink();
             },
-          ));
-        },
-        icon: Stack(
-          children: [
-            Icon(
-              Icons.favorite_border_outlined,
-              color: blackColor,
-              size: 27,
-            ),
-            StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('commentNotifications')
-                    .where('toId',
-                        isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    List<CommentNotoficationModel> notoficationModel = snapshot
-                        .data!.docs
-                        .map((e) => CommentNotoficationModel.fromMap(e.data()))
-                        .toList();
-                    List<CommentNotoficationModel> unreadNotifications = [];
-                    unreadNotifications.clear();
-                    for (var noti in notoficationModel) {
-                      if (noti.isRead.isEmpty) {
-                        unreadNotifications.add(noti);
-                      }
-                    }
-                    return unreadNotifications.isNotEmpty
-                        ? Consumer<UserProvider>(
-                            builder: (context, userPro, _) {
-                            return Positioned(
-                              left: 13,
-                              top: 2,
-                              child: Container(
-                                height: 8,
-                                width: 8,
-                                decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(5)),
-                              ),
-                            );
-                          })
-                        : const SizedBox();
-                  } else {
-                    return const SizedBox();
-                  }
-                }),
-          ],
-        ));
+          ),
+        ],
+      ),
+    );
   }
 }

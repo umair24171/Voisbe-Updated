@@ -178,8 +178,8 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       child: ElevatedButton(
                         style: ButtonStyle(
-                          backgroundColor: WidgetStatePropertyAll(blackColor),
-                          elevation: const WidgetStatePropertyAll(0),
+                          backgroundColor: MaterialStatePropertyAll(blackColor),
+                          elevation: const MaterialStatePropertyAll(0),
                         ),
 
                         //  function to remove the paymnent info
@@ -211,8 +211,8 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
 
                     ElevatedButton(
                       style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(blackColor),
-                        elevation: const WidgetStatePropertyAll(0),
+                        backgroundColor: MaterialStatePropertyAll(blackColor),
+                        elevation: const MaterialStatePropertyAll(0),
                       ),
                       onPressed: () {
                         if (nameController.text.isNotEmpty &&
@@ -583,8 +583,8 @@ class PayFieldWidget extends StatelessWidget {
 //       padding: const EdgeInsets.symmetric(horizontal: 14),
 //       child: ElevatedButton(
 //         style: ButtonStyle(
-//           backgroundColor: WidgetStatePropertyAll(blackColor),
-//           elevation: const WidgetStatePropertyAll(0),
+//           backgroundColor: MaterialStatePropertyAll(blackColor),
+//           elevation: const MaterialStatePropertyAll(0),
 //         ),
 //         onPressed: () {
 //           if (cardNumberCont.text.isNotEmpty &&
@@ -621,8 +621,8 @@ class PayFieldWidget extends StatelessWidget {
 //     ),
 //     ElevatedButton(
 //       style: ButtonStyle(
-//         backgroundColor: WidgetStatePropertyAll(blackColor),
-//         elevation: const WidgetStatePropertyAll(0),
+//         backgroundColor: MaterialStatePropertyAll(blackColor),
+//         elevation: const MaterialStatePropertyAll(0),
 //       ),
 //       onPressed: () {
 //         String paymentId = const Uuid().v4();

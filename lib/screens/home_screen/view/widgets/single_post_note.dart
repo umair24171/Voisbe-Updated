@@ -105,7 +105,7 @@ class _SingleNotePostState extends State<SingleNotePost> {
   // }
 
   void stopMainPlayer() {
-    // _audioHandler.pause();
+     Provider.of<DisplayNotesProvider>(context, listen: false).pausePlayer();
     Provider.of<DisplayNotesProvider>(context, listen: false)
         .setIsPlaying(false);
     Provider.of<DisplayNotesProvider>(context, listen: false)
@@ -987,6 +987,7 @@ class _SingleNotePostState extends State<SingleNotePost> {
                                     ),
                                   ),
                                 ),
+                              
                               ],
                             ),
                           );

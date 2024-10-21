@@ -173,23 +173,13 @@ class DisplayNotesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // playAudioPlayer(String url, int index) async {
-  //   await audioPlayer!.play(UrlSource(url)).then((value) async {
-  //     setChangeIndex(index);
-  //     setIsPlaying(true);
-
-  //     duration = (await audioPlayer!.getDuration())!;
-  //     setDuration(duration);
-  //   });
-  //   notifyListeners();
-  // }
-
   resumeAudioPlayer() {
     audioPlayer!.resume();
     notifyListeners();
   }
 
   disposePlayer() {
+    log('player disposed');
     audioPlayer!.stop();
     audioPlayer!.dispose();
     notifyListeners();
@@ -250,6 +240,57 @@ class DisplayNotesProvider with ChangeNotifier {
       setPosition(Duration.zero);
     });
   }
+
+  // void playPause(String url, int index) async {
+  //   FileInfo? fileInfo;
+  //   if (Platform.isAndroid) {
+  //     final cacheManager = DefaultCacheManager();
+  //     fileInfo = await cacheManager.getFileFromCache(url);
+
+  //     if (fileInfo == null) {
+  //       // File is not cached, download and cache it
+  //       try {
+  //         fileInfo = await cacheManager.downloadFile(url, key: url);
+  //       } catch (e) {
+  //         print('Error downloading file: $e');
+  //         return;
+  //       }
+  //     }
+  //   }
+
+  //   // Use the cached file for playback
+  //   if (isPlaying && changeIndex != index) {
+  //     // await audioPlayer!.stop();
+  //     pausePlayer();
+  //     setChangeIndex(-1);
+  //     setIsPlaying(false);
+  //   }
+
+  //   if (changeIndex == index && isPlaying) {
+  //     if (audioPlayer!.state == PlayerState.playing) {
+  //       pausePlayer();
+  //       setChangeIndex(-1);
+  //       setIsPlaying(false);
+  //     } else {
+  //       resumeAudioPlayer();
+  //       setChangeIndex(index);
+  //       setIsPlaying(true);
+  //     }
+  //   } else {
+  //     playAudioPlayer(fileInfo?.file.path ?? url, index);
+  //   }
+
+  //   audioPlayer!.onPositionChanged.listen((event) {
+  //     if (changeIndex == index) {
+  //       setPosition(event);
+  //     }
+  //   });
+  //   audioPlayer!.onPlayerComplete.listen((event) {
+  //     setChangeIndex(-1);
+  //     setIsPlaying(false);
+  //     setPosition(Duration.zero);
+  //   });
+  // }
 
   setIsSearching(bool value) {
     isSearching = value;

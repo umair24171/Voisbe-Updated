@@ -40,6 +40,7 @@ import 'package:social_notes/screens/chat_screen.dart/view/users_screen.dart';
 
 import 'package:social_notes/screens/custom_bottom_bar.dart';
 import 'package:social_notes/screens/home_screen/controller/audio_handler.dart';
+import 'package:social_notes/screens/home_screen/controller/share_services.dart';
 import 'package:social_notes/screens/home_screen/controller/video_download_methods.dart';
 import 'package:social_notes/screens/home_screen/provider/circle_comments_provider.dart';
 import 'package:social_notes/screens/home_screen/provider/comments_provider.dart';
@@ -159,81 +160,88 @@ void main() async {
   }
   flutterNotificationChannel();
   _initializeNotifications();
+  final deepLinkService = DeepLinkPostService();
   // await JustAudioBackground.init(
   //   androidNotificationChannelId: 'com.app.social_notes.audio',
   //   androidNotificationChannelName: 'Audio playback',
   //   androidNotificationOngoing: true,
   // );
-  runApp(MultiProvider(providers: [
-    ChangeNotifierProvider(
-      create: (context) => UserProvider(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => NoteProvider(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => DisplayNotesProvider(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => ChatProvider(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => FilterProvider(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => UserProfileProvider(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => UpdateProfileProvider(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => SoundProvider(),
-    ),
-    // ChangeNotifierProvider(
-    //   create: (context) => TracksProvider(),
-    // ),
-    ChangeNotifierProvider(
-      create: (context) => SearchScreenProvider(),
-    ),
-    // ChangeNotifierProvider(
-    //   create: (context) => AudioProvider(),
-    // ),
-    ChangeNotifierProvider(
-      create: (context) => SettingsProvider(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => NotificationProvider(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => PaymentController(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => PexelsProvider(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => PlayerProvider(),
-    ),
-    // ChangeNotifierProvider(create: (_) => VideoPlayerManager()),
-    ChangeNotifierProvider(
-      create: (context) => BottomProvider(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => CircleCommentsProvider(),
-    ),
-    // ChangeNotifierProvider(
-    //   create: (context) => SearchPlayerProvider(),
-    // ),
-    // ChangeNotifierProvider(
-    //   create: (context) => EditedInfo(),
-    // ),
-    // ChangeNotifierProvider(
-    //   create: (context) => PlayerProvider(),
-    // ),
-  ], child: const MyApp()));
+  runApp(MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => UserProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => NoteProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => DisplayNotesProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ChatProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => FilterProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => UserProfileProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => UpdateProfileProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => SoundProvider(),
+        ),
+        // ChangeNotifierProvider(
+        //   create: (context) => TracksProvider(),
+        // ),
+        ChangeNotifierProvider(
+          create: (context) => SearchScreenProvider(),
+        ),
+        // ChangeNotifierProvider(
+        //   create: (context) => AudioProvider(),
+        // ),
+        ChangeNotifierProvider(
+          create: (context) => SettingsProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => NotificationProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => PaymentController(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => PexelsProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => PlayerProvider(),
+        ),
+        // ChangeNotifierProvider(create: (_) => VideoPlayerManager()),
+        ChangeNotifierProvider(
+          create: (context) => BottomProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => CircleCommentsProvider(),
+        ),
+        // ChangeNotifierProvider(
+        //   create: (context) => SearchPlayerProvider(),
+        // ),
+        // ChangeNotifierProvider(
+        //   create: (context) => EditedInfo(),
+        // ),
+        // ChangeNotifierProvider(
+        //   create: (context) => PlayerProvider(),
+        // ),
+      ],
+      child: MyApp(
+        deepLinkService: deepLinkService,
+      )));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.deepLinkService});
+
+  final DeepLinkPostService deepLinkService;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -242,6 +250,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
   @override
   void initState() {
     super.initState();

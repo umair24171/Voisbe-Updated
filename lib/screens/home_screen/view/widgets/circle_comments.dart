@@ -80,18 +80,10 @@ class _CircleCommentsState extends State<CircleComments> {
 
   late StreamSubscription<DocumentSnapshot> _userSubscription;
 
-  //  creating the empty lists to manage the colors based on the certain logics
-
-  // List<int> subscriberCommentsIndexes = [];
-
-  // List<int> closeFriendIndexes = [];
-  // List<int> remainingCommentsIndex = [];
-  // List<CommentModel> commentsList = [];
-  // int engageCommentIndex = 0;
+ 
   String? path;
   late Directory directory;
-  // int indexOfNewComent = -1;
-
+ 
   stopPlayingOnScrolling() {
     widget.pagController.addListener(_checkIndex);
   }
@@ -99,47 +91,42 @@ class _CircleCommentsState extends State<CircleComments> {
   _checkIndex() {
     if (widget.changeIndex != widget.currentIndex) {
       Provider.of<CircleCommentsProvider>(context, listen: false).pausePlayer();
-      // _audioPlayer.stop();
-      // setState(() {
-      //   _currentIndex = -1;
-      //   _isPlaying = false;
-      // });
+     
     }
   }
+
+  bool _mounted = true;
 
   @override
   void initState() {
     super.initState();
-    commentManager = CommentManager(setState);
-    //  initializing the player
-    // _audioPlayer = AudioPlayer();
 
-    // getting 7 replies
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        if (_mounted) {
+          commentManager = CommentManager(setState);
 
-    getStreamComments();
+          getStreamComments();
 
-    Provider.of<DisplayNotesProvider>(context, listen: false)
-        .audioPlayer
-        .onPlayerStateChanged
-        .listen((PlayerState state) {
-      if (state == PlayerState.playing) {
-        // Assuming there's a method to check if main audio is playing
+          Provider.of<DisplayNotesProvider>(context, listen: false)
+              .audioPlayer
+              .onPlayerStateChanged
+              .listen((PlayerState state) {
+            if (state == PlayerState.playing) {
+              // Assuming there's a method to check if main audio is playing
 
-        Provider.of<CircleCommentsProvider>(context, listen: false)
-            .pausePlayer();
+              Provider.of<CircleCommentsProvider>(context, listen: false)
+                  .pausePlayer();
+            }
+          });
 
-        // _audioPlayer.stop();
-        // setState(() {
-        //   _currentIndex = -1;
-        //   _isPlaying = false;
-        // });
-      }
-    });
+          //  initilizing wave generate controller
 
-    //  initilizing wave generate controller
-
-    _initialiseController();
-    stopPlayingOnScrolling();
+          _initialiseController();
+          stopPlayingOnScrolling();
+        }
+      },
+    );
   }
 
   void _initialiseController() {
@@ -176,148 +163,10 @@ class _CircleCommentsState extends State<CircleComments> {
       isLoading = false;
     });
 
-    // _subscription = FirebaseFirestore.instance
-    //     .collection('notes')
-    //     .doc(widget.noteModel.noteId)
-    //     .collection('comments')
-    //     .orderBy('time', descending: true)
-    //     .snapshots()
-    //     .listen((snapshot) {
-    //   if (mounted) {
-    //     if (snapshot.docs.isNotEmpty) {
-    //       // List<CommentModel> list =
-    //       //     snapshot.docs.map((e) => CommentModel.fromMap(e.data())).toList();
-
-    //       // List<CommentModel> itemsToRemove = [];
-    //       // List<String>? commentIDs =
-    //       //     preferences.getStringList(currentUser!.uid);
-    //       // if (commentIDs != null) {
-    //       //   for (var item in list) {
-    //       //     if (commentIDs.contains(item.commentid)) {
-    //       //       itemsToRemove.add(item);
-    //       //     }
-    //       //   }
-    //       // }
-
-    //       // list.removeWhere((item) => itemsToRemove.contains(item));
-
-    //       // List<int> newCloseFriendIndexes = [];
-    //       // List<int> newSubscriberCommentsIndexes = [];
-    //       // List<int> newRemainingCommentsIndex = [];
-
-    //       // for (var index = 0; index < list.length; index++) {
-    //       //   var comment = list[index];
-    //       //   if (currentNoteUser?.closeFriends.contains(comment.userId) ??
-    //       //       false) {
-    //       //     newCloseFriendIndexes.add(index);
-    //       //   } else if (currentNoteUser?.subscribedUsers
-    //       //           .contains(comment.userId) ??
-    //       //       false) {
-    //       //     newSubscriberCommentsIndexes.add(index);
-    //       //   } else {
-    //       //     newRemainingCommentsIndex.add(index);
-    //       //   }
-    //       // }
-
-    //       // List<CommentModel> engageComments = List.from(list);
-    //       // engageComments
-    //       //     .sort((a, b) => b.playedComment.compareTo(a.playedComment));
-    //       // CommentModel mostEngageComment = engageComments[0];
-    //       // int indexOfEngageComment = list.indexWhere(
-    //       //     (element) => element.commentid == mostEngageComment.commentid);
-
-    //       // setState(() {
-    //       //   commentsList = list;
-    //       //   closeFriendIndexes = newCloseFriendIndexes;
-    //       //   subscriberCommentsIndexes = newSubscriberCommentsIndexes;
-    //       //   remainingCommentsIndex = newRemainingCommentsIndex;
-    //       //   engageCommentIndex = indexOfEngageComment;
-    //       // });
-    //     }
-    //   }
-    // });
+    
   }
 
-  // Future<void> getStreamComments() async {
-  //   UserModel? currentNoteUser;
-  //   var currentUser = Provider.of<UserProvider>(context, listen: false).user;
-
-  //   _userSubscription = FirebaseFirestore.instance
-  //       .collection("users")
-  //       .doc(widget.noteModel.userUid)
-  //       .snapshots()
-  //       .listen((snapshot) {
-  //     if (mounted) {
-  //       setState(() {
-  //         currentNoteUser = UserModel.fromMap(snapshot.data() ?? {});
-  //       });
-  //     }
-  //   });
-
-  //   SharedPreferences preferences = await SharedPreferences.getInstance();
-
-  //   _subscription = FirebaseFirestore.instance
-  //       .collection('notes')
-  //       .doc(widget.noteModel.noteId)
-  //       .collection('comments')
-  //       .orderBy('time', descending: true)
-  //       .snapshots()
-  //       .listen((snapshot) {
-  //     if (mounted) {
-  //       if (snapshot.docs.isNotEmpty) {
-  //         List<CommentModel> list =
-  //             snapshot.docs.map((e) => CommentModel.fromMap(e.data())).toList();
-
-  //         List<CommentModel> itemsToRemove = [];
-  //         List<String>? commentIDs =
-  //             preferences.getStringList(currentUser!.uid);
-  //         if (commentIDs != null) {
-  //           for (var item in list) {
-  //             if (commentIDs.contains(item.commentid)) {
-  //               itemsToRemove.add(item);
-  //             }
-  //           }
-  //         }
-
-  //         list.removeWhere((item) => itemsToRemove.contains(item));
-
-  //         List<int> newCloseFriendIndexes = [];
-  //         List<int> newSubscriberCommentsIndexes = [];
-  //         List<int> newRemainingCommentsIndex = [];
-
-  //         for (var index = 0; index < list.length; index++) {
-  //           var comment = list[index];
-  //           if (currentNoteUser?.closeFriends.contains(comment.userId) ??
-  //               false) {
-  //             newCloseFriendIndexes.add(index);
-  //           } else if (currentNoteUser?.subscribedUsers
-  //                   .contains(comment.userId) ??
-  //               false) {
-  //             newSubscriberCommentsIndexes.add(index);
-  //           } else {
-  //             newRemainingCommentsIndex.add(index);
-  //           }
-  //         }
-
-  //         List<CommentModel> engageComments = List.from(list);
-  // engageComments
-  //     .sort((a, b) => b.playedComment.compareTo(a.playedComment));
-  //         CommentModel mostEngageComment = engageComments[0];
-  //         int indexOfEngageComment = list.indexWhere(
-  //             (element) => element.commentid == mostEngageComment.commentid);
-
-  //         setState(() {
-  //           commentsList = list;
-  //           closeFriendIndexes = newCloseFriendIndexes;
-  //           subscriberCommentsIndexes = newSubscriberCommentsIndexes;
-  //           remainingCommentsIndex = newRemainingCommentsIndex;
-  //           engageCommentIndex = indexOfEngageComment;
-  //         });
-  //       }
-  //     }
-  //   });
-  // }
-
+ 
   //  updating the value of the comment in the for most played
 
   void _updatePlayedComment(String commentId, int playedComment) async {
@@ -330,67 +179,7 @@ class _CircleCommentsState extends State<CircleComments> {
         .update({'playedComment': updateCommentCounter});
   }
 
-  //  function to play one audio at a time
-
-  // void _playAudio(
-  //   String url,
-  //   int index,
-  //   String commentId,
-  //   int playedComment,
-  // ) async {
-  //   DefaultCacheManager cacheManager = DefaultCacheManager();
-  // var pro = Provider.of<DisplayNotesProvider>(context, listen: false);
-  // pro.pausePlayer();
-  // pro.setIsPlaying(false);
-  // pro.setChangeIndex(-1);
-
-  //   if (_isPlaying && _currentIndex != index) {
-  //     await _audioPlayer.stop();
-  //   }
-
-  //   if (_currentIndex == index && _isPlaying) {
-  //     if (_audioPlayer.state == PlayerState.playing) {
-  //       _audioPlayer.pause();
-  //       setState(() {
-  //         _currentIndex = -1;
-  //         _isPlaying = false;
-  //       });
-  //     } else {
-  //       _audioPlayer.resume();
-  //       setState(() {
-  //         _currentIndex = index;
-  //         _isPlaying = true;
-  //       });
-  //     }
-  //   } else {
-  //     File cachedFile = await cacheManager.getSingleFile(url);
-  //     if (cachedFile != null && await cachedFile.exists()) {
-  //       await _audioPlayer.play(UrlSource(cachedFile.path));
-  //     } else {
-  //       await _audioPlayer.play(UrlSource(url));
-  //     }
-  //     setState(() {
-  //       _currentIndex = index;
-  //       _isPlaying = true;
-  //     });
-  //   }
-
-  //   _audioPlayer.onPositionChanged.listen((event) {
-  //     if (_currentIndex == index) {
-  //       setState(() {
-  //         position = event;
-  //       });
-  //     }
-  //   });
-
-  //   _audioPlayer.onPlayerComplete.listen((event) {
-  //     // _updatePlayedComment(commentId, playedComment);
-  //     setState(() {
-  //       _isPlaying = false;
-  //       position = Duration.zero;
-  //     });
-  //   });
-  // }
+  
 
   //  disposing all the players when no longer needs
 
@@ -402,6 +191,7 @@ class _CircleCommentsState extends State<CircleComments> {
     // _audioPlayer.dispose();
     // _subscription.cancel();
     // Provider.of<CircleCommentsProvider>(context, listen: false).disposePlayer();
+    _mounted = false;
     commentManager.dispose();
     controller.dispose();
 

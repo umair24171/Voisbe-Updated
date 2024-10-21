@@ -557,7 +557,7 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                   children: [
                     ElevatedButton.icon(
                       style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(blackColor),
+                        backgroundColor: MaterialStatePropertyAll(blackColor),
                       ),
                       onPressed: () {
                         // go back to the prevoius screen
@@ -624,7 +624,7 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                       return ElevatedButton.icon(
                         style: ButtonStyle(
                             backgroundColor:
-                                WidgetStatePropertyAll(whiteColor)),
+                                MaterialStatePropertyAll(whiteColor)),
                         onPressed: () async {
                           // while the post adding show the loading true
 
@@ -726,7 +726,6 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                             noteProvider.setEmptySelectedVideo();
                             noteProvider.setIsGalleryVideo(false);
                             noteProvider.setClearTags();
-
                             Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(

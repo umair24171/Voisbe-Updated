@@ -11,6 +11,59 @@ import 'package:social_notes/screens/user_profile/other_user_profile.dart';
 
 class DeepLinkPostService {
   final dynamicLink = FirebaseDynamicLinks.instance;
+  Future<String> createReferLink(NoteModel postData) async {
+    final DynamicLinkParameters dynamicLinkParameters = DynamicLinkParameters(
+      uriPrefix: 'https://voisbe.page.link',
+      link: Uri.parse('https://voisbe.page.link?noteId=${postData.noteId}'),
+      androidParameters: const AndroidParameters(
+        packageName: 'com.app.voisbe',
+        minimumVersion: 1,
+      ),
+      socialMetaTagParameters: SocialMetaTagParameters(
+        title: postData.title,
+        description: 'Voisbe post',
+        imageUrl: Uri.parse(postData.photoUrl),
+      ),
+    );
+
+    final shortLink = await dynamicLink.buildShortLink(dynamicLinkParameters);
+    return shortLink.shortUrl.toString();
+  }
+
+  void initDynamicLinks(BuildContext context) async {
+    // Handle links when the app is already running
+    FirebaseDynamicLinks.instance.onLink.listen((dynamicLinkData) {
+      _handleDynamicLink(dynamicLinkData.link, context);
+    }).onError((error) {
+      debugPrint('Dynamic Link Error: $error');
+    });
+
+    // Handle links when the app is started from a terminated state
+    final PendingDynamicLinkData? data =
+        await FirebaseDynamicLinks.instance.getInitialLink();
+    if (data != null) {
+      _handleDynamicLink(data.link, context);
+    }
+  }
+
+  void _handleDynamicLink(Uri deepLink, BuildContext context) async {
+    final queryParams = deepLink.queryParameters;
+    final noteId = queryParams['noteId'];
+    if (noteId != null) {
+      await FirebaseFirestore.instance
+          .collection('notes')
+          .doc(noteId)
+          .get()
+          .then((snapshot) {
+        if (snapshot.exists) {
+          final postData = NoteModel.fromMap(snapshot.data()!);
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => HomeScreen(note: postData),
+          ));
+        }
+      });
+    }
+  }
 
   Future<String> shareProfileLink(String userId) async {
     final DynamicLinkParameters dynamicLinkParameters = DynamicLinkParameters(
@@ -49,77 +102,6 @@ class DeepLinkPostService {
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => OtherUserProfile(userId: userId),
             ));
-          }
-        });
-      }
-    }).onError((error) {
-      debugPrint('Dynamic Link Error: $error');
-    });
-  }
-
-  Future<String> createReferLink(NoteModel postData) async {
-    FirebaseDynamicLinks links = FirebaseDynamicLinks.instance;
-    final DynamicLinkParameters dynamicLinkParameters = DynamicLinkParameters(
-      uriPrefix: 'https://voisbe.page.link',
-      link: Uri.parse('https://voisbe.page.link?noteId=${postData.noteId}'),
-      androidParameters: const AndroidParameters(
-        packageName: 'com.app.voisbe',
-        minimumVersion: 1,
-      ),
-      socialMetaTagParameters: SocialMetaTagParameters(
-        title: postData.title,
-        description: 'Voisbe post',
-        imageUrl: Uri.parse(postData.photoUrl),
-      ),
-    );
-
-    final shortLink = await links.buildShortLink(dynamicLinkParameters);
-    return shortLink.shortUrl.toString();
-  }
-
-  AudioPlayer _audioPlayer = AudioPlayer();
-  PageController controller = PageController();
-
-  void initDynamicLinks(BuildContext context) async {
-    FirebaseDynamicLinks.instance.onLink.listen((dynamicLinkData) async {
-      final Uri deepLink = dynamicLinkData.link;
-
-      final queryParams = deepLink.queryParameters;
-      final profileCode = queryParams['noteId'];
-      if (profileCode != null) {
-        await FirebaseFirestore.instance
-            .collection('notes')
-            .doc(profileCode)
-            .get()
-            .then((snapshot) {
-          if (snapshot.exists) {
-            final postData = NoteModel.fromMap(snapshot.data()!);
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => HomeScreen(
-                      // audioPlayer: _audioPlayer,
-                      // changeIndex: 0,
-                      // currentIndex: 0,
-                      // duration: Duration.zero,
-                      // isPlaying: true,
-                      // pageController: controller,
-                      // playPause: () {
-                      //   // playPause(userPosts[index].noteUrl, index);
-                      // },
-                      // position: Duration.zero,
-                      // stopMainPlayer: () {},
-                      // size: MediaQuery.of(context).size,
-                      note: postData,
-                    )));
-
-            // if (postData.postType == PostType.video) {
-            //   Provider.of<BottomNavigationProvider>(context, listen: false)
-            //       .setcurrentIndex = 3;
-            //   navPush(context, BottomNavigationBarSet(postData: postData));
-            // } else {
-            //   Provider.of<BottomNavigationProvider>(context, listen: false)
-            //       .setcurrentIndex = 0;
-            //   navPush(context, BottomNavigationBarSet(postData: postData));
-            // }
           }
         });
       }
