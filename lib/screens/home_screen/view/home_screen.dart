@@ -57,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen>
 
         final displayNotesProvider =
             Provider.of<DisplayNotesProvider>(context, listen: false);
+        displayNotesProvider.initializeAudioPlayer();
 
         //  setting the value of home to true
         displayNotesProvider.setHomeActive(true);
@@ -216,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void dispose() {
     // Use the stored reference instead of accessing Provider directly
-    // _displayNotesProvider.disposePlayer();
+    _displayNotesProvider.disposePlayer();
     super.dispose();
   }
 

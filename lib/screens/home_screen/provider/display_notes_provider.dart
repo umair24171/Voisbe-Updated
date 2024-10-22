@@ -36,13 +36,17 @@ class DisplayNotesProvider with ChangeNotifier {
   Duration duration = Duration.zero;
   Duration position = Duration.zero;
   int changeIndex = 0;
-  AudioPlayer audioPlayer = AudioPlayer();
+  late AudioPlayer audioPlayer;
   bool isHomeActive = true;
   bool isLoading = false;
 
   setIsloading(bool value) {
     isLoading = value;
     notifyListeners();
+  }
+
+  initializeAudioPlayer() {
+    audioPlayer = AudioPlayer();
   }
 
   // DisplayNotesProvider() {
