@@ -160,7 +160,7 @@ class _TrimmerViewState extends State<TrimmerView> {
       body: Builder(
         builder: (context) => Center(
           child: Container(
-            padding: const EdgeInsets.only(bottom: 30.0),
+            // padding: const EdgeInsets.only(bottom: 30.0),
             color: Colors.black,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
