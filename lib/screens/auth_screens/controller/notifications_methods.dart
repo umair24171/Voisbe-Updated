@@ -6,8 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:googleapis_auth/auth_io.dart';
-import 'package:http/http.dart';
-import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_notes/screens/auth_screens/model/user_model.dart';
 import 'package:http/http.dart' as http;
@@ -75,9 +73,7 @@ class NotificationMethods {
       UserModel user = UserModel.fromMap(userData.data()!);
       String bearer = await setToken(context);
 
-      const String fcmEndpoint =
-          'https://fcm.googleapis.com/v1/projects/voisbe/messages:send';
-      // Get this from Firebase Console
+      const String fcmEndpoint = '';
 
       final body = {
         "message": {

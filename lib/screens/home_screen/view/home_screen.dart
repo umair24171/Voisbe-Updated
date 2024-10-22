@@ -1147,7 +1147,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildBackgroundContent(NoteModel note, BuildContext context) {
-    if (note.backgroundType.contains('video')) { 
+    if (note.backgroundType.contains('video')) {
       return VisibilityDetector(
         key: Key(note.noteId),
         onVisibilityChanged: (VisibilityInfo info) {
@@ -1218,7 +1218,7 @@ class _CustomNotificationIconState extends State<CustomNotificationIcon> {
             color: blackColor,
             size: 27,
           ),
-          StreamBuilder<QuerySnapshot>(
+          StreamBuilder(
             stream: FirebaseFirestore.instance
                 .collection('commentNotifications')
                 .where('toId',
@@ -1226,33 +1226,44 @@ class _CustomNotificationIconState extends State<CustomNotificationIcon> {
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-                int unreadCount = snapshot.data!.docs
-                    .where((doc) => (doc['isRead']).isEmpty)
+                // int unreadCount = snapshot.data!.docs
+                //     .where((doc) => (doc['isRead']).isEmpty)
+                //     .length;
+
+                List<CommentNotoficationModel> notifications = snapshot
+                    .data!.docs
+                    .map(
+                        (data) => CommentNotoficationModel.fromMap(data.data()))
+                    .toList();
+
+                List<CommentNotoficationModel> unreadNoti = notifications
+                    .where(
+                      (element) => element.isRead.isEmpty,
+                    )
+                    .toList();
+                // log('unr ${unreadNoti.first.notificationType} ${unreadNoti.first.}');
+
+                int unreadCount = notifications
+                    .where(
+                      (element) => element.isRead.isEmpty,
+                    )
                     .length;
+                log('unread $unreadCount');
 
                 if (unreadCount > 0) {
                   return Positioned(
-                    right: -5,
-                    top: -5,
+                    right: 2,
+                    top: 0,
                     child: Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white, width: 1.5),
+                        // border: Border.all(color: Colors.white, width: 1.5),
                       ),
                       constraints: const BoxConstraints(
-                        minWidth: 14,
-                        minHeight: 14,
-                      ),
-                      child: Text(
-                        unreadCount.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
+                        minWidth: 8,
+                        minHeight: 8,
                       ),
                     ),
                   );

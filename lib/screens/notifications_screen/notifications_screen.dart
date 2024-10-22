@@ -95,6 +95,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
         commentNotifications = commentNotifi;
         likeNotifications = likeNotific;
       });
+
+      // for(var noti in followNotifications){
+
+      // }
     });
   }
 
@@ -213,6 +217,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   if (snapshot.hasData) {
                     return Column(
                       children: [
+                        CustomSeeenWidget(
+                          notiIds: followNotifications,
+                        ),
                         //  building the requests
 
                         ListView.builder(
@@ -574,6 +581,37 @@ class FollowUserWidget extends StatelessWidget {
             return const SizedBox();
           }
         });
+  }
+}
+
+class CustomSeeenWidget extends StatefulWidget {
+  const CustomSeeenWidget({super.key, required this.notiIds});
+
+  final List<CommentNotoficationModel> notiIds;
+
+  @override
+  State<CustomSeeenWidget> createState() => _CustomSeeenWidgetState();
+}
+
+class _CustomSeeenWidgetState extends State<CustomSeeenWidget> {
+  @override
+  void initState() {
+    super.initState();
+    seenNotifications();
+  }
+
+  seenNotifications() {
+    SchedulerBinding.instance.scheduleFrameCallback((timer) {
+      for (var id in widget.notiIds) {
+        Provider.of<NotificationProvider>(context, listen: false)
+            .readNotification(id.notificationId);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox();
   }
 }
 

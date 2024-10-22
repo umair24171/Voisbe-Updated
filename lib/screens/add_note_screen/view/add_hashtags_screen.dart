@@ -676,6 +676,11 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                           AddNoteController()
                               .addNote(note, noteId, context)
                               .then((value) async {
+                            Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const BottomBar()),
+                                (route) => false);
                             List<double> waveformData =
                                 await controller.extractWaveformData(
                               path: widget.filePath != null
@@ -737,11 +742,7 @@ class _AddHashtagsScreenState extends State<AddHashtagsScreen> {
                             noteProvider.setEmptySelectedVideo();
                             noteProvider.setIsGalleryVideo(false);
                             noteProvider.setClearTags();
-                            Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const BottomBar()),
-                                (route) => false);
+                            log("everything removed");
 
                             // navPush(BottomBar.routeName, context);
 

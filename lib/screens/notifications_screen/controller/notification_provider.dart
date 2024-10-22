@@ -124,6 +124,7 @@ class NotificationProvider with ChangeNotifier {
           .collection('commentNotifications')
           .doc(notiId)
           .update({'isRead': 'read'});
+      log('noti read');
     } catch (e) {
       log(e.toString());
     }
